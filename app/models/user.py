@@ -1,7 +1,11 @@
-from db.base_class import Base
-from models.user_role import UserRole
+from app.db.base_class import Base
+from app.models.user_role import UserRole
 from sqlalchemy import Integer, String, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING, List
+
+if TYPE_CHECKING:
+  from app.models.reservation import Reservation
 
 class User(Base):
   __tablename__ = "users"
@@ -9,4 +13,7 @@ class User(Base):
   id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
   name: Mapped[str] = mapped_column(String(30), unique=True, nullable=False)
   pw_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-  role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), server_default=UserRole.USER, nullable=False)
+  role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), default=UserRole.USER, nullable=False)
+  
+  # Relationships
+  reservations: Mapped[List["Reservation"]] = relationship("Reservation", back_populates="user", lazy="raise")
