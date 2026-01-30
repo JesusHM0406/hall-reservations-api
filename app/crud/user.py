@@ -12,8 +12,8 @@ async def get_user_by_id(db: AsyncSession, id: int):
   return result.first()
 
 async def update_user(db: AsyncSession, name: str, id: int):
-  result = await db.execute(update(User).where(User.id == id).values(name=name).returning(User.name, User.id))
-  return result.scalar().all()
+  await db.execute(update(User).where(User.id == id).values(name=name))
+  return
 
 async def delete_user(db: AsyncSession, id: int):
   await db.execute(delete(User).where(User.id == id))
