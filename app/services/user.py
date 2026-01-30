@@ -7,7 +7,7 @@ from app.schemas.user import UserRead
 
 MIN_PASSWORD_SIZE = 8
 
-async def create_user(db: AsyncSession, name: str, password: str, password_confirm: str):
+async def create_user(db: AsyncSession, name: str, password: str, password_confirm: str) -> UserRead:
   if len(password) < MIN_PASSWORD_SIZE:
     raise ValueError("La contraseña debe contener al menos 8 caracteres.")
   if password != password_confirm:
@@ -22,7 +22,7 @@ async def create_user(db: AsyncSession, name: str, password: str, password_confi
     pw_hash = generate_password_hash(password)
     new_user: User = await create_new_user(db, name, pw_hash)
 
-  return {"id": new_user.id, "name": new_user.name }
+  return UserRead(id=new_user.id, name=new_user.name)
 
 async def get_user(db: AsyncSession, id: int) -> UserRead:
   user = await get_user_by_id(db, id)
