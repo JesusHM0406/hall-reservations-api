@@ -33,4 +33,4 @@ async def crud_delete_hall(db: AsyncSession, id: int):
 async def crud_get_all_halls(db: AsyncSession):
   result = await db.execute(select(Hall))
 
-  return result
+  return result.all()

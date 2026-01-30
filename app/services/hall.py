@@ -66,6 +66,6 @@ async def service_get_all_halls(db: AsyncSession):
   async with db.begin():
     result = await crud_get_all_halls(db)
 
-  data = [HallRead(id=row.id, name=row.name, description=row.description, is_available=row.is_available) for row in result]
+  data = [HallRead(id=row[0].id , name=row[0].name, description=row[0].description, is_available=row[0].is_available) for row in result]
 
   return data
