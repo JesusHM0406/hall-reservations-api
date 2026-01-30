@@ -8,14 +8,14 @@ from app.models.hall import Hall as Hall
 
 router = APIRouter()
 
-@router.post("/")
+@router.post("/", status_code=201)
 async def add_user(user: UserCreate, db: DBDep) -> UserRead:
   try:
-    result = await create_user(db, user.name, user.password, user.password_confirm)
+    user_created = await create_user(db, user.name, user.password, user.password_confirm)
   except Exception as e:
     raise HTTPException(status_code=400, detail=f"{e}")
 
-  return UserRead(id=result["id"], name=result["name"])
+  return user_created
 
 @router.get("/{id}")
 async def get_user_by_id(id: int, db: DBDep) -> UserRead:
