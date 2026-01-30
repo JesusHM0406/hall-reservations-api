@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.hall import crud_create_new_hall, crud_get_hall_by_id, crud_get_hall_by_name, crud_update_hall
+from app.crud.hall import crud_create_new_hall, crud_delete_hall, crud_get_hall_by_id, crud_get_hall_by_name, crud_update_hall
 from app.schemas.hall import HallRead
 
 
@@ -43,3 +43,14 @@ async def service_update_hall(db: AsyncSession, name: str | None, description: s
     updated_hall = await crud_update_hall(hall, name, description, is_available)
 
   return HallRead(id=updated_hall.id, name=updated_hall.name, description=updated_hall.description, is_available=updated_hall.is_available)
+
+async def service_delete_hall(db: AsyncSession, id: int):
+  async with db.begin():
+    hall = await crud_get_hall_by_id(db, id)
+
+    if not hall:
+      raise ValueError("The hall you want to delete doesn't exist.")
+
+    await crud_delete_hall(db, id)
+
+  return
