@@ -1,8 +1,7 @@
 from fastapi import FastAPI
-from core.config import settings
+from app.core.config import settings
+from app.api.v1.routes.user import router as user_router
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
 
-@app.get("/")
-def index():
-  return { "hello": "world" }
+app.include_router(user_router, prefix="/users", tags=["Users"])
