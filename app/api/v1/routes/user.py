@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.api.deps import DBDep
-from app.schemas.user import UserCreate, UserRead
-from app.services.user import create_user, get_user
+from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.services.user import create_user, get_user, update_user as service_update_user
 from app.models.user import User as User
 from app.models.reservation import Reservation as Reservation
 from app.models.hall import Hall as Hall
@@ -25,3 +25,12 @@ async def get_user_by_id(id: int, db: DBDep) -> UserRead:
     raise HTTPException(status_code=404, detail=f"{e}")
 
   return user
+
+@router.patch("/{id}")
+async def update_user(id: int, user: UserUpdate, db: DBDep) -> UserRead:
+  try:
+    updated_user = await service_update_user(db, user.name, id)
+  except ValueError as e:
+    raise HTTPException(status_code=404, detail=f"{e}")
+
+  return updated_user
