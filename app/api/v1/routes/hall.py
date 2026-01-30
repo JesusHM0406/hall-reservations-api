@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.api.deps import DBDep
 from app.schemas.hall import HallCreate, HallRead, HallUpdate
-from app.services.hall import service_create_new_hall, service_get_hall_by_id, service_get_hall_by_name, service_update_hall
+from app.services.hall import service_create_new_hall, service_delete_hall, service_get_hall_by_id, service_get_hall_by_name, service_update_hall
 
 router = APIRouter()
 
@@ -41,3 +41,12 @@ async def update_hall(hall_id: int, hall: HallUpdate, db: DBDep) -> HallRead:
     raise HTTPException(status_code=404, detail=f"{e}")
 
   return updated_hall
+
+@router.delete("/{hall_id}", status_code=204)
+async def delete_hall(hall_id: int, db: DBDep):
+  try:
+    await service_delete_hall(db, hall_id)
+  except ValueError as e:
+    raise HTTPException(status_code=404, detail=f"{e}")
+
+  return
