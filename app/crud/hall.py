@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.hall import Hall
@@ -21,3 +21,6 @@ async def crud_update_hall(hall: Hall, name: str | None, description: str | None
     hall.is_available = is_available
 
   return hall
+
+async def crud_delete_hall(db: AsyncSession, id: int):
+  await db.execute(delete(Hall).where(Hall.id == id))
