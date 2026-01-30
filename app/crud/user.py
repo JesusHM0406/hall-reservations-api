@@ -25,6 +25,6 @@ async def crud_get_user_by_name(db: AsyncSession, name: str):
   return result.scalar_one_or_none()
 
 async def crud_get_all_users(db: AsyncSession):
-  result = await db.execute(select(User))
+  result = await db.execute(select(User.id, User.name))
 
-  return result.scalars().all()
+  return result.all()

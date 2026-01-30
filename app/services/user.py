@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash
 from app.crud.user import (
   crud_create_new_user,
   crud_delete_user,
+  crud_get_all_users,
   crud_get_user_by_id,
   crud_get_user_by_name,
   crud_update_user,
@@ -59,3 +60,9 @@ async def service_delete_user(db: AsyncSession, id: int):
     await crud_delete_user(db, id)
 
   return
+
+async def service_get_all_users(db: AsyncSession):
+  async with db.begin():
+    result = await crud_get_all_users(db)
+
+  return result
