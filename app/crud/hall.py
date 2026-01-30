@@ -4,6 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.hall import Hall
 
 
+async def crud_create_new_hall(db: AsyncSession, name: str, description: str, is_available: bool):
+  new_hall = Hall(name=name, description=description, is_available=is_available)
+  db.add(new_hall)
+  return new_hall
+
 async def crud_get_hall_by_id(db: AsyncSession, id: int):
   result = await db.execute(select(Hall).where(Hall.id == id))
   return result.scalar_one_or_none()
