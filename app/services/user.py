@@ -32,16 +32,17 @@ async def get_user(db: AsyncSession, id: int) -> UserRead:
 
   return UserRead(id=user.id, name=user.name )
 
-async def update_user(db: AsyncSession, name: str, id: int):
+async def update_user(db: AsyncSession, name: str, id: int) -> UserRead:
   user = await get_user_by_id(db, id)
 
   if not user:
     raise ValueError("El usuario no existe")
 
   async with db.begin():
-    result = await crud_update_user(db, name, id)
+    updated_user = await crud_update_user(db, name, id)
 
-  return {"id": result.id, "name": result.name}
+  return UserRead(id=updated_user.id, name=updated_user.name )
+
 
 async def delete_user(db: AsyncSession, id: int):
   user = await get_user_by_id(db, id)
