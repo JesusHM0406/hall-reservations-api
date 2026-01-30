@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
 from app.crud.user import create_new_user, get_user_by_id, get_user_by_name, update_user as crud_update_user, delete_user as crud_delete_user
 from app.models.user import User
 from werkzeug.security import generate_password_hash
+
+from app.schemas.user import UserRead
 
 MIN_PASSWORD_SIZE = 8
 
@@ -23,13 +24,13 @@ async def create_user(db: AsyncSession, name: str, password: str, password_confi
 
   return {"id": new_user.id, "name": new_user.name }
 
-async def get_user(db: AsyncSession, id: int):
+async def get_user(db: AsyncSession, id: int) -> UserRead:
   user = await get_user_by_id(db, id)
 
   if not user:
     raise ValueError("El usuario no existe")
 
-  return { "id": user.id, "name": user.name }
+  return UserRead(id=user.id, name=user.name )
 
 async def update_user(db: AsyncSession, name: str, id: int):
   user = await get_user_by_id(db, id)
