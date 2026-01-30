@@ -2,7 +2,14 @@ from fastapi import APIRouter, HTTPException
 
 from app.api.deps import DBDep
 from app.schemas.hall import HallCreate, HallRead, HallUpdate
-from app.services.hall import service_create_new_hall, service_delete_hall, service_get_all_halls, service_get_hall_by_id, service_get_hall_by_name, service_update_hall
+from app.services.hall import (
+  service_create_new_hall,
+  service_delete_hall,
+  service_get_all_halls,
+  service_get_hall_by_id,
+  service_get_hall_by_name,
+  service_update_hall,
+)
 
 router = APIRouter()
 
