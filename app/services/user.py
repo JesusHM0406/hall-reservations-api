@@ -45,12 +45,12 @@ async def update_user(db: AsyncSession, name: str, id: int) -> UserRead:
 
 
 async def delete_user(db: AsyncSession, id: int):
-  user = await get_user_by_id(db, id)
-
-  if not user:
-    raise ValueError("El usuario que intentas eliminar no existe")
-
   async with db.begin():
+    user = await get_user_by_id(db, id)
+
+    if not user:
+      raise ValueError("El usuario que intentas eliminar no existe")
+
     await crud_delete_user(db, id)
 
   return
