@@ -24,3 +24,8 @@ async def crud_update_hall(hall: Hall, name: str | None, description: str | None
 
 async def crud_delete_hall(db: AsyncSession, id: int):
   await db.execute(delete(Hall).where(Hall.id == id))
+
+async def crud_get_all_halls(db: AsyncSession):
+  result = await db.execute(select(Hall))
+
+  return result
