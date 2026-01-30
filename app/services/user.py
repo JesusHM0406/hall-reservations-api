@@ -65,4 +65,8 @@ async def service_get_all_users(db: AsyncSession):
   async with db.begin():
     result = await crud_get_all_users(db)
 
-  return result
+  data = []
+  for row in result:
+    data.append(UserRead(id=row.id, name=row.name))
+
+  return data

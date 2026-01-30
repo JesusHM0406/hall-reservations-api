@@ -8,6 +8,7 @@ from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.services.user import (
   service_create_user,
   service_delete_user,
+  service_get_all_users,
   service_get_user_by_id,
   service_update_user,
 )
@@ -22,6 +23,12 @@ async def add_user(user: UserCreate, db: DBDep) -> UserRead:
     raise HTTPException(status_code=400, detail=f"{e}")
 
   return user_created
+
+@router.get("/all")
+async def get_all_users(db: DBDep) -> list[UserRead]:
+  result = await service_get_all_users(db)
+
+  return result
 
 @router.get("/{id}")
 async def get_user_by_id(id: int, db: DBDep) -> UserRead:

@@ -27,4 +27,4 @@ async def crud_get_user_by_name(db: AsyncSession, name: str):
 async def crud_get_all_users(db: AsyncSession):
   result = await db.execute(select(User.id, User.name))
 
-  return result.all()
+  return result
