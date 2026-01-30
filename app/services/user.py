@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from app.crud.user import create_new_user, get_user_by_id, update_user as crud_update_user, delete_user as crud_delete_user
+from app.crud.user import create_new_user, get_user_by_id, get_user_by_name, update_user as crud_update_user, delete_user as crud_delete_user
 from app.models.user import User
 from werkzeug.security import generate_password_hash
 
@@ -13,11 +13,13 @@ async def create_user(db: AsyncSession, name: str, password: str, password_confi
     raise ValueError("Las contraseñas no coinciden.")
 
   async with db.begin():
-    try:
-      pw_hash = generate_password_hash(password)
-      new_user: User = await create_new_user(db, name, pw_hash)
-    except IntegrityError:
-      raise ValueError("El nombre de usuario ya existe.")
+    user = await get_user_by_name(db, name)
+
+    if user is not None:
+      raise ValueError("El nombre de usuario ya existe")
+
+    pw_hash = generate_password_hash(password)
+    new_user: User = await create_new_user(db, name, pw_hash)
 
   return {"id": new_user.id, "name": new_user.name }
 
