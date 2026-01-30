@@ -23,3 +23,12 @@ async def service_get_hall_by_id(db: AsyncSession, id: int) -> HallRead:
       raise ValueError("Hall not found.")
 
   return HallRead(id=hall.id, name=hall.name, description=hall.description, is_available=hall.is_available)
+
+async def service_get_hall_by_name(db: AsyncSession, name: str) -> HallRead:
+  async with db.begin():
+    hall = await crud_get_hall_by_name(db, name)
+
+    if not hall:
+      raise ValueError("Hall not found.")
+
+  return HallRead(id=hall.id, name=hall.name, description=hall.description, is_available=hall.is_available)
