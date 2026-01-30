@@ -1,8 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.crud.user import crud_create_new_user, crud_get_user_by_id, crud_get_user_by_name, crud_update_user, crud_delete_user
-from app.models.user import User
 from werkzeug.security import generate_password_hash
 
+from app.crud.user import (
+  crud_create_new_user,
+  crud_delete_user,
+  crud_get_user_by_id,
+  crud_get_user_by_name,
+  crud_update_user,
+)
+from app.models.user import User
 from app.schemas.user import UserRead
 
 MIN_PASSWORD_SIZE = 8

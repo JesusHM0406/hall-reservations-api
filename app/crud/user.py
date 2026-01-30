@@ -1,6 +1,8 @@
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
+
 from app.models.user import User
+
 
 async def crud_create_new_user(db: AsyncSession, name: str, pw_hash: str):
   new_user = User(name=name, pw_hash=pw_hash)

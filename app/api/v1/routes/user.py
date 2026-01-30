@@ -1,10 +1,16 @@
 from fastapi import APIRouter, HTTPException
+
 from app.api.deps import DBDep
-from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.services.user import service_create_user, service_get_user_by_id, service_update_user, service_delete_user
-from app.models.user import User as User
-from app.models.reservation import Reservation as Reservation
 from app.models.hall import Hall as Hall
+from app.models.reservation import Reservation as Reservation
+from app.models.user import User as User
+from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.services.user import (
+  service_create_user,
+  service_delete_user,
+  service_get_user_by_id,
+  service_update_user,
+)
 
 router = APIRouter()
 
