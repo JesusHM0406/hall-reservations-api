@@ -1,6 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.hall import crud_create_new_hall, crud_delete_hall, crud_get_hall_by_id, crud_get_hall_by_name, crud_update_hall
+from app.crud.hall import (
+  crud_create_new_hall,
+  crud_delete_hall,
+  crud_get_all_halls,
+  crud_get_hall_by_id,
+  crud_get_hall_by_name,
+  crud_update_hall,
+)
 from app.schemas.hall import HallRead
 
 
@@ -54,3 +61,11 @@ async def service_delete_hall(db: AsyncSession, id: int):
     await crud_delete_hall(db, id)
 
   return
+
+async def service_get_all_halls(db: AsyncSession):
+  async with db.begin():
+    result = await crud_get_all_halls(db)
+
+  data = [HallRead(id=row.id, name=row.name, description=row.description, is_available=row.is_available) for row in result]
+
+  return data
