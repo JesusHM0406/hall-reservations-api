@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.api.deps import DBDep
 from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.services.user import create_user, get_user, update_user as service_update_user
+from app.services.user import create_user, get_user, update_user as service_update_user, delete_user as service_delete_user
 from app.models.user import User as User
 from app.models.reservation import Reservation as Reservation
 from app.models.hall import Hall as Hall
@@ -34,3 +34,12 @@ async def update_user(id: int, user: UserUpdate, db: DBDep) -> UserRead:
     raise HTTPException(status_code=404, detail=f"{e}")
 
   return updated_user
+
+@router.delete("/{id}", status_code=204)
+async def delete_user(id: int, db: DBDep):
+  try:
+    await service_delete_user(db, id)
+  except ValueError as e:
+    raise HTTPException(status_code=404, detail=f"{e}")
+
+  return
