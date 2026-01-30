@@ -23,3 +23,8 @@ async def crud_delete_user(db: AsyncSession, id: int):
 async def crud_get_user_by_name(db: AsyncSession, name: str):
   result = await db.execute(select(User).where(User.name == name))
   return result.scalar_one_or_none()
+
+async def crud_get_all_users(db: AsyncSession):
+  result = await db.execute(select(User))
+
+  return result.scalars().all()
