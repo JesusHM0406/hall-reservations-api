@@ -14,3 +14,8 @@ async def crud_create_new_reservation(db: AsyncSession, user_id: int, hall_id: i
 async def crud_get_reservation(db: AsyncSession, reservation_id: int):
   reservation = await db.execute(select(Reservation).where(Reservation.id == reservation_id))
   return reservation.scalar_one_or_none()
+
+async def crud_get_all_reservations(db: AsyncSession):
+  result = await db.execute(select(Reservation))
+
+  return result.scalars().all()
