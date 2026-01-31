@@ -29,3 +29,17 @@ async def crud_get_all_reservations(db: AsyncSession):
   result = await db.scalars(stmt)
 
   return result.all()
+
+async def crud_get_all_reservations_by_user_id(db: AsyncSession, user_id: int):
+  stmt = (
+    select(Reservation)
+    .options(
+      joinedload(Reservation.user).load_only(User.name),
+      joinedload(Reservation.hall).load_only(Hall.name)
+    )
+    .where(Reservation.user_id == user_id)
+  )
+
+  result = await db.scalars(stmt)
+
+  return result.all()
