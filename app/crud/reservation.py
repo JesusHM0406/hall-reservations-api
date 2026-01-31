@@ -1,10 +1,12 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
 from datetime import date
 
-from app.models.reservation import Reservation
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
+from app.models.hall import Hall
+from app.models.reservation import Reservation
+from app.models.user import User
 
 async def crud_create_new_reservation(db: AsyncSession, user_id: int, hall_id: int, reservation_date: date):
   new_reservation = Reservation(user_id=user_id, hall_id=hall_id, reservation_date=reservation_date)
@@ -16,6 +18,14 @@ async def crud_get_reservation(db: AsyncSession, reservation_id: int):
   return reservation.scalar_one_or_none()
 
 async def crud_get_all_reservations(db: AsyncSession):
-  result = await db.execute(select(Reservation))
+  stmt = (
+    select(Reservation)
+    .options(
+      joinedload(Reservation.user).load_only(User.name),
+      joinedload(Reservation.hall).load_only(Hall.name)
+    )
+  )
 
-  return result.scalars().all()
+  result = await db.scalars(stmt)
+
+  return result.all()
