@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.hall import crud_get_hall_by_id
-from app.crud.reservation import crud_create_new_reservation, crud_get_all_reservations, crud_get_reservation
+from app.crud.reservation import crud_create_new_reservation, crud_get_all_reservations, crud_get_all_reservations_by_user_id, crud_get_reservation
 from app.crud.user import crud_get_user_by_id
 from app.schemas.reservation import ReservationRead
 
@@ -54,6 +54,21 @@ async def service_get_all_reservations(db: AsyncSession):
   async with db.begin():
     result = await crud_get_all_reservations(db)
 
+  # This might fail because I'm currently performing a "hard delete" of users.
+  data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
+
+  return data
+
+async def service_get_all_reservations_by_user_id(db: AsyncSession, user_id: int):
+  async with db.begin():
+    user = await crud_get_user_by_id(db, user_id)
+
+    if not user:
+      raise ValueError("User not found.")
+
+    result = await crud_get_all_reservations_by_user_id(db, user_id)
+
+  # Perhaps I can remove the "joinedload" that retrieves the username because I am currently retrieving the user.
   data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
 
   return data
