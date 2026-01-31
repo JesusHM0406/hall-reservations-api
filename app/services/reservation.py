@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.hall import crud_get_hall_by_id
-from app.crud.reservation import crud_create_new_reservation, crud_get_reservation
+from app.crud.reservation import crud_create_new_reservation, crud_get_all_reservations, crud_get_reservation
 from app.crud.user import crud_get_user_by_id
 from app.schemas.reservation import ReservationRead
 
@@ -49,3 +49,11 @@ async def service_get_reservation(db: AsyncSession, id: int) -> ReservationRead:
       raise ValueError("Hall not found.")
 
   return ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=user.name, hall_id=reservation.hall_id, hall_name=hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
+
+async def service_get_all_reservations(db: AsyncSession):
+  async with db.begin():
+    result = await crud_get_all_reservations(db)
+
+  data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
+
+  return data
