@@ -8,6 +8,9 @@ class ReservationCreate(BaseModel):
 
 class ReservationRead(BaseModel):
   id: int
+  user_id: int
+  user_name: str
+  hall_id: int
   hall_name: str
   status: str
   reservation_date: date
