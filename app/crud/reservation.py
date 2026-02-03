@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.models.hall import Hall
-from app.models.reservation import Reservation
+from app.models.reservation import Reservation, ReservationStatus
 from app.models.user import User
 
 async def crud_create_new_reservation(db: AsyncSession, user_id: int, hall_id: int, reservation_date: date):
@@ -47,3 +47,7 @@ async def crud_get_reservations_by_hall_id(db: AsyncSession, hall_id: int):
   stmt = select(Reservation).options(joinedload(Reservation.user).load_only(User.name)).where(Reservation.hall_id == hall_id)
   result = await db.scalars(stmt)
   return result.all()
+
+async def crud_update_reservation_status(db: AsyncSession, new_status: ReservationStatus, reservation: Reservation):
+  reservation.status = new_status
+  return reservation
