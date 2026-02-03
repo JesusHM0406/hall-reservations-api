@@ -67,8 +67,6 @@ async def service_get_all_reservations_by_user_id(db: AsyncSession, user_id: int
       raise ValueError("User not found.")
 
     result = await crud_get_all_reservations_by_user_id(db, user_id)
-
-  # Perhaps I can remove the "joinedload" that retrieves the username because I am currently retrieving the user.
-  data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
+  data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
 
   return data
