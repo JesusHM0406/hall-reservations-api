@@ -17,11 +17,11 @@ async def service_create_new_reservation(db: AsyncSession, user_id: int, hall_id
 
     user = await crud_get_user_by_id(db, user_id)
     if not user:
-      raise ValueError("The user doen't exist.")
+      raise ValueError("The user doesn't exist.")
 
     hall = await crud_get_hall_by_id(db, hall_id)
     if not hall:
-      raise ValueError("The hall doen't exist.")
+      raise ValueError("The hall doesn't exist.")
 
     try:
       reservation = await crud_create_new_reservation(db, user_id, hall_id, reservation_date)
