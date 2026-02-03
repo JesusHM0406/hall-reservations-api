@@ -8,3 +8,4 @@ app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
 
 app.include_router(user_router, prefix="/users", tags=["Users"])
 app.include_router(hall_router, prefix="/halls", tags=["Halls"])
+app.include_router(hall_router, prefix="/reservations", tags=["Reservations"])

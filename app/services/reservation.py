@@ -48,7 +48,7 @@ async def service_get_reservation(db: AsyncSession, id: int) -> ReservationRead:
 
     user = await crud_get_user_by_id(db, reservation.user_id)
     if not user:
-    # This is obviously provisional.
+    # This is provisional.
       raise ValueError("It appears the user was deleted.")
 
     hall = await crud_get_hall_by_id(db, reservation.hall_id)
