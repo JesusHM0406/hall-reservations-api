@@ -50,7 +50,7 @@ async def service_get_reservation(db: AsyncSession, id: int) -> ReservationRead:
 
   return ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=user.name, hall_id=reservation.hall_id, hall_name=hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
 
-async def service_get_all_reservations(db: AsyncSession):
+async def service_get_all_reservations(db: AsyncSession) -> list[ReservationRead]:
   async with db.begin():
     result = await crud_get_all_reservations(db)
 
@@ -59,7 +59,7 @@ async def service_get_all_reservations(db: AsyncSession):
 
   return data
 
-async def service_get_all_reservations_by_user_id(db: AsyncSession, user_id: int):
+async def service_get_all_reservations_by_user_id(db: AsyncSession, user_id: int) -> list[ReservationRead]:
   async with db.begin():
     user = await crud_get_user_by_id(db, user_id)
 
