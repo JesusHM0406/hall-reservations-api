@@ -48,6 +48,6 @@ async def crud_get_reservations_by_hall_id(db: AsyncSession, hall_id: int):
   result = await db.scalars(stmt)
   return result.all()
 
-async def crud_update_reservation_status(db: AsyncSession, new_status: ReservationStatus, reservation: Reservation):
+async def crud_update_reservation_status(new_status: ReservationStatus, reservation: Reservation):
   reservation.status = new_status
   return reservation
