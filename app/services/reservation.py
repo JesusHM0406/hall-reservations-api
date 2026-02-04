@@ -93,6 +93,26 @@ async def service_get_all_reservations_by_hall_id(db: AsyncSession, hall_id: int
   return data
 
 async def service_update_reservation_status(db: AsyncSession, reservation_id: int, new_status: str, user_id: int) -> ReservationRead:
+  transitions_map = {
+    ReservationStatus.CANCELLED.value: {
+      "has_transitions": False
+    },
+    ReservationStatus.CONFIRMED.value: {
+      "has_transitions": True,
+      "transitions": [ReservationStatus.CANCELLED.value, ReservationStatus.FINISHED.value, ReservationStatus.EXPIRED.value]
+    },
+    ReservationStatus.EXPIRED.value: {
+      "has_transitions": False
+    },
+    ReservationStatus.FINISHED.value: {
+      "has_transitions": False
+    },
+    ReservationStatus.PENDING.value: {
+      "has_transitions": True,
+      "transitions": [ReservationStatus.CONFIRMED.value]
+    }
+  }
+
   async with db.begin():
     user = await crud_get_user_by_id(db, user_id)
 
@@ -112,11 +132,14 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
     if reservation.user_id != user.id:
       raise ValueError("The reservation is not from this user.")
 
-    if reservation.status in [ReservationStatus.CANCELLED, ReservationStatus.EXPIRED]:
-      raise ValueError("You cannot modify a reservation that has already been cancelled or expired.")
+    if not transitions_map[reservation.status.value]["has_transitions"]:
+      raise ValueError("You cannot change the status of this reservation; it has already been cancelled, finished, or expired.")
 
     if new_status not in [ReservationStatus.CANCELLED.value, ReservationStatus.CONFIRMED.value, ReservationStatus.EXPIRED.value, ReservationStatus.FINISHED.value, ReservationStatus.PENDING.value]:
       raise ValueError("Invalid status.")
+
+    if new_status not in transitions_map[reservation.status.value]["transitions"]:
+      raise ValueError(f"The status cannot be set as {new_status} because the reservation has a {reservation.status.value} status.")
 
     status_enum = ReservationStatus(new_status)
 
