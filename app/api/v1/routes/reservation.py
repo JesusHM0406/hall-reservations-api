@@ -4,6 +4,8 @@ from app.schemas.reservation import ReservationRead, ReservationCreate
 from app.services.reservation import (
   service_create_new_reservation,
   service_get_all_reservations,
+  service_get_all_reservations_by_user_id,
+  service_get_all_reservations_by_hall_id,
   service_get_reservation
 )
 
@@ -25,5 +27,14 @@ async def get_reservation(reservation_id: int, db: DBDep) -> ReservationRead:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 @router.get("/")
-async def get_all_reservations(db: DBDep) -> list[ReservationRead]:
-  return await service_get_all_reservations(db)
+async def get_reservations(db: DBDep, user_id: int | None = None, hall_id: int | None = None) -> list[ReservationRead]:
+  try:
+    if user_id:
+      return await service_get_all_reservations_by_user_id(db, user_id)
+
+    if hall_id:
+      return await service_get_all_reservations_by_hall_id(db, hall_id)
+
+    return await service_get_all_reservations(db)
+  except ValueError as e:
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
