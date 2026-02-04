@@ -16,4 +16,5 @@ class ReservationRead(BaseModel):
   reservation_date: date
 
 class ReservationUpdate(BaseModel):
+  user_id: int # Just for now
   status: str
