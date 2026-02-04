@@ -20,13 +20,6 @@ async def create_reservation(reservation: ReservationCreate, db: DBDep) -> Reser
   except ValueError as e:
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-@router.get("/{reservation_id}")
-async def get_reservation(reservation_id: int, db: DBDep) -> ReservationRead:
-  try:
-    return await service_get_reservation(db, reservation_id)
-  except ValueError as e:
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-
 @router.get("/")
 async def get_reservations(db: DBDep, user_id: int | None = None, hall_id: int | None = None) -> list[ReservationRead]:
   try:
@@ -37,6 +30,13 @@ async def get_reservations(db: DBDep, user_id: int | None = None, hall_id: int |
       return await service_get_all_reservations_by_hall_id(db, hall_id)
 
     return await service_get_all_reservations(db)
+  except ValueError as e:
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+@router.get("/{reservation_id}")
+async def get_single_reservation(reservation_id: int, db: DBDep) -> ReservationRead:
+  try:
+    return await service_get_reservation(db, reservation_id)
   except ValueError as e:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
