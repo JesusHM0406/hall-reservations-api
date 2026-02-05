@@ -10,7 +10,6 @@ from app.crud.user import (
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
-from app.models.user import User
 from app.schemas.user import UserRead
 
 MIN_PASSWORD_SIZE = 8
@@ -27,7 +26,9 @@ async def service_create_user(db: AsyncSession, name: str, password: str, passwo
     raise ConflictError("The name already exists.")
 
   pw_hash = generate_password_hash(password)
-  new_user: User = await crud_create_new_user(db, name, pw_hash)
+  new_user = await crud_create_new_user(db, name, pw_hash)
+
+  await db.flush()
 
   return UserRead(id=new_user.id, name=new_user.name)
 
