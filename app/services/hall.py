@@ -13,59 +13,53 @@ from app.schemas.hall import HallRead
 
 
 async def service_create_new_hall(db: AsyncSession, name: str, description: str, is_available: bool) -> HallRead:
-  async with db.begin():
-    hall = await crud_get_hall_by_name(db, name)
+  hall = await crud_get_hall_by_name(db, name)
 
-    if hall:
-      raise ConflictError("There's already a hall with that name.")
+  if hall:
+    raise ConflictError("There's already a hall with that name.")
 
-    created_hall = await crud_create_new_hall(db, name, description, is_available)
+  created_hall = await crud_create_new_hall(db, name, description, is_available)
 
   return HallRead(id=created_hall.id, name=name, description=description, is_available=is_available)
 
 async def service_get_hall_by_id(db: AsyncSession, id: int) -> HallRead:
-  async with db.begin():
-    hall = await crud_get_hall_by_id(db, id)
+  hall = await crud_get_hall_by_id(db, id)
 
-    if not hall:
-      raise NotFoundError("Hall not found.")
+  if not hall:
+    raise NotFoundError("Hall not found.")
 
   return HallRead(id=hall.id, name=hall.name, description=hall.description, is_available=hall.is_available)
 
 async def service_get_hall_by_name(db: AsyncSession, name: str) -> HallRead:
-  async with db.begin():
-    hall = await crud_get_hall_by_name(db, name)
+  hall = await crud_get_hall_by_name(db, name)
 
-    if not hall:
-      raise NotFoundError("Hall not found.")
+  if not hall:
+    raise NotFoundError("Hall not found.")
 
   return HallRead(id=hall.id, name=hall.name, description=hall.description, is_available=hall.is_available)
 
 async def service_update_hall(db: AsyncSession, name: str | None, description: str | None, is_available: bool | None, id: int) -> HallRead:
-  async with db.begin():
-    hall = await crud_get_hall_by_id(db, id)
+  hall = await crud_get_hall_by_id(db, id)
 
-    if not hall:
-      raise NotFoundError("Hall not found.")
+  if not hall:
+    raise NotFoundError("Hall not found.")
 
-    updated_hall = await crud_update_hall(hall, name, description, is_available)
+  updated_hall = await crud_update_hall(hall, name, description, is_available)
 
   return HallRead(id=updated_hall.id, name=updated_hall.name, description=updated_hall.description, is_available=updated_hall.is_available)
 
 async def service_delete_hall(db: AsyncSession, id: int):
-  async with db.begin():
-    hall = await crud_get_hall_by_id(db, id)
+  hall = await crud_get_hall_by_id(db, id)
 
-    if not hall:
-      raise NotFoundError("The hall you want to delete doesn't exist.")
+  if not hall:
+    raise NotFoundError("The hall you want to delete doesn't exist.")
 
-    await crud_delete_hall(db, id)
+  await crud_delete_hall(db, id)
 
   return
 
 async def service_get_all_halls(db: AsyncSession):
-  async with db.begin():
-    result = await crud_get_all_halls(db)
+  result = await crud_get_all_halls(db)
 
   data = [HallRead(id=row[0].id , name=row[0].name, description=row[0].description, is_available=row[0].is_available) for row in result]
 

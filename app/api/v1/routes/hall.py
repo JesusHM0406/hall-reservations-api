@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from app.api.deps import DBDep
 from app.schemas.hall import HallCreate, HallRead, HallUpdate
@@ -15,51 +15,30 @@ router = APIRouter()
 
 @router.post("/")
 async def create_new_hall(db: DBDep, hall: HallCreate) -> HallRead:
-  try:
-    new_hall = await service_create_new_hall(db, hall.name, hall.description, hall.is_available)
-  except ValueError as e:
-    raise HTTPException(status_code=409, detail=f"{e}")
-
-  return new_hall
+  async with db.begin():
+    return await service_create_new_hall(db, hall.name, hall.description, hall.is_available)
 
 @router.get("/")
 async def get_hall_by_name(name: str, db: DBDep) -> HallRead:
-  try:
-    hall = await service_get_hall_by_name(db, name)
-  except ValueError as e:
-    raise HTTPException(status_code=404, detail=f"{e}")
-
-  return hall
+  async with db.begin():
+    return await service_get_hall_by_name(db, name)
 
 @router.get("/all")
 async def get_all_halls(db: DBDep) -> list[HallRead]:
-  result = await service_get_all_halls(db)
-
-  return result
+  async with db.begin():
+    return await service_get_all_halls(db)
 
 @router.get("/{hall_id}")
 async def get_hall_by_id(hall_id: int, db: DBDep) -> HallRead:
-  try:
-    hall = await service_get_hall_by_id(db, hall_id)
-  except ValueError as e:
-    raise HTTPException(status_code=404, detail=f"{e}")
-
-  return hall
+  async with db.begin():
+    return await service_get_hall_by_id(db, hall_id)
 
 @router.patch("/{hall_id}")
 async def update_hall(hall_id: int, hall: HallUpdate, db: DBDep) -> HallRead:
-  try:
-    updated_hall = await service_update_hall(db, hall.name, hall.description, hall.is_available, hall_id)
-  except ValueError as e:
-    raise HTTPException(status_code=404, detail=f"{e}")
-
-  return updated_hall
+  async with db.begin():
+    return await service_update_hall(db, hall.name, hall.description, hall.is_available, hall_id)
 
 @router.delete("/{hall_id}", status_code=204)
 async def delete_hall(hall_id: int, db: DBDep):
-  try:
+  async with db.begin():
     await service_delete_hall(db, hall_id)
-  except ValueError as e:
-    raise HTTPException(status_code=404, detail=f"{e}")
-
-  return
