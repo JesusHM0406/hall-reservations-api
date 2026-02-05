@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from app.api.deps import DBDep
 from app.models.hall import Hall as Hall
@@ -17,42 +17,25 @@ router = APIRouter()
 
 @router.post("/", status_code=201)
 async def add_user(user: UserCreate, db: DBDep) -> UserRead:
-  try:
-    user_created = await service_create_user(db, user.name, user.password, user.password_confirm)
-  except Exception as e:
-    raise HTTPException(status_code=400, detail=f"{e}")
-
-  return user_created
+  async with db.begin():
+    return await service_create_user(db, user.name, user.password, user.password_confirm)
 
 @router.get("/all")
 async def get_all_users(db: DBDep) -> list[UserRead]:
-  result = await service_get_all_users(db)
-
-  return result
+  async with db.begin():
+    return await service_get_all_users(db)
 
 @router.get("/{id}")
 async def get_user_by_id(id: int, db: DBDep) -> UserRead:
-  try:
-    user = await service_get_user_by_id(db, id)
-  except ValueError as e:
-    raise HTTPException(status_code=404, detail=f"{e}")
-
-  return user
+  async with db.begin():
+    return await service_get_user_by_id(db, id)
 
 @router.patch("/{id}")
 async def update_user(id: int, user: UserUpdate, db: DBDep) -> UserRead:
-  try:
-    updated_user = await service_update_user(db, user.name, id)
-  except ValueError as e:
-    raise HTTPException(status_code=404, detail=f"{e}")
-
-  return updated_user
+  async with db.begin():
+    return await service_update_user(db, user.name, id)
 
 @router.delete("/{id}", status_code=204)
 async def delete_user(id: int, db: DBDep):
-  try:
+  async with db.begin():
     await service_delete_user(db, id)
-  except ValueError as e:
-    raise HTTPException(status_code=404, detail=f"{e}")
-
-  return

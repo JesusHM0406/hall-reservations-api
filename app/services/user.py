@@ -21,14 +21,13 @@ async def service_create_user(db: AsyncSession, name: str, password: str, passwo
   if password != password_confirm:
     raise BusinessLogicError("The passwords don't match.")
 
-  async with db.begin():
-    user = await crud_get_user_by_name(db, name)
+  user = await crud_get_user_by_name(db, name)
 
-    if user is not None:
-      raise ConflictError("The name already exists.")
+  if user is not None:
+    raise ConflictError("The name already exists.")
 
-    pw_hash = generate_password_hash(password)
-    new_user: User = await crud_create_new_user(db, name, pw_hash)
+  pw_hash = generate_password_hash(password)
+  new_user: User = await crud_create_new_user(db, name, pw_hash)
 
   return UserRead(id=new_user.id, name=new_user.name)
 
@@ -41,30 +40,27 @@ async def service_get_user_by_id(db: AsyncSession, id: int) -> UserRead:
   return UserRead(id=user.id, name=user.name )
 
 async def service_update_user(db: AsyncSession, name: str, id: int) -> UserRead:
-  async with db.begin():
-    user = await crud_get_user_by_id(db, id)
+  user = await crud_get_user_by_id(db, id)
 
-    if not user:
-      raise NotFoundError("User not found.")
+  if not user:
+    raise NotFoundError("User not found.")
 
-    await crud_update_user(db, name, id)
+  await crud_update_user(db, name, id)
 
   return UserRead(id=id, name=name )
 
 async def service_delete_user(db: AsyncSession, id: int):
-  async with db.begin():
-    user = await crud_get_user_by_id(db, id)
+  user = await crud_get_user_by_id(db, id)
 
-    if not user:
-      raise NotFoundError("The user you want to delete doesn't exist.")
+  if not user:
+    raise NotFoundError("The user you want to delete doesn't exist.")
 
-    await crud_delete_user(db, id)
+  await crud_delete_user(db, id)
 
   return
 
 async def service_get_all_users(db: AsyncSession):
-  async with db.begin():
-    result = await crud_get_all_users(db)
+  result = await crud_get_all_users(db)
 
   data = []
   for row in result:
