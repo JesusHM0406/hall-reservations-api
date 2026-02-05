@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 from app.api.v1.routes.user import router as user_router
 from app.api.v1.routes.hall import router as hall_router
@@ -18,6 +19,18 @@ async def app_exception_handler(request: Request, exc: AppError):
       "status": "error",
       "code": exc.code,
       "message": exc.message,
+      "path": request.url.path
+    }
+  )
+
+@app.exception_handler(IntegrityError)
+async def integrity_exception_handler(request: Request, exc: IntegrityError):
+  return JSONResponse(
+    status_code=status.HTTP_409_CONFLICT,
+    content={
+      "status": "error",
+      "code": "DATABASE_INTEGRITY_ERROR",
+      "message": "Data integrity conflict (possible duplicate record).",
       "path": request.url.path
     }
   )
