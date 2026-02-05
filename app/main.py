@@ -35,6 +35,19 @@ async def integrity_exception_handler(request: Request, exc: IntegrityError):
     }
   )
 
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+  # I need to log the error
+  return JSONResponse(
+    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    content={
+      "status": "error",
+      "code": "INTERNAL_SERVER_ERROR",
+      "message": "An unexpected error has occurred on the server.",
+      "path": request.url.path
+    }
+  )
+
 app.include_router(user_router, prefix="/users", tags=["Users"])
 app.include_router(hall_router, prefix="/halls", tags=["Halls"])
 app.include_router(reservation_router, prefix="/reservations", tags=["Reservations"])
