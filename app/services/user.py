@@ -9,6 +9,7 @@ from app.crud.user import (
   crud_get_user_by_name,
   crud_update_user,
 )
+from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
 from app.models.user import User
 from app.schemas.user import UserRead
 
@@ -16,15 +17,15 @@ MIN_PASSWORD_SIZE = 8
 
 async def service_create_user(db: AsyncSession, name: str, password: str, password_confirm: str) -> UserRead:
   if len(password) < MIN_PASSWORD_SIZE:
-    raise ValueError("The password must contain at least 8 characters.")
+    raise BusinessLogicError("The password must contain at least 8 characters.")
   if password != password_confirm:
-    raise ValueError("The passwords don't match.")
+    raise BusinessLogicError("The passwords don't match.")
 
   async with db.begin():
     user = await crud_get_user_by_name(db, name)
 
     if user is not None:
-      raise ValueError("The name already exists.")
+      raise ConflictError("The name already exists.")
 
     pw_hash = generate_password_hash(password)
     new_user: User = await crud_create_new_user(db, name, pw_hash)
@@ -35,7 +36,7 @@ async def service_get_user_by_id(db: AsyncSession, id: int) -> UserRead:
   user = await crud_get_user_by_id(db, id)
 
   if not user:
-    raise ValueError("User not found.")
+    raise NotFoundError("User not found.")
 
   return UserRead(id=user.id, name=user.name )
 
@@ -44,7 +45,7 @@ async def service_update_user(db: AsyncSession, name: str, id: int) -> UserRead:
     user = await crud_get_user_by_id(db, id)
 
     if not user:
-      raise ValueError("User not found.")
+      raise NotFoundError("User not found.")
 
     await crud_update_user(db, name, id)
 
@@ -55,7 +56,7 @@ async def service_delete_user(db: AsyncSession, id: int):
     user = await crud_get_user_by_id(db, id)
 
     if not user:
-      raise ValueError("The user you want to delete doesn't exist.")
+      raise NotFoundError("The user you want to delete doesn't exist.")
 
     await crud_delete_user(db, id)
 
