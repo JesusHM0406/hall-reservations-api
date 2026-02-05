@@ -19,49 +19,46 @@ from app.schemas.reservation import ReservationRead
 
 
 async def service_create_new_reservation(db: AsyncSession, user_id: int, hall_id: int, reservation_date: date) -> ReservationRead:
-  async with db.begin():
-    today = date.today()
-    if reservation_date < today or reservation_date == today:
-      raise BusinessLogicError("The date is invalid; it must be at least one day after the current date.")
+  today = date.today()
+  if reservation_date < today or reservation_date == today:
+    raise BusinessLogicError("The date is invalid; it must be at least one day after the current date.")
 
-    user = await crud_get_user_by_id(db, user_id)
-    if not user:
-      raise NotFoundError("The user doesn't exist.")
+  user = await crud_get_user_by_id(db, user_id)
+  if not user:
+    raise NotFoundError("The user doesn't exist.")
 
-    hall = await crud_get_hall_by_id(db, hall_id)
-    if not hall:
-      raise NotFoundError("The hall doesn't exist.")
+  hall = await crud_get_hall_by_id(db, hall_id)
+  if not hall:
+    raise NotFoundError("The hall doesn't exist.")
 
-    try:
-      reservation = await crud_create_new_reservation(db, user_id, hall_id, reservation_date)
-      await db.flush()
+  try:
+    reservation = await crud_create_new_reservation(db, user_id, hall_id, reservation_date)
+    await db.flush()
 
-      return ReservationRead(id=reservation.id, user_id=user_id, user_name=user.name, hall_id=hall_id, hall_name=hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
-    except IntegrityError:
-      raise ConflictError("There's already an active reservation in that date.")
+    return ReservationRead(id=reservation.id, user_id=user_id, user_name=user.name, hall_id=hall_id, hall_name=hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
+  except IntegrityError:
+    raise ConflictError("There's already an active reservation in that date.")
 
 async def service_get_reservation(db: AsyncSession, id: int) -> ReservationRead:
-  async with db.begin():
-    reservation = await crud_get_reservation(db, id)
+  reservation = await crud_get_reservation(db, id)
 
-    if not reservation:
-      raise NotFoundError("Reservation not found.")
+  if not reservation:
+    raise NotFoundError("Reservation not found.")
 
-    user = await crud_get_user_by_id(db, reservation.user_id)
-    if not user:
-    # This is provisional.
-      raise NotFoundError("It appears the user was deleted.")
+  user = await crud_get_user_by_id(db, reservation.user_id)
+  if not user:
+  # This is provisional.
+    raise NotFoundError("It appears the user was deleted.")
 
-    hall = await crud_get_hall_by_id(db, reservation.hall_id)
-    if not hall:
-    # The same
-      raise NotFoundError("Hall not found.")
+  hall = await crud_get_hall_by_id(db, reservation.hall_id)
+  if not hall:
+  # The same
+    raise NotFoundError("Hall not found.")
 
   return ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=user.name, hall_id=reservation.hall_id, hall_name=hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
 
 async def service_get_all_reservations(db: AsyncSession) -> list[ReservationRead]:
-  async with db.begin():
-    result = await crud_get_all_reservations(db)
+  result = await crud_get_all_reservations(db)
 
   # This might fail because I'm currently performing a "hard delete" of users.
   data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
@@ -69,25 +66,24 @@ async def service_get_all_reservations(db: AsyncSession) -> list[ReservationRead
   return data
 
 async def service_get_all_reservations_by_user_id(db: AsyncSession, user_id: int) -> list[ReservationRead]:
-  async with db.begin():
-    user = await crud_get_user_by_id(db, user_id)
+  user = await crud_get_user_by_id(db, user_id)
 
-    if not user:
-      raise NotFoundError("User not found.")
+  if not user:
+    raise NotFoundError("User not found.")
 
-    result = await crud_get_all_reservations_by_user_id(db, user_id)
+  result = await crud_get_all_reservations_by_user_id(db, user_id)
+
   data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
 
   return data
 
 async def service_get_all_reservations_by_hall_id(db: AsyncSession, hall_id: int) -> list[ReservationRead]:
-  async with db.begin():
-    hall = await crud_get_hall_by_id(db, hall_id)
+  hall = await crud_get_hall_by_id(db, hall_id)
 
-    if not hall:
-      raise NotFoundError("Hall not found.")
+  if not hall:
+    raise NotFoundError("Hall not found.")
 
-    result = await crud_get_reservations_by_hall_id(db, hall_id)
+  result = await crud_get_reservations_by_hall_id(db, hall_id)
 
   data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=hall_id, hall_name=hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
 
@@ -114,36 +110,35 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
     }
   }
 
-  async with db.begin():
-    user = await crud_get_user_by_id(db, user_id)
+  user = await crud_get_user_by_id(db, user_id)
 
-    if not user:
-      raise NotFoundError("User not found.")
+  if not user:
+    raise NotFoundError("User not found.")
 
-    reservation = await crud_get_reservation(db, reservation_id)
+  reservation = await crud_get_reservation(db, reservation_id)
 
-    if not reservation:
-      raise NotFoundError("Reservation not found.")
+  if not reservation:
+    raise NotFoundError("Reservation not found.")
 
-    hall = await crud_get_hall_by_id(db, reservation.hall_id)
+  hall = await crud_get_hall_by_id(db, reservation.hall_id)
 
-    if not hall:
-      raise NotFoundError("It appears the hall was deleted.")
+  if not hall:
+    raise NotFoundError("It appears the hall was deleted.")
 
-    if reservation.user_id != user.id:
-      raise BusinessLogicError("The reservation is not from this user.")
+  if reservation.user_id != user.id:
+    raise BusinessLogicError("The reservation is not from this user.")
 
-    if not transitions_map[reservation.status.value]["has_transitions"]:
-      raise BusinessLogicError("You cannot change the status of this reservation; it has already been cancelled, finished, or expired.")
+  if not transitions_map[reservation.status.value]["has_transitions"]:
+    raise BusinessLogicError("You cannot change the status of this reservation; it has already been cancelled, finished, or expired.")
 
-    if new_status not in [ReservationStatus.CANCELLED.value, ReservationStatus.CONFIRMED.value, ReservationStatus.EXPIRED.value, ReservationStatus.FINISHED.value, ReservationStatus.PENDING.value]:
-      raise BusinessLogicError("Invalid status.")
+  if new_status not in [ReservationStatus.CANCELLED.value, ReservationStatus.CONFIRMED.value, ReservationStatus.EXPIRED.value, ReservationStatus.FINISHED.value, ReservationStatus.PENDING.value]:
+    raise BusinessLogicError("Invalid status.")
 
-    if new_status not in transitions_map[reservation.status.value]["transitions"]:
-      raise BusinessLogicError(f"The status cannot be set as {new_status} because the reservation has a {reservation.status.value} status.")
+  if new_status not in transitions_map[reservation.status.value]["transitions"]:
+    raise BusinessLogicError(f"The status cannot be set as {new_status} because the reservation has a {reservation.status.value} status.")
 
-    status_enum = ReservationStatus(new_status)
+  status_enum = ReservationStatus(new_status)
 
-    updated_reservation = await crud_update_reservation_status(status_enum, reservation)
+  updated_reservation = await crud_update_reservation_status(status_enum, reservation)
 
   return ReservationRead(id=reservation.id, user_id=user.id, user_name=user.name, hall_id=hall.id, hall_name=hall.name, status=updated_reservation.status, reservation_date=reservation.reservation_date)
