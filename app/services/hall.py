@@ -20,6 +20,8 @@ async def service_create_new_hall(db: AsyncSession, name: str, description: str,
 
   created_hall = await crud_create_new_hall(db, name, description, is_available)
 
+  await db.flush()
+
   return HallRead(id=created_hall.id, name=name, description=description, is_available=is_available)
 
 async def service_get_hall_by_id(db: AsyncSession, id: int) -> HallRead:
