@@ -9,5 +9,8 @@ class Settings(BaseSettings):
   PROJECT_NAME: str = "Hall Reservations API"
   PROJECT_VERSION: str = "0.0.1"
   DATABASE_URL: str = os.environ["DATABASE_URL"]
+  SECRET_KEY: str = os.environ["SECRET_KEY"]
+  ALGORITHM: str = "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
 settings = Settings()
