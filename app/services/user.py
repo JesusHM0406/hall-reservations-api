@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from werkzeug.security import generate_password_hash
 
+from app.core.security import get_password_hash
 from app.crud.user import (
   crud_create_new_user,
   crud_delete_user,
@@ -25,7 +25,7 @@ async def service_create_user(db: AsyncSession, name: str, password: str, passwo
   if user is not None:
     raise ConflictError("The name already exists.")
 
-  pw_hash = generate_password_hash(password)
+  pw_hash = get_password_hash(password)
   new_user = await crud_create_new_user(db, name, pw_hash)
 
   await db.flush()
