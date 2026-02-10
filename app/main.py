@@ -1,4 +1,5 @@
 from fastapi import FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
@@ -11,6 +12,16 @@ from app.core.config import settings
 from app.exceptions.base import AppError
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
+
+origins = settings.ALLOWED_ORIGINS.split(",")
+
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=origins,
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"]
+)
 
 @app.exception_handler(AppError)
 async def app_exception_handler(request: Request, exc: AppError):
