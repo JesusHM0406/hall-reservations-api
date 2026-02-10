@@ -10,8 +10,8 @@ async def crud_create_new_user(db: AsyncSession, name: str, pw_hash: str):
   return new_user
 
 async def crud_get_user_by_id(db: AsyncSession, id: int):
-  result = await db.execute(select(User.id, User.name).where(User.id == id))
-  return result.first()
+  result = await db.execute(select(User).where(User.id == id))
+  return result.scalar_one_or_none()
 
 async def crud_update_user(db: AsyncSession, name: str, id: int):
   await db.execute(update(User).where(User.id == id).values(name=name))
