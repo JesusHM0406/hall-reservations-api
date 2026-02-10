@@ -12,3 +12,6 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
   name: str
+
+class UserComplete(UserRead):
+  role: str
