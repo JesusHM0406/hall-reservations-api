@@ -47,3 +47,8 @@ async def get_current_active_user(user: Annotated[UserComplete, Depends(get_curr
   if not user.is_active:
     raise HTTPException(status_code=400, detail="Inactive user")
   return user
+
+async def get_current_active_admin(user: Annotated[UserComplete, Depends(get_current_active_user)]):
+  if user.role != "admin":
+    raise HTTPException(status_code=403, detail="Not enough permissions.")
+  return user
