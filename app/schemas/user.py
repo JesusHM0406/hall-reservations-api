@@ -15,3 +15,4 @@ class UserUpdate(BaseModel):
 
 class UserComplete(UserRead):
   role: str
+  is_active: bool
