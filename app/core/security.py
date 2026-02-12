@@ -24,7 +24,7 @@ async def authenticate_user(db: AsyncSession, name: str, password: str):
   if not verify_password(password, user.pw_hash):
     return False
 
-  return UserComplete(id=user.id, name=user.name, role=user.role)
+  return UserComplete(id=user.id, name=user.name, role=user.role, is_active=user.is_active)
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
   to_encode = data.copy()
