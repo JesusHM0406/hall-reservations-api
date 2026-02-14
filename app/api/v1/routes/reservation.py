@@ -1,8 +1,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, status, Depends
-from app.api.deps import DBDep, get_current_active_user
-from app.schemas.reservation import ReservationRead, ReservationCreate, ReservationUpdate
+from app.api.deps import DBDep, get_current_active_admin, get_current_active_user
+from app.models.reservation_status import ReservationStatus
+from app.schemas.reservation import ReservationApprove, ReservationRead, ReservationCreate, ReservationUpdate
 from app.schemas.user import UserComplete
 from app.services.reservation import (
   service_create_new_reservation,
@@ -41,3 +42,8 @@ async def get_single_reservation(reservation_id: int, db: DBDep) -> ReservationR
 async def update_reservation_status(db: DBDep, user: Annotated[UserComplete, Depends(get_current_active_user)], update: ReservationUpdate, reservation_id: int) -> ReservationRead:
   async with db.begin():
     return await service_update_reservation_status(db, reservation_id, update.status, user.id)
+
+@router.patch("/{reservation_id}/approve")
+async def approve_reservation(db: DBDep, admin: Annotated[UserComplete, Depends(get_current_active_admin)], approve: ReservationApprove, reservation_id: int) -> ReservationRead:
+  async with db.begin():
+    return await service_update_reservation_status(db, reservation_id, ReservationStatus.CONFIRMED.value, approve.user_id)
