@@ -60,7 +60,7 @@ async def general_exception_handler(request: Request, exc: Exception):
     }
   )
 
-app.include_router(auth_router, prefix="/auth", include_in_schema=False)
+app.include_router(auth_router, prefix="/auth")
 app.include_router(user_router, prefix="/users", tags=["Users"])
 app.include_router(hall_router, prefix="/halls", tags=["Halls"])
 app.include_router(reservation_router, prefix="/reservations", tags=["Reservations"])
