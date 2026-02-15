@@ -137,6 +137,9 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
   if new_status not in transitions_map[reservation.status.value]["transitions"]:
     raise BusinessLogicError(f"The status cannot be set as {new_status} because the reservation has a {reservation.status.value} status.")
 
+  if new_status == ReservationStatus.FINISHED.value and date.today() != reservation.reservation_date:
+    raise BusinessLogicError("The reservation cannot be finalized because today is not the reservation date.")
+
   status_enum = ReservationStatus(new_status)
 
   updated_reservation = await crud_update_reservation_status(status_enum, reservation)
