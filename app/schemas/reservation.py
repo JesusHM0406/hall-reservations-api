@@ -15,8 +15,5 @@ class ReservationRead(BaseModel):
   status: str
   reservation_date: date
 
-class ReservationUpdate(BaseModel):
-  status: str
-
 class ReservationApprove(BaseModel):
   user_id: int
