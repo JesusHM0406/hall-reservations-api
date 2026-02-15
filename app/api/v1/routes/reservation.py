@@ -35,7 +35,7 @@ async def get_reservations(db: DBDep, admin: AdminDep, user_id: int | None = Non
     return await service_get_all_reservations(db)
 
 @router.get("/{id}")
-async def get_single_reservation(id: int, db: DBDep) -> ReservationRead:
+async def get_single_reservation(id: int, admin: AdminDep, db: DBDep) -> ReservationRead:
   async with db.begin():
     return await service_get_reservation(db, id)
 
