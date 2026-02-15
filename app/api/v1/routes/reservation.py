@@ -19,12 +19,12 @@ from app.services.reservation import (
 router = APIRouter()
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_reservation(reservation: ReservationCreate, db: DBDep) -> ReservationRead:
+async def create_reservation(reservation: ReservationCreate, user: UserDep, db: DBDep) -> ReservationRead:
   async with db.begin():
-    return await service_create_new_reservation(db, reservation.user_id, reservation.hall_id, reservation.reservation_date)
+    return await service_create_new_reservation(db, user.id, reservation.hall_id, reservation.reservation_date)
 
 @router.get("/")
-async def get_reservations(db: DBDep, user_id: int | None = None, hall_id: int | None = None) -> list[ReservationRead]:
+async def get_reservations(db: DBDep, admin: AdminDep, user_id: int | None = None, hall_id: int | None = None) -> list[ReservationRead]:
   async with db.begin():
     if user_id:
       return await service_get_all_reservations_by_user_id(db, user_id)
