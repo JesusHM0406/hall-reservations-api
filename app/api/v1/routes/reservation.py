@@ -33,17 +33,17 @@ async def get_reservations(db: DBDep, user_id: int | None = None, hall_id: int |
 
     return await service_get_all_reservations(db)
 
-@router.get("/{reservation_id}")
-async def get_single_reservation(reservation_id: int, db: DBDep) -> ReservationRead:
+@router.get("/{id}")
+async def get_single_reservation(id: int, db: DBDep) -> ReservationRead:
   async with db.begin():
-    return await service_get_reservation(db, reservation_id)
+    return await service_get_reservation(db, id)
 
-@router.patch("/{reservation_id}")
-async def update_reservation_status(db: DBDep, user: Annotated[UserComplete, Depends(get_current_active_user)], update: ReservationUpdate, reservation_id: int) -> ReservationRead:
+@router.patch("/{id}")
+async def update_reservation_status(db: DBDep, user: Annotated[UserComplete, Depends(get_current_active_user)], update: ReservationUpdate, id: int) -> ReservationRead:
   async with db.begin():
-    return await service_update_reservation_status(db, reservation_id, update.status, user.id)
+    return await service_update_reservation_status(db, id, update.status, user.id)
 
-@router.patch("/{reservation_id}/approve")
-async def approve_reservation(db: DBDep, admin: Annotated[UserComplete, Depends(get_current_active_admin)], approve: ReservationApprove, reservation_id: int) -> ReservationRead:
+@router.patch("/{id}/approve")
+async def approve_reservation(db: DBDep, admin: Annotated[UserComplete, Depends(get_current_active_admin)], approve: ReservationApprove, id: int) -> ReservationRead:
   async with db.begin():
-    return await service_update_reservation_status(db, reservation_id, ReservationStatus.CONFIRMED.value, approve.user_id)
+    return await service_update_reservation_status(db, id, ReservationStatus.CONFIRMED.value, approve.user_id)
