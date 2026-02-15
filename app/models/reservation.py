@@ -17,7 +17,7 @@ class Reservation(Base):
   id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
   user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
   hall_id: Mapped[int] = mapped_column(Integer, ForeignKey("halls.id"), nullable=False)
-  status: Mapped[ReservationStatus] = mapped_column(Enum(ReservationStatus, name="reservation_status"), nullable=False, default=ReservationStatus.PENDING)
+  status: Mapped[ReservationStatus] = mapped_column(Enum(ReservationStatus, name="reservation_status"), nullable=False, default=ReservationStatus.CONFIRMED)
   reservation_date: Mapped[date] = mapped_column(Date, nullable=False)
 
   # Relationships
@@ -30,7 +30,7 @@ class Reservation(Base):
       'hall_id', 'reservation_date',
       unique=True,
       postgresql_where=(
-        status.in_([ReservationStatus.PENDING, ReservationStatus.CONFIRMED])
+        status == ReservationStatus.CONFIRMED
       )
     ),
   )

@@ -103,10 +103,6 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
     },
     ReservationStatus.FINISHED.value: {
       "has_transitions": False
-    },
-    ReservationStatus.PENDING.value: {
-      "has_transitions": True,
-      "transitions": [ReservationStatus.CONFIRMED.value]
     }
   }
 
@@ -131,7 +127,7 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
   if not transitions_map[reservation.status.value]["has_transitions"]:
     raise BusinessLogicError("You cannot change the status of this reservation; it has already been cancelled, finished, or expired.")
 
-  if new_status not in [ReservationStatus.CANCELLED.value, ReservationStatus.CONFIRMED.value, ReservationStatus.EXPIRED.value, ReservationStatus.FINISHED.value, ReservationStatus.PENDING.value]:
+  if new_status not in [ReservationStatus.CANCELLED.value, ReservationStatus.CONFIRMED.value, ReservationStatus.EXPIRED.value, ReservationStatus.FINISHED.value]:
     raise BusinessLogicError("Invalid status.")
 
   if new_status not in transitions_map[reservation.status.value]["transitions"]:
