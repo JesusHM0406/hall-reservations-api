@@ -9,6 +9,7 @@ from app.crud.reservation import (
   crud_get_all_reservations,
   crud_get_all_reservations_by_user_id,
   crud_get_reservation,
+  crud_get_reservations,
   crud_get_reservations_by_hall_id,
   crud_update_reservation_status
 )
@@ -16,6 +17,7 @@ from app.crud.user import crud_get_user_by_id
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
 from app.models.reservation_status import ReservationStatus
 from app.schemas.reservation import ReservationRead
+from app.utils.pagination import Pagination
 
 
 async def service_create_new_reservation(db: AsyncSession, user_id: int, hall_id: int, reservation_date: date) -> ReservationRead:
@@ -140,3 +142,13 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
   updated_reservation = await crud_update_reservation_status(status_enum, reservation)
 
   return ReservationRead(id=reservation.id, user_id=user.id, user_name=user.name, hall_id=hall.id, hall_name=hall.name, status=updated_reservation.status, reservation_date=reservation.reservation_date)
+
+async def service_get_all_reservations_paginate(db: AsyncSession, page: int, last_id: int | None) -> Pagination:
+  result = await crud_get_reservations(db, False, False, None, last_id)
+
+  if last_id and last_id < 1:
+    raise BusinessLogicError("The last id cannot be negative or 0.")
+
+  pagination = Pagination(items=result.items, page=page, per_page=result.per_page, total=result.total)
+
+  return pagination
