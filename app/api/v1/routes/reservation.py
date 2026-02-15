@@ -45,11 +45,11 @@ async def approve_reservation(db: DBDep, admin: AdminDep, approve: ReservationAp
     return await service_update_reservation_status(db, id, ReservationStatus.CONFIRMED.value, approve.user_id)
 
 @router.patch("/{id}/finish")
-async def finish_reservation(db: DBDep, user: UserDep, id: int):
+async def finish_reservation(db: DBDep, user: UserDep, id: int) -> ReservationRead:
   async with db.begin():
     return await service_update_reservation_status(db, id, ReservationStatus.FINISHED.value, user.id)
 
 @router.patch("/{id}/cancel")
-async def cancel_reservation(db: DBDep, user: UserDep, id: int):
+async def cancel_reservation(db: DBDep, user: UserDep, id: int) -> ReservationRead:
   async with db.begin():
     return await service_update_reservation_status(db, id, ReservationStatus.CANCELLED.value, user.id)
