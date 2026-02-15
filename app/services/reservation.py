@@ -60,7 +60,6 @@ async def service_get_reservation(db: AsyncSession, id: int) -> ReservationRead:
 async def service_get_all_reservations(db: AsyncSession) -> list[ReservationRead]:
   result = await crud_get_all_reservations(db)
 
-  # This might fail because I'm currently performing a "hard delete" of users.
   data = [ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date) for reservation in result]
 
   return data
