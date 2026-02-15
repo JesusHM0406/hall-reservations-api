@@ -55,7 +55,13 @@ async def crud_update_reservation_status(new_status: ReservationStatus, reservat
   reservation.status = new_status
   return reservation
 
-async def crud_get_reservations(db: AsyncSession, user_filter: bool, hall_filter: bool, filter_id: int | None, last_id: int | None) -> PaginationCRUD:
+async def crud_get_reservations(
+  db: AsyncSession,
+  filter_id: int | None = None,
+  last_id: int | None = None,
+  user_filter: bool = False,
+  hall_filter: bool = False
+) -> PaginationCRUD:
   stmt = (
     select(Reservation)
     .order_by(Reservation.id.desc())
