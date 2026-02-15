@@ -3,7 +3,6 @@ from fastapi import APIRouter, status
 from app.api.deps import AdminDep, DBDep, UserDep
 from app.models.reservation_status import ReservationStatus
 from app.schemas.reservation import (
-  ReservationApprove,
   ReservationCreate,
   ReservationRead,
 )
@@ -38,11 +37,6 @@ async def get_reservations(db: DBDep, admin: AdminDep, user_id: int | None = Non
 async def get_single_reservation(id: int, admin: AdminDep, db: DBDep) -> ReservationRead:
   async with db.begin():
     return await service_get_reservation(db, id)
-
-@router.patch("/{id}/approve")
-async def approve_reservation(db: DBDep, admin: AdminDep, approve: ReservationApprove, id: int) -> ReservationRead:
-  async with db.begin():
-    return await service_update_reservation_status(db, id, ReservationStatus.CONFIRMED.value, approve.user_id)
 
 @router.patch("/{id}/finish")
 async def finish_reservation(db: DBDep, user: UserDep, id: int) -> ReservationRead:

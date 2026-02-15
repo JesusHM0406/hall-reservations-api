@@ -13,6 +13,3 @@ class ReservationRead(BaseModel):
   hall_name: str
   status: str
   reservation_date: date
-
-class ReservationApprove(BaseModel):
-  user_id: int
