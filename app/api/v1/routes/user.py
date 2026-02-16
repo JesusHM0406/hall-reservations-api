@@ -21,7 +21,7 @@ async def add_user(user: UserCreate, db: DBDep) -> UserRead:
   async with db.begin():
     return await service_create_user(db, user.name, user.password, user.password_confirm)
 
-@router.get("/all")
+@router.get("/")
 async def get_all_users(db: DBDep) -> list[UserRead]:
   async with db.begin():
     return await service_get_all_users(db)
