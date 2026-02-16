@@ -34,10 +34,10 @@ async def get_user_by_id(id: int, db: DBDep) -> UserRead:
   async with db.begin():
     return await service_get_user_by_id(db, id)
 
-@router.patch("/{id}")
-async def update_user(id: int, user: UserUpdate, db: DBDep) -> UserRead:
+@router.patch("/me")
+async def update_current_user(db: DBDep, user: UserDep, update: UserUpdate) -> UserRead:
   async with db.begin():
-    return await service_update_user(db, user.name, id)
+    return await service_update_user(db, update.name, user.id)
 
 @router.delete("/{id}", status_code=204)
 async def delete_user(id: int, db: DBDep):
