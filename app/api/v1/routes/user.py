@@ -30,7 +30,7 @@ async def read_current_user(user: UserDep) -> UserComplete:
   return user
 
 @router.get("/{id}")
-async def get_user_by_id(id: int, db: DBDep) -> UserRead:
+async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserRead:
   async with db.begin():
     return await service_get_user_by_id(db, id)
 
