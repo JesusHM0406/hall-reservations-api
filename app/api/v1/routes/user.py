@@ -1,7 +1,6 @@
-from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
-from app.api.deps import AdminDep, DBDep, get_current_user
+from app.api.deps import AdminDep, DBDep, UserDep
 from app.models.hall import Hall as Hall
 from app.models.reservation import Reservation as Reservation
 from app.models.user import User as User
@@ -27,7 +26,7 @@ async def get_all_users(db: DBDep, admin: AdminDep, page: int = 1):
   return await service_get_all_users(db, page)
 
 @router.get("/me")
-async def read_current_user(user: Annotated[UserComplete, Depends(get_current_user)]) -> UserComplete:
+async def read_current_user(user: UserDep) -> UserComplete:
   return user
 
 @router.get("/{id}")
