@@ -57,17 +57,14 @@ async def crud_update_reservation_status(new_status: ReservationStatus, reservat
 
 async def crud_get_reservations(
   db: AsyncSession,
+  page: int,
   filter_id: int | None = None,
-  last_id: int | None = None,
   user_filter: bool = False,
   hall_filter: bool = False
 ) -> PaginationCRUD:
-  stmt = (
-    select(Reservation)
-    .order_by(Reservation.id.desc())
-    .limit(LIMIT_PER_PAGE)
-  )
+  current_offset = (page - 1) * LIMIT_PER_PAGE
 
+  stmt = select(Reservation).order_by(Reservation.id.desc())
   total_records_stmt = select(func.count()).select_from(Reservation)
 
   if filter_id:
@@ -78,11 +75,10 @@ async def crud_get_reservations(
       stmt = stmt.where(Reservation.hall_id == filter_id)
       total_records_stmt = total_records_stmt.where(Reservation.hall_id == filter_id)
 
-  total_records = await db.execute(total_records_stmt)
-  total_records = total_records.scalar() or 0
+  total_res = await db.execute(total_records_stmt)
+  total_records = total_res.scalar() or 0
 
-  if last_id:
-    stmt = stmt.where(Reservation.id < last_id)
+  stmt = stmt.limit(LIMIT_PER_PAGE).offset(current_offset)
 
   result = await db.execute(stmt)
   result_items = result.scalars().all()

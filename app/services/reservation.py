@@ -143,11 +143,8 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
 
   return ReservationRead(id=reservation.id, user_id=user.id, user_name=user.name, hall_id=hall.id, hall_name=hall.name, status=updated_reservation.status, reservation_date=reservation.reservation_date)
 
-async def service_get_all_reservations_paginate(db: AsyncSession, page: int, last_id: int | None) -> Pagination:
-  result = await crud_get_reservations(db, last_id=last_id)
-
-  if last_id and last_id < 1:
-    raise BusinessLogicError("The last id cannot be negative or 0.")
+async def service_get_all_reservations_paginate(db: AsyncSession, page: int) -> Pagination:
+  result = await crud_get_reservations(db, page)
 
   pagination = Pagination(items=result.items, page=page, per_page=result.per_page, total=result.total)
 
