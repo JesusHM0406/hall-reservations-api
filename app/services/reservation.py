@@ -151,6 +151,11 @@ async def service_get_all_reservations_paginate(db: AsyncSession, page: int) -> 
   return pagination
 
 async def service_get_all_reservations_by_user_id_paginate(db: AsyncSession, page: int, user_id: int) -> Pagination:
+  user = await crud_get_user_by_id(db, user_id)
+
+  if not user:
+    raise NotFoundError("User not found.")
+
   result = await crud_get_reservations(db, page, filter_id=user_id, user_filter=True)
 
   pagination = Pagination(items=result.items, requested_page=page, per_page=result.per_page, total=result.total, pages=result.pages, current_page=result.current_page)
@@ -158,6 +163,11 @@ async def service_get_all_reservations_by_user_id_paginate(db: AsyncSession, pag
   return pagination
 
 async def service_get_all_reservations_by_hall_id_paginate(db: AsyncSession, page: int, hall_id: int) -> Pagination:
+  hall = await crud_get_hall_by_id(db, hall_id)
+
+  if not hall:
+    raise NotFoundError("Hall not found.")
+
   result = await crud_get_reservations(db, page, filter_id=hall_id, hall_filter=True)
 
   pagination = Pagination(items=result.items, requested_page=page, per_page=result.per_page, total=result.total, pages=result.pages, current_page=result.current_page)
