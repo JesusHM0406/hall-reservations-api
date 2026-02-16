@@ -98,4 +98,4 @@ async def crud_get_reservations(
     for item in result_items
   ]
 
-  return PaginationCRUD(items=list(data), total=total_records, per_page=LIMIT_PER_PAGE)
+  return PaginationCRUD(items=list(data), total=total_records, per_page=LIMIT_PER_PAGE, pages=pages, current_page=current_page)

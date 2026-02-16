@@ -149,6 +149,6 @@ async def service_get_all_reservations_paginate(db: AsyncSession, page: int) -> 
 
   result = await crud_get_reservations(db, page)
 
-  pagination = Pagination(items=result.items, page=page, per_page=result.per_page, total=result.total)
+  pagination = Pagination(items=result.items, requested_page=page, per_page=result.per_page, total=result.total, pages=result.pages, current_page=result.current_page)
 
   return pagination

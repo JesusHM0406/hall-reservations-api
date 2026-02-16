@@ -6,7 +6,7 @@ class PaginationResponse(BaseModel):
 
   items: List[Any]
   total: int
-  page: int
+  requested_page: int
   per_page: int
   pages: int
   current_page: int
