@@ -27,7 +27,7 @@ async def get_all_users(db: DBDep) -> list[UserRead]:
     return await service_get_all_users(db)
 
 @router.get("/me")
-async def route_get_current_user(user: Annotated[UserComplete, Depends(get_current_user)]) -> UserComplete:
+async def read_current_user(user: Annotated[UserComplete, Depends(get_current_user)]) -> UserComplete:
   return user
 
 @router.get("/{id}")
