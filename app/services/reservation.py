@@ -17,7 +17,7 @@ from app.crud.user import crud_get_user_by_id
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
 from app.models.reservation_status import ReservationStatus
 from app.schemas.reservation import ReservationRead
-from app.utils.pagination import Pagination
+from app.utils.pagination import Pagination, get_pagination
 
 
 async def service_create_new_reservation(db: AsyncSession, user_id: int, hall_id: int, reservation_date: date) -> ReservationRead:
@@ -146,7 +146,7 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
 async def service_get_all_reservations_paginate(db: AsyncSession, page: int) -> Pagination:
   result = await crud_get_reservations(db, page)
 
-  pagination = Pagination(items=result.items, requested_page=page, per_page=result.per_page, total=result.total, pages=result.pages, current_page=result.current_page)
+  pagination = get_pagination(result, page)
 
   return pagination
 
@@ -158,7 +158,7 @@ async def service_get_all_reservations_by_user_id_paginate(db: AsyncSession, pag
 
   result = await crud_get_reservations(db, page, filter_id=user_id, user_filter=True)
 
-  pagination = Pagination(items=result.items, requested_page=page, per_page=result.per_page, total=result.total, pages=result.pages, current_page=result.current_page)
+  pagination = get_pagination(result, page)
 
   return pagination
 
@@ -170,6 +170,6 @@ async def service_get_all_reservations_by_hall_id_paginate(db: AsyncSession, pag
 
   result = await crud_get_reservations(db, page, filter_id=hall_id, hall_filter=True)
 
-  pagination = Pagination(items=result.items, requested_page=page, per_page=result.per_page, total=result.total, pages=result.pages, current_page=result.current_page)
+  pagination = get_pagination(result, page)
 
   return pagination
