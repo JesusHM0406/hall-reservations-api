@@ -20,9 +20,9 @@ class PaginationResponse(BaseModel):
     return self.current_page < self.pages
 
   @computed_field
-  def next_num(self) -> int | None:
-    return self.current_page + 1 if self.has_next else None
-
-  @computed_field
   def prev_num(self) -> int | None:
     return self.current_page - 1 if self.has_prev else None
+
+  @computed_field
+  def next_num(self) -> int | None:
+    return self.current_page + 1 if self.has_next else None
