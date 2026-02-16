@@ -16,7 +16,7 @@ from app.utils.pagination_response import PaginationResponse
 
 router = APIRouter()
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, response_model=UserRead)
 async def add_user(user: UserCreate, db: DBDep) -> UserRead:
   async with db.begin():
     return await service_create_user(db, user.name, user.password, user.password_confirm)
@@ -25,16 +25,16 @@ async def add_user(user: UserCreate, db: DBDep) -> UserRead:
 async def get_all_users(db: DBDep, admin: AdminDep, page: int = 1):
   return await service_get_all_users(db, page)
 
-@router.get("/me")
+@router.get("/me", response_model=UserComplete)
 async def read_current_user(user: UserDep) -> UserComplete:
   return user
 
-@router.get("/{id}")
+@router.get("/{id}", response_model=UserRead)
 async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserRead:
   async with db.begin():
     return await service_get_user_by_id(db, id)
 
-@router.patch("/me")
+@router.patch("/me", response_model=UserRead)
 async def update_current_user(db: DBDep, user: UserDep, update: UserUpdate) -> UserRead:
   async with db.begin():
     return await service_update_user(db, update.name, user.id)
