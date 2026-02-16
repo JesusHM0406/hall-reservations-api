@@ -5,12 +5,14 @@ from app.crud.user import (
   crud_create_new_user,
   crud_delete_user,
   crud_get_all_users,
+  crud_get_all_users_paginate,
   crud_get_user_by_id,
   crud_get_user_by_name,
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
 from app.schemas.user import UserRead
+from app.utils.pagination import Pagination, get_pagination
 
 MIN_PASSWORD_SIZE = 8
 
@@ -68,3 +70,10 @@ async def service_get_all_users(db: AsyncSession):
     data.append(UserRead(id=row.id, name=row.name))
 
   return data
+
+async def service_get_all_users_paginate(db: AsyncSession, page: int) -> Pagination:
+  result = await crud_get_all_users_paginate(db, page)
+
+  pagination = get_pagination(result, page)
+
+  return pagination
