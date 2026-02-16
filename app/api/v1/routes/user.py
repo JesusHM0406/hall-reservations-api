@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from app.api.deps import DBDep, get_current_user
+from app.api.deps import AdminDep, DBDep, get_current_user
 from app.models.hall import Hall as Hall
 from app.models.reservation import Reservation as Reservation
 from app.models.user import User as User
@@ -10,9 +10,11 @@ from app.services.user import (
   service_create_user,
   service_delete_user,
   service_get_all_users,
+  service_get_all_users_paginate,
   service_get_user_by_id,
   service_update_user,
 )
+from app.utils.pagination_response import PaginationResponse
 
 router = APIRouter()
 
@@ -25,6 +27,10 @@ async def add_user(user: UserCreate, db: DBDep) -> UserRead:
 async def get_all_users(db: DBDep) -> list[UserRead]:
   async with db.begin():
     return await service_get_all_users(db)
+
+@router.get("/paginate", response_model=PaginationResponse)
+async def get_all_users_paginate(db: DBDep, admin: AdminDep, page: int = 1):
+  return await service_get_all_users_paginate(db, page)
 
 @router.get("/me")
 async def read_current_user(user: Annotated[UserComplete, Depends(get_current_user)]) -> UserComplete:
