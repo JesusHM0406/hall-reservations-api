@@ -1,5 +1,6 @@
 from datetime import date
 
+from app.utils.reservation_status import ReservationStatus
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,11 +9,10 @@ from app.crud.reservation import (
   crud_create_new_reservation,
   crud_get_reservation,
   crud_get_reservations,
-  crud_update_reservation_status
+  crud_update_reservation_status,
 )
 from app.crud.user import crud_get_user_by_id
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
-from app.models.reservation_status import ReservationStatus
 from app.schemas.reservation import ReservationRead
 from app.utils.pagination import Pagination, get_pagination
 

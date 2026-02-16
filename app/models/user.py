@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import true
 
 from app.db.base_class import Base
-from app.models.user_role import UserRole
+from app.utils.user_role import UserRole
 
 if TYPE_CHECKING:
   from app.models.reservation import Reservation

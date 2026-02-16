@@ -5,7 +5,7 @@ from sqlalchemy import Date, Enum, ForeignKey, Index, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
-from app.models.reservation_status import ReservationStatus
+from app.utils.reservation_status import ReservationStatus
 
 if TYPE_CHECKING:
   from app.models.hall import Hall
