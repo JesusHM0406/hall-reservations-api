@@ -1,13 +1,13 @@
-from datetime import date
 import math
+from datetime import date
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.reservation import Reservation, ReservationStatus
 from app.utils.pagination_crud import PaginationCRUD
 
-LIMIT_PER_PAGE = 10
 
 async def crud_create_new_reservation(db: AsyncSession, user_id: int, hall_id: int, reservation_date: date):
   new_reservation = Reservation(user_id=user_id, hall_id=hall_id, reservation_date=reservation_date)
@@ -43,13 +43,13 @@ async def crud_get_reservations(
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
 
-  pages = math.ceil(total_records / LIMIT_PER_PAGE) if total_records > 0 else 1
+  pages = math.ceil(total_records / settings.PAGINATION_LIMIT_PER_PAGE) if total_records > 0 else 1
 
   current_page = max(1, min(page, pages))
 
-  current_offset = (current_page - 1) * LIMIT_PER_PAGE
+  current_offset = (current_page - 1) * settings.PAGINATION_LIMIT_PER_PAGE
 
-  stmt = stmt.limit(LIMIT_PER_PAGE).offset(current_offset)
+  stmt = stmt.limit(settings.PAGINATION_LIMIT_PER_PAGE).offset(current_offset)
 
   result = await db.execute(stmt)
   result_items = result.scalars().all()
@@ -64,4 +64,4 @@ async def crud_get_reservations(
     for item in result_items
   ]
 
-  return PaginationCRUD(items=list(data), total=total_records, per_page=LIMIT_PER_PAGE, pages=pages, current_page=current_page)
+  return PaginationCRUD(items=list(data), total=total_records, per_page=settings.PAGINATION_LIMIT_PER_PAGE, pages=pages, current_page=current_page)
