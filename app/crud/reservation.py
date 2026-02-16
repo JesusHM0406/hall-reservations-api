@@ -1,4 +1,5 @@
 from datetime import date
+import math
 
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -62,8 +63,6 @@ async def crud_get_reservations(
   user_filter: bool = False,
   hall_filter: bool = False
 ) -> PaginationCRUD:
-  current_offset = (page - 1) * LIMIT_PER_PAGE
-
   stmt = select(Reservation).order_by(Reservation.id.desc())
   total_records_stmt = select(func.count()).select_from(Reservation)
 
@@ -77,6 +76,12 @@ async def crud_get_reservations(
 
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
+
+  pages = math.ceil(total_records / LIMIT_PER_PAGE) if total_records > 0 else 1
+
+  current_page = max(1, min(page, pages))
+
+  current_offset = (current_page - 1) * LIMIT_PER_PAGE
 
   stmt = stmt.limit(LIMIT_PER_PAGE).offset(current_offset)
 
