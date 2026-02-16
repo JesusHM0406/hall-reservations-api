@@ -29,12 +29,7 @@ async def crud_get_user_by_name(db: AsyncSession, name: str):
   result = await db.execute(select(User).where(User.name == name))
   return result.scalar_one_or_none()
 
-async def crud_get_all_users(db: AsyncSession):
-  result = await db.execute(select(User.id, User.name))
-
-  return result
-
-async def crud_get_all_users_paginate(db: AsyncSession, page: int) -> PaginationCRUD:
+async def crud_get_all_users(db: AsyncSession, page: int) -> PaginationCRUD:
   stmt = select(User).order_by(User.id.desc())
   total_records_stmt = select(func.count()).select_from(User)
 

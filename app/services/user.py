@@ -5,7 +5,6 @@ from app.crud.user import (
   crud_create_new_user,
   crud_delete_user,
   crud_get_all_users,
-  crud_get_all_users_paginate,
   crud_get_user_by_id,
   crud_get_user_by_name,
   crud_update_user,
@@ -62,17 +61,8 @@ async def service_delete_user(db: AsyncSession, id: int):
 
   return
 
-async def service_get_all_users(db: AsyncSession):
-  result = await crud_get_all_users(db)
-
-  data = []
-  for row in result:
-    data.append(UserRead(id=row.id, name=row.name))
-
-  return data
-
-async def service_get_all_users_paginate(db: AsyncSession, page: int) -> Pagination:
-  result = await crud_get_all_users_paginate(db, page)
+async def service_get_all_users(db: AsyncSession, page: int) -> Pagination:
+  result = await crud_get_all_users(db, page)
 
   pagination = get_pagination(result, page)
 
