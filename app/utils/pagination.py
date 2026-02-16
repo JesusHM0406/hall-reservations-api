@@ -17,19 +17,3 @@ class Pagination:
     self.pages = math.ceil(self.total / self.per_page) if self.total > 0 else 1
 
     self.current_page = max(1, min(self.page, self.pages))
-
-  @property
-  def has_prev(self) -> bool:
-    return self.page > 1
-
-  @property
-  def has_next(self) -> bool:
-    return self.page < self.pages
-
-  @property
-  def next_num(self) -> int | None:
-    return self.page + 1 if self.has_next else None
-
-  @property
-  def prev_num(self) -> int | None:
-    return self.page - 1 if self.has_prev else None
