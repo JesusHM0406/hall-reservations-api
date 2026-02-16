@@ -12,6 +12,7 @@ class Settings(BaseSettings):
   SECRET_KEY: str = os.environ["SECRET_KEY"]
   ALGORITHM: str = "HS256"
   ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-  ALLOWED_ORIGINS: str =os.environ["ALLOWED_ORIGINS"]
+  ALLOWED_ORIGINS: str = os.environ["ALLOWED_ORIGINS"]
+  PAGINATION_LIMIT_PER_PAGE: int = 10
 
 settings = Settings()
