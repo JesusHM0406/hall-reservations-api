@@ -31,8 +31,7 @@ async def read_current_user(user: UserDep) -> UserComplete:
 
 @router.get("/{id}", response_model=UserRead)
 async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserRead:
-  async with db.begin():
-    return await service_get_user_by_id(db, id)
+  return await service_get_user_by_id(db, id)
 
 @router.patch("/me", response_model=UserRead)
 async def update_current_user(db: DBDep, user: UserDep, update: UserUpdate) -> UserRead:
