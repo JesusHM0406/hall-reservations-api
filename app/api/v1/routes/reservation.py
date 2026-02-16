@@ -2,6 +2,7 @@ from fastapi import APIRouter, status
 
 from app.api.deps import AdminDep, DBDep, UserDep
 from app.models.reservation_status import ReservationStatus
+from app.schemas.pagination_response import PaginationResponse
 from app.schemas.reservation import (
   ReservationCreate,
   ReservationRead,
@@ -11,6 +12,7 @@ from app.services.reservation import (
   service_get_all_reservations,
   service_get_all_reservations_by_hall_id,
   service_get_all_reservations_by_user_id,
+  service_get_all_reservations_paginate,
   service_get_reservation,
   service_update_reservation_status,
 )
@@ -32,6 +34,11 @@ async def get_reservations(db: DBDep, admin: AdminDep, user_id: int | None = Non
       return await service_get_all_reservations_by_hall_id(db, hall_id)
 
     return await service_get_all_reservations(db)
+
+# Temporary endpoint
+@router.get("/paginate", response_model=PaginationResponse)
+async def get_paginated_reservations(db: DBDep, admin: AdminDep, page: int = 1):
+  return await service_get_all_reservations_paginate(db, page)
 
 @router.get("/{id}")
 async def get_single_reservation(id: int, admin: AdminDep, db: DBDep) -> ReservationRead:
