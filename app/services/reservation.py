@@ -144,6 +144,9 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
   return ReservationRead(id=reservation.id, user_id=user.id, user_name=user.name, hall_id=hall.id, hall_name=hall.name, status=updated_reservation.status, reservation_date=reservation.reservation_date)
 
 async def service_get_all_reservations_paginate(db: AsyncSession, page: int) -> Pagination:
+  if page < 1:
+    page = 1
+
   result = await crud_get_reservations(db, page)
 
   pagination = Pagination(items=result.items, page=page, per_page=result.per_page, total=result.total)
