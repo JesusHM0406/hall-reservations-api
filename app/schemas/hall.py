@@ -13,3 +13,6 @@ class HallUpdate(BaseModel):
   name: str | None
   description: str | None
   is_available: bool | None
+
+class HallUpdateAvailability(BaseModel):
+  is_available: bool
