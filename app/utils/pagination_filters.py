@@ -29,5 +29,5 @@ class FilterFactory:
       name=name,
       label=label,
       type="boolean",
-      current_value=False if current is None else current
+      current_value=current
     )
