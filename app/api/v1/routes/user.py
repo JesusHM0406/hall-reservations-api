@@ -12,7 +12,7 @@ from app.services.user import (
   service_get_user_by_id,
   service_update_user,
 )
-from app.utils.pagination_response import PaginationResponse
+from app.utils.pagination import Pagination
 
 router = APIRouter()
 
@@ -21,8 +21,8 @@ async def add_user(user: UserCreate, db: DBDep) -> UserRead:
   async with db.begin():
     return await service_create_user(db, user.name, user.password, user.password_confirm)
 
-@router.get("/", response_model=PaginationResponse)
-async def get_all_users(db: DBDep, admin: AdminDep, page: int = 1):
+@router.get("/", response_model=Pagination)
+async def get_all_users(db: DBDep, admin: AdminDep, page: int = 1) -> Pagination:
   return await service_get_all_users(db, page)
 
 @router.get("/me", response_model=UserComplete)

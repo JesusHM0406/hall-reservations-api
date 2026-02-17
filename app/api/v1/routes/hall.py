@@ -11,7 +11,7 @@ from app.services.hall import (
   service_update_hall,
   service_update_hall_availability,
 )
-from app.utils.pagination_response import PaginationResponse
+from app.utils.pagination import Pagination
 
 router = APIRouter()
 
@@ -20,8 +20,8 @@ async def create_new_hall(db: DBDep, admin: AdminDep, hall: HallCreate) -> HallR
   async with db.begin():
     return await service_create_new_hall(db, hall.name, hall.description, hall.is_available)
 
-@router.get("/", response_model=PaginationResponse)
-async def get_all_halls(db: DBDep, page: int = 1):
+@router.get("/", response_model=Pagination)
+async def get_all_halls(db: DBDep, page: int = 1) -> Pagination:
   return await service_get_all_halls(db, page)
 
 @router.get("/{name}", response_model=HallRead)
