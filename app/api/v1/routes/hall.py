@@ -28,17 +28,17 @@ async def get_all_halls(db: DBDep) -> list[HallRead]:
   async with db.begin():
     return await service_get_all_halls(db)
 
-@router.get("/{hall_id}")
-async def get_hall_by_id(hall_id: int, db: DBDep) -> HallRead:
+@router.get("/{id}")
+async def get_hall_by_id(id: int, db: DBDep) -> HallRead:
   async with db.begin():
-    return await service_get_hall_by_id(db, hall_id)
+    return await service_get_hall_by_id(db, id)
 
-@router.patch("/{hall_id}")
-async def update_hall(hall_id: int, hall: HallUpdate, db: DBDep) -> HallRead:
+@router.patch("/{id}")
+async def update_hall(id: int, hall: HallUpdate, db: DBDep) -> HallRead:
   async with db.begin():
-    return await service_update_hall(db, hall.name, hall.description, hall.is_available, hall_id)
+    return await service_update_hall(db, hall.name, hall.description, hall.is_available, id)
 
-@router.delete("/{hall_id}", status_code=204)
-async def delete_hall(hall_id: int, db: DBDep):
+@router.delete("/{id}", status_code=204)
+async def delete_hall(id: int, db: DBDep):
   async with db.begin():
-    await service_delete_hall(db, hall_id)
+    await service_delete_hall(db, id)
