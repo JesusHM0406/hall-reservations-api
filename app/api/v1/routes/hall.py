@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from starlette.status import HTTP_201_CREATED
 
 from app.api.deps import AdminDep, DBDep
 from app.schemas.hall import HallCreate, HallRead, HallUpdate, HallUpdateAvailability
@@ -14,7 +15,7 @@ from app.utils.pagination_response import PaginationResponse
 
 router = APIRouter()
 
-@router.post("/", response_model=HallRead)
+@router.post("/", response_model=HallRead, status_code=HTTP_201_CREATED)
 async def create_new_hall(db: DBDep, admin: AdminDep, hall: HallCreate) -> HallRead:
   async with db.begin():
     return await service_create_new_hall(db, hall.name, hall.description, hall.is_available)
