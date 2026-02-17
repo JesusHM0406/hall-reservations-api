@@ -1,5 +1,6 @@
 import math
-from sqlalchemy import select, func
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -35,11 +36,6 @@ async def crud_update_hall_availability(hall: Hall, is_available: bool):
   hall.is_available = is_available
 
   return hall
-
-async def crud_get_all_halls(db: AsyncSession):
-  result = await db.execute(select(Hall))
-
-  return result.all()
 
 async def crud_get_all_halls_paginated(db: AsyncSession, page: int) -> PaginationCRUD:
   stmt = select(Hall).order_by(Hall.id.desc())

@@ -2,7 +2,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.hall import (
   crud_create_new_hall,
-  crud_get_all_halls,
   crud_get_all_halls_paginated,
   crud_get_hall_by_id,
   crud_get_hall_by_name,
@@ -61,13 +60,6 @@ async def service_update_hall_availability(db: AsyncSession, id: int, is_availab
   updated_hall = await crud_update_hall_availability(hall, is_available)
 
   return HallRead(id=updated_hall.id, name=updated_hall.name, is_available=updated_hall.is_available, description=updated_hall.description)
-
-async def service_get_all_halls(db: AsyncSession):
-  result = await crud_get_all_halls(db)
-
-  data = [HallRead(id=row[0].id , name=row[0].name, description=row[0].description, is_available=row[0].is_available) for row in result]
-
-  return data
 
 async def service_get_all_hall_paginated(db: AsyncSession, page: int) -> Pagination:
   result = await crud_get_all_halls_paginated(db, page)
