@@ -29,8 +29,8 @@ async def get_all_users(db: DBDep, admin: AdminDep, page: int = 1):
 async def read_current_user(user: UserDep) -> UserComplete:
   return user
 
-@router.get("/{id}", response_model=UserRead)
-async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserRead:
+@router.get("/{id}", response_model=UserComplete)
+async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserComplete:
   return await service_get_user_by_id(db, id)
 
 @router.patch("/me", response_model=UserRead)

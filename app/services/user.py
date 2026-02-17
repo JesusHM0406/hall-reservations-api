@@ -10,7 +10,7 @@ from app.crud.user import (
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
-from app.schemas.user import UserRead
+from app.schemas.user import UserComplete, UserRead
 from app.utils.pagination import Pagination, get_pagination
 
 MIN_PASSWORD_SIZE = 8
@@ -33,13 +33,13 @@ async def service_create_user(db: AsyncSession, name: str, password: str, passwo
 
   return UserRead(id=new_user.id, name=new_user.name)
 
-async def service_get_user_by_id(db: AsyncSession, id: int) -> UserRead:
+async def service_get_user_by_id(db: AsyncSession, id: int) -> UserComplete:
   user = await crud_get_user_by_id(db, id)
 
   if not user:
     raise NotFoundError("User not found.")
 
-  return UserRead(id=user.id, name=user.name )
+  return UserComplete(id=user.id, name=user.name, role=user.role, is_active=user.is_active)
 
 async def service_update_user(db: AsyncSession, name: str, id: int) -> UserRead:
   user = await crud_get_user_by_id(db, id)
