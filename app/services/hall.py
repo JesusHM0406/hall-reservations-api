@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud.hall import (
   crud_create_new_hall,
   crud_get_all_halls,
+  crud_get_all_halls_paginated,
   crud_get_hall_by_id,
   crud_get_hall_by_name,
   crud_update_hall,
@@ -10,6 +11,7 @@ from app.crud.hall import (
 )
 from app.exceptions.exceptions import ConflictError, NotFoundError
 from app.schemas.hall import HallRead
+from app.utils.pagination import Pagination, get_pagination
 
 
 async def service_create_new_hall(db: AsyncSession, name: str, description: str, is_available: bool) -> HallRead:
@@ -66,3 +68,10 @@ async def service_get_all_halls(db: AsyncSession):
   data = [HallRead(id=row[0].id , name=row[0].name, description=row[0].description, is_available=row[0].is_available) for row in result]
 
   return data
+
+async def service_get_all_hall_paginated(db: AsyncSession, page: int) -> Pagination:
+  result = await crud_get_all_halls_paginated(db, page)
+
+  pagination = get_pagination(result, page)
+
+  return pagination
