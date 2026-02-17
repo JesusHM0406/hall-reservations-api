@@ -7,6 +7,7 @@ from app.crud.hall import (
   crud_get_hall_by_id,
   crud_get_hall_by_name,
   crud_update_hall,
+  crud_update_hall_availability,
 )
 from app.exceptions.exceptions import ConflictError, NotFoundError
 from app.schemas.hall import HallRead
@@ -59,6 +60,16 @@ async def service_delete_hall(db: AsyncSession, id: int):
   await crud_delete_hall(db, id)
 
   return
+
+async def service_update_hall_availability(db: AsyncSession, id: int, is_available: bool) -> HallRead:
+  hall = await crud_get_hall_by_id(db, id)
+
+  if not hall:
+    raise NotFoundError("Hall not found.")
+
+  updated_hall = await crud_update_hall_availability(hall, is_available)
+
+  return HallRead(id=updated_hall.id, name=updated_hall.name, is_available=updated_hall.is_available, description=updated_hall.description)
 
 async def service_get_all_halls(db: AsyncSession):
   result = await crud_get_all_halls(db)
