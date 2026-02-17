@@ -19,14 +19,14 @@ async def create_new_hall(db: DBDep, hall: HallCreate) -> HallRead:
     return await service_create_new_hall(db, hall.name, hall.description, hall.is_available)
 
 @router.get("/")
-async def get_hall_by_name(name: str, db: DBDep) -> HallRead:
-  async with db.begin():
-    return await service_get_hall_by_name(db, name)
-
-@router.get("/all")
 async def get_all_halls(db: DBDep) -> list[HallRead]:
   async with db.begin():
     return await service_get_all_halls(db)
+
+@router.get("/{name}")
+async def get_hall_by_name(name: str, db: DBDep) -> HallRead:
+  async with db.begin():
+    return await service_get_hall_by_name(db, name)
 
 @router.get("/{id}")
 async def get_hall_by_id(id: int, db: DBDep) -> HallRead:
