@@ -37,7 +37,7 @@ async def crud_update_hall_availability(hall: Hall, is_available: bool):
 
   return hall
 
-async def crud_get_all_halls_paginated(db: AsyncSession, page: int) -> PaginationCRUD:
+async def crud_get_all_halls(db: AsyncSession, page: int) -> PaginationCRUD:
   stmt = select(Hall).order_by(Hall.id.desc())
   total_records_stmt = select(func.count()).select_from(Hall)
 

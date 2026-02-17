@@ -4,7 +4,7 @@ from app.api.deps import AdminDep, DBDep
 from app.schemas.hall import HallCreate, HallRead, HallUpdate, HallUpdateAvailability
 from app.services.hall import (
   service_create_new_hall,
-  service_get_all_hall_paginated,
+  service_get_all_halls,
   service_get_hall_by_id,
   service_get_hall_by_name,
   service_update_hall,
@@ -19,9 +19,9 @@ async def create_new_hall(db: DBDep, admin: AdminDep, hall: HallCreate) -> HallR
   async with db.begin():
     return await service_create_new_hall(db, hall.name, hall.description, hall.is_available)
 
-@router.get("/paginated", response_model=PaginationResponse)
-async def get_all_halls_paginated(db: DBDep, page: int = 1):
-  return await service_get_all_hall_paginated(db, page)
+@router.get("/", response_model=PaginationResponse)
+async def get_all_halls(db: DBDep, page: int = 1):
+  return await service_get_all_halls(db, page)
 
 @router.get("/{name}")
 async def get_hall_by_name(db: DBDep, name: str) -> HallRead:
