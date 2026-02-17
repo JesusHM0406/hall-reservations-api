@@ -3,9 +3,12 @@ from datetime import date
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.core.config import settings
+from app.models.hall import Hall
 from app.models.reservation import Reservation, ReservationStatus
+from app.models.user import User
 from app.utils.pagination_crud import PaginationCRUD
 
 
@@ -15,7 +18,16 @@ async def crud_create_new_reservation(db: AsyncSession, user_id: int, hall_id: i
   return new_reservation
 
 async def crud_get_reservation(db: AsyncSession, reservation_id: int):
-  reservation = await db.execute(select(Reservation).where(Reservation.id == reservation_id))
+  stmt = (
+    select(Reservation)
+    .options(
+      joinedload(Reservation.user).load_only(User.name),
+      joinedload(Reservation.hall).load_only(Hall.name)
+    )
+    .where(Reservation.id == reservation_id)
+  )
+
+  reservation = await db.execute(stmt)
   return reservation.scalar_one_or_none()
 
 async def crud_update_reservation_status(new_status: ReservationStatus, reservation: Reservation):

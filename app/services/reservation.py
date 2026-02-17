@@ -25,10 +25,14 @@ async def service_create_new_reservation(db: AsyncSession, user_id: int, hall_id
   user = await crud_get_user_by_id(db, user_id)
   if not user:
     raise NotFoundError("The user doesn't exist.")
+  if not user.is_active:
+    raise BusinessLogicError("The user is inactive.")
 
   hall = await crud_get_hall_by_id(db, hall_id)
   if not hall:
     raise NotFoundError("The hall doesn't exist.")
+  if not hall.is_available:
+    raise BusinessLogicError("The hall isn't available in this moment.")
 
   try:
     reservation = await crud_create_new_reservation(db, user_id, hall_id, reservation_date)
@@ -44,17 +48,7 @@ async def service_get_reservation(db: AsyncSession, id: int) -> ReservationRead:
   if not reservation:
     raise NotFoundError("Reservation not found.")
 
-  user = await crud_get_user_by_id(db, reservation.user_id)
-  if not user:
-  # This is provisional.
-    raise NotFoundError("It appears the user was deleted.")
-
-  hall = await crud_get_hall_by_id(db, reservation.hall_id)
-  if not hall:
-  # The same
-    raise NotFoundError("Hall not found.")
-
-  return ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=user.name, hall_id=reservation.hall_id, hall_name=hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
+  return ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
 
 async def service_update_reservation_status(db: AsyncSession, reservation_id: int, new_status: str, user_id: int) -> ReservationRead:
   transitions_map = {
