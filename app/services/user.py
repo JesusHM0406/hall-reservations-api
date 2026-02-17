@@ -46,6 +46,8 @@ async def service_update_user(db: AsyncSession, name: str, id: int) -> UserRead:
 
   if not user:
     raise NotFoundError("User not found.")
+  if not user.is_active:
+    raise BusinessLogicError("The user is inactive.")
 
   await crud_update_user(db, name, id)
 
@@ -56,6 +58,8 @@ async def service_delete_user(db: AsyncSession, id: int):
 
   if not user:
     raise NotFoundError("The user you want to delete doesn't exist.")
+  if not user.is_active:
+    raise BusinessLogicError("The user has already been deactivated previously.")
 
   await crud_delete_user(db, id)
 
