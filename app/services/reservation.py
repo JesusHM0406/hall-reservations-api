@@ -28,7 +28,7 @@ async def service_create_new_reservation(
   if reservation_date < today or reservation_date == today:
     raise BusinessLogicError("The date is invalid; it must be at least one day after the current date.")
 
-  user = await crud_get_user_by_id(db, user_id)
+  user = await crud_get_user_by_id(db=db, id=user_id)
   if not user:
     raise NotFoundError("The user doesn't exist.")
   if not user.is_active:
@@ -106,7 +106,7 @@ async def service_update_reservation_status(
     }
   }
 
-  user = await crud_get_user_by_id(db, user_id)
+  user = await crud_get_user_by_id(db=db, id=user_id)
 
   if not user:
     raise NotFoundError("User not found.")

@@ -40,7 +40,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
     raise credentials_exception
 
   async with AsyncSessionLocal() as db:
-    user = await crud_get_user_by_name(db, username)
+    user = await crud_get_user_by_name(db=db, name=username)
 
   if user is None:
     raise credentials_exception

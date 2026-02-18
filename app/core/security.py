@@ -17,7 +17,7 @@ def get_password_hash(password: str):
   return password_hash.hash(password)
 
 async def authenticate_user(db: AsyncSession, name: str, password: str):
-  user = await crud_get_user_by_name(db, name)
+  user = await crud_get_user_by_name(db=db, name=name)
 
   if not user:
     return False

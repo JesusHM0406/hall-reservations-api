@@ -27,13 +27,13 @@ async def service_create_user(
   if password != password_confirm:
     raise BusinessLogicError("The passwords don't match.")
 
-  user = await crud_get_user_by_name(db, name)
+  user = await crud_get_user_by_name(db=db, name=name)
 
   if user is not None:
     raise ConflictError("The name already exists.")
 
   pw_hash = get_password_hash(password)
-  new_user = await crud_create_new_user(db, name, pw_hash)
+  new_user = await crud_create_new_user(db=db, name=name, pw_hash=pw_hash)
 
   await db.flush()
 
@@ -44,7 +44,7 @@ async def service_get_user_by_id(
   db: AsyncSession,
   id: int
 ) -> UserComplete:
-  user = await crud_get_user_by_id(db, id)
+  user = await crud_get_user_by_id(db=db, id=id)
 
   if not user:
     raise NotFoundError("User not found.")
@@ -62,26 +62,26 @@ async def service_update_user(
   name: str,
   id: int
 ) -> UserRead:
-  user = await crud_get_user_by_id(db, id)
+  user = await crud_get_user_by_id(db=db, id=id)
 
   if not user:
     raise NotFoundError("User not found.")
   if not user.is_active:
     raise BusinessLogicError("The user is inactive.")
 
-  await crud_update_user(db, name, id)
+  await crud_update_user(db=db, name=name, id=id)
 
   return UserRead(id=id, name=name )
 
 async def service_delete_user(*, db: AsyncSession, id: int):
-  user = await crud_get_user_by_id(db, id)
+  user = await crud_get_user_by_id(db=db, id=id)
 
   if not user:
     raise NotFoundError("The user you want to delete doesn't exist.")
   if not user.is_active:
     raise BusinessLogicError("The user has already been deactivated previously.")
 
-  await crud_delete_user(db, id)
+  await crud_delete_user(db=db, id=id)
 
   return
 
@@ -91,7 +91,7 @@ async def service_get_all_users(
   page: int,
   filters: dict[str, bool | None]
 ) -> Pagination:
-  result = await crud_get_all_users(db, page, filters)
+  result = await crud_get_all_users(db=db, page=page, filters=filters)
 
   pagination = get_pagination(result, page)
 
