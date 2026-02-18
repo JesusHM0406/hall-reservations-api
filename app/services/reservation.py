@@ -19,6 +19,7 @@ from app.utils.pagination import Pagination, get_pagination
 
 
 async def service_create_new_reservation(
+  *,
   db: AsyncSession,
   user_id: int,
   hall_id: int,
@@ -62,6 +63,7 @@ async def service_create_new_reservation(
     raise ConflictError("There's already an active reservation in that date.")
 
 async def service_get_reservation(
+  *,
   db: AsyncSession,
   id: int
 ) -> ReservationRead:
@@ -81,6 +83,7 @@ async def service_get_reservation(
   )
 
 async def service_update_reservation_status(
+  *,
   db: AsyncSession,
   reservation_id: int,
   new_status: str,
@@ -160,6 +163,7 @@ async def service_update_reservation_status(
   )
 
 async def service_get_all_reservations(
+  *,
   db: AsyncSession,
   page: int,
   filters: dict
