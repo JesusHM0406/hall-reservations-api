@@ -20,16 +20,16 @@ async def service_create_new_hall(
   description: str,
   is_available: bool
 ) -> HallRead:
-  hall = await crud_get_hall_by_name(db, name)
+  hall = await crud_get_hall_by_name(db=db, name=name)
 
   if hall:
     raise ConflictError("There's already a hall with that name.")
 
   created_hall = await crud_create_new_hall(
-    db,
-    name,
-    description,
-    is_available
+    db=db,
+    name=name,
+    description=description,
+    is_available=is_available
   )
 
   await db.flush()
@@ -42,7 +42,7 @@ async def service_create_new_hall(
   )
 
 async def service_get_hall_by_id(*, db: AsyncSession, id: int) -> HallRead:
-  hall = await crud_get_hall_by_id(db, id)
+  hall = await crud_get_hall_by_id(db=db, id=id)
 
   if not hall:
     raise NotFoundError("Hall not found.")
@@ -55,7 +55,7 @@ async def service_get_hall_by_id(*, db: AsyncSession, id: int) -> HallRead:
   )
 
 async def service_get_hall_by_name(*, db: AsyncSession, name: str) -> HallRead:
-  hall = await crud_get_hall_by_name(db, name)
+  hall = await crud_get_hall_by_name(db=db, name=name)
 
   if not hall:
     raise NotFoundError("Hall not found.")
@@ -75,12 +75,17 @@ async def service_update_hall(
   is_available: bool | None,
   id: int
 ) -> HallRead:
-  hall = await crud_get_hall_by_id(db, id)
+  hall = await crud_get_hall_by_id(db=db, id=id)
 
   if not hall:
     raise NotFoundError("Hall not found.")
 
-  updated_hall = await crud_update_hall(hall, name, description, is_available)
+  updated_hall = await crud_update_hall(
+    hall=hall,
+    name=name,
+    description=description,
+    is_available=is_available
+  )
 
   return HallRead(
     id=updated_hall.id,
@@ -95,12 +100,15 @@ async def service_update_hall_availability(
   id: int,
   is_available: bool
 ) -> HallRead:
-  hall = await crud_get_hall_by_id(db, id)
+  hall = await crud_get_hall_by_id(db=db, id=id)
 
   if not hall:
     raise NotFoundError("Hall not found.")
 
-  updated_hall = await crud_update_hall_availability(hall, is_available)
+  updated_hall = await crud_update_hall_availability(
+    hall=hall,
+    is_available=is_available
+  )
 
   return HallRead(
     id=updated_hall.id,
@@ -115,7 +123,7 @@ async def service_get_all_halls(
   page: int,
   filters: dict
 ) -> Pagination:
-  result = await crud_get_all_halls(db, page, filters)
+  result = await crud_get_all_halls(db=db, page=page, filters=filters)
 
   pagination = get_pagination(result, page)
 
