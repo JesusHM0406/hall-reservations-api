@@ -16,6 +16,7 @@ from app.utils.pagination import Pagination, get_pagination
 MIN_PASSWORD_SIZE = 8
 
 async def service_create_user(
+  *,
   db: AsyncSession,
   name: str,
   password: str,
@@ -38,7 +39,11 @@ async def service_create_user(
 
   return UserRead(id=new_user.id, name=new_user.name)
 
-async def service_get_user_by_id(db: AsyncSession, id: int) -> UserComplete:
+async def service_get_user_by_id(
+  *,
+  db: AsyncSession,
+  id: int
+) -> UserComplete:
   user = await crud_get_user_by_id(db, id)
 
   if not user:
@@ -52,6 +57,7 @@ async def service_get_user_by_id(db: AsyncSession, id: int) -> UserComplete:
   )
 
 async def service_update_user(
+  *,
   db: AsyncSession,
   name: str,
   id: int
@@ -67,7 +73,7 @@ async def service_update_user(
 
   return UserRead(id=id, name=name )
 
-async def service_delete_user(db: AsyncSession, id: int):
+async def service_delete_user(*, db: AsyncSession, id: int):
   user = await crud_get_user_by_id(db, id)
 
   if not user:
@@ -80,6 +86,7 @@ async def service_delete_user(db: AsyncSession, id: int):
   return
 
 async def service_get_all_users(
+  *,
   db: AsyncSession,
   page: int,
   filters: dict[str, bool | None]
