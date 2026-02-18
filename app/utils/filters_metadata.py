@@ -17,7 +17,9 @@ class HallFilterLabels(str, Enum):
 class ReservationFilterNames(str, Enum):
   USER = "user_id"
   HALL = "hall_id"
+  STATUS = "status"
 
 class ReservationFilterLabels(str, Enum):
   USER = "Filter by user id"
   HALL = "Filter by hall id"
+  STATUS = "Reservation status"
