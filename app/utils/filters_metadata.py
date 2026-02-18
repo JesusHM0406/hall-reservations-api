@@ -7,3 +7,9 @@ class UserFilterNames(str, Enum):
 class UserFilterLabels(str, Enum):
   ACTIVE = "Only active users"
   ADMIN = "Only admins"
+
+class HallFilterNames(str, Enum):
+  AVAILABLE = "available_filter"
+
+class HallFilterLabels(str, Enum):
+  AVAILABLE = "Only available halls"
