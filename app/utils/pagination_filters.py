@@ -13,6 +13,7 @@ class AvailableFilter(BaseModel):
 class FilterFactory:
   @staticmethod
   def select(
+    *,
     name: str,
     label: str,
     options: Dict[str, str],
@@ -28,7 +29,7 @@ class FilterFactory:
     )
 
   @staticmethod
-  def boolean(name: str, label: str, current: bool | None = None):
+  def boolean(*, name: str, label: str, current: bool | None = None):
     """To generate filters like switch/checkbox"""
     return AvailableFilter(
       name=name,
