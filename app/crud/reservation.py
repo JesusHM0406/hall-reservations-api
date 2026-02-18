@@ -14,6 +14,7 @@ from app.utils.pagination_crud import PaginationCRUD
 
 
 async def crud_create_new_reservation(
+  *,
   db: AsyncSession,
   user_id: int,
   hall_id: int,
@@ -27,7 +28,7 @@ async def crud_create_new_reservation(
   db.add(new_reservation)
   return new_reservation
 
-async def crud_get_reservation(db: AsyncSession, reservation_id: int):
+async def crud_get_reservation(*, db: AsyncSession, reservation_id: int):
   stmt = (
     select(Reservation)
     .options(
@@ -41,6 +42,7 @@ async def crud_get_reservation(db: AsyncSession, reservation_id: int):
   return reservation.scalar_one_or_none()
 
 async def crud_update_reservation_status(
+  *,
   new_status: ReservationStatus,
   reservation: Reservation
 ):
@@ -48,6 +50,7 @@ async def crud_update_reservation_status(
   return reservation
 
 async def crud_get_reservations(
+  *,
   db: AsyncSession,
   page: int,
   filters: dict

@@ -43,10 +43,10 @@ async def service_create_new_reservation(
 
   try:
     reservation = await crud_create_new_reservation(
-      db,
-      user_id,
-      hall_id,
-      reservation_date
+      db=db,
+      user_id=user_id,
+      hall_id=hall_id,
+      reservation_date=reservation_date
     )
     await db.flush()
 
@@ -67,7 +67,7 @@ async def service_get_reservation(
   db: AsyncSession,
   id: int
 ) -> ReservationRead:
-  reservation = await crud_get_reservation(db, id)
+  reservation = await crud_get_reservation(db=db, reservation_id=id)
 
   if not reservation:
     raise NotFoundError("Reservation not found.")
@@ -114,7 +114,7 @@ async def service_update_reservation_status(
   if not user:
     raise NotFoundError("User not found.")
 
-  reservation = await crud_get_reservation(db, reservation_id)
+  reservation = await crud_get_reservation(db=db, reservation_id=reservation_id)
 
   if not reservation:
     raise NotFoundError("Reservation not found.")
@@ -148,8 +148,8 @@ async def service_update_reservation_status(
   status_enum = ReservationStatus(new_status)
 
   updated_reservation = await crud_update_reservation_status(
-    status_enum,
-    reservation
+    new_status=status_enum,
+    reservation=reservation
   )
 
   return ReservationRead(
@@ -170,9 +170,9 @@ async def service_get_all_reservations(
 ) -> Pagination:
 
   result = await crud_get_reservations(
-    db,
-    page,
-    {
+    db=db,
+    page=page,
+    filters={
       ReservationFilterNames.USER.value: filters.get("user_id"),
       ReservationFilterNames.HALL.value: filters.get("hall_id")
     }
