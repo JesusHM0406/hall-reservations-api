@@ -24,10 +24,10 @@ async def create_new_hall(
 ) -> HallRead:
   async with db.begin():
     return await service_create_new_hall(
-      db,
-      hall.name,
-      hall.description,
-      hall.is_available
+      db=db,
+      name=hall.name,
+      description=hall.description,
+      is_available=hall.is_available
     )
 
 @router.get("/", response_model=Pagination)
@@ -40,17 +40,21 @@ async def get_all_halls(
     HallFilterNames.AVAILABLE.value: available_filter
   }
 
-  return await service_get_all_halls(db, page, current_filters)
+  return await service_get_all_halls(
+    db=db,
+    page=page,
+    filters=current_filters
+  )
 
 @router.get("/{name}", response_model=HallRead)
 async def get_hall_by_name(db: DBDep, name: str) -> HallRead:
   async with db.begin():
-    return await service_get_hall_by_name(db, name)
+    return await service_get_hall_by_name(db=db, name=name)
 
 @router.get("/{id}", response_model=HallRead)
 async def get_hall_by_id(db: DBDep, id: int) -> HallRead:
   async with db.begin():
-    return await service_get_hall_by_id(db, id)
+    return await service_get_hall_by_id(db=db, id=id)
 
 @router.patch("/{id}", response_model=HallRead)
 async def update_hall(
@@ -61,11 +65,11 @@ async def update_hall(
 ) -> HallRead:
   async with db.begin():
     return await service_update_hall(
-      db,
-      hall.name,
-      hall.description,
-      hall.is_available,
-      id
+      db=db,
+      name=hall.name,
+      description=hall.description,
+      is_available=hall.is_available,
+      id=id
     )
 
 @router.patch("/{id}/availability", response_model=HallRead)
@@ -76,4 +80,8 @@ async def update_hall_availability(
   update: HallUpdateAvailability
 ) -> HallRead:
   async with db.begin():
-    return await service_update_hall_availability(db, id, update.is_available)
+    return await service_update_hall_availability(
+      db=db,
+      id=id,
+      is_available=update.is_available
+    )

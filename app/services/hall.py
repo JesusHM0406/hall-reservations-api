@@ -14,6 +14,7 @@ from app.utils.pagination import Pagination, get_pagination
 
 
 async def service_create_new_hall(
+  *,
   db: AsyncSession,
   name: str,
   description: str,
@@ -40,7 +41,7 @@ async def service_create_new_hall(
     is_available=is_available
   )
 
-async def service_get_hall_by_id(db: AsyncSession, id: int) -> HallRead:
+async def service_get_hall_by_id(*, db: AsyncSession, id: int) -> HallRead:
   hall = await crud_get_hall_by_id(db, id)
 
   if not hall:
@@ -53,7 +54,7 @@ async def service_get_hall_by_id(db: AsyncSession, id: int) -> HallRead:
     is_available=hall.is_available
   )
 
-async def service_get_hall_by_name(db: AsyncSession, name: str) -> HallRead:
+async def service_get_hall_by_name(*, db: AsyncSession, name: str) -> HallRead:
   hall = await crud_get_hall_by_name(db, name)
 
   if not hall:
@@ -67,6 +68,7 @@ async def service_get_hall_by_name(db: AsyncSession, name: str) -> HallRead:
   )
 
 async def service_update_hall(
+  *,
   db: AsyncSession,
   name: str | None,
   description: str | None,
@@ -88,6 +90,7 @@ async def service_update_hall(
   )
 
 async def service_update_hall_availability(
+  *,
   db: AsyncSession,
   id: int,
   is_available: bool
@@ -107,6 +110,7 @@ async def service_update_hall_availability(
   )
 
 async def service_get_all_halls(
+  *,
   db: AsyncSession,
   page: int,
   filters: dict
