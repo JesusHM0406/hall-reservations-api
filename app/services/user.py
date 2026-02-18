@@ -11,9 +11,7 @@ from app.crud.user import (
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
 from app.schemas.user import UserComplete, UserRead
-from app.utils.filters_metadata import UserFilterLabels, UserFilterNames
 from app.utils.pagination import Pagination, get_pagination
-from app.utils.pagination_filters import FilterFactory
 
 MIN_PASSWORD_SIZE = 8
 
@@ -68,11 +66,6 @@ async def service_delete_user(db: AsyncSession, id: int):
   return
 
 async def service_get_all_users(db: AsyncSession, page: int, filters: dict[str, bool | None]) -> Pagination:
-  meta_filters = [
-    FilterFactory.boolean(UserFilterNames.ACTIVE.value, UserFilterLabels.ACTIVE.value, filters.get(UserFilterNames.ACTIVE.value)),
-    FilterFactory.boolean(UserFilterNames.ADMIN.value, UserFilterLabels.ADMIN.value, filters.get(UserFilterNames.ADMIN.value))
-  ]
-
   result = await crud_get_all_users(db, page, filters)
 
   pagination = get_pagination(result, page)

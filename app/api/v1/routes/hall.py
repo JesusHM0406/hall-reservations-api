@@ -11,6 +11,7 @@ from app.services.hall import (
   service_update_hall,
   service_update_hall_availability,
 )
+from app.utils.filters_metadata import HallFilterNames
 from app.utils.pagination import Pagination
 
 router = APIRouter()
@@ -21,8 +22,12 @@ async def create_new_hall(db: DBDep, admin: AdminDep, hall: HallCreate) -> HallR
     return await service_create_new_hall(db, hall.name, hall.description, hall.is_available)
 
 @router.get("/", response_model=Pagination)
-async def get_all_halls(db: DBDep, page: int = 1) -> Pagination:
-  return await service_get_all_halls(db, page)
+async def get_all_halls(db: DBDep, page: int = 1, available_filter: bool | None = None) -> Pagination:
+  current_filters = {
+    HallFilterNames.AVAILABLE.value: available_filter
+  }
+
+  return await service_get_all_halls(db, page, current_filters)
 
 @router.get("/{name}", response_model=HallRead)
 async def get_hall_by_name(db: DBDep, name: str) -> HallRead:

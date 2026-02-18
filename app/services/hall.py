@@ -61,8 +61,8 @@ async def service_update_hall_availability(db: AsyncSession, id: int, is_availab
 
   return HallRead(id=updated_hall.id, name=updated_hall.name, is_available=updated_hall.is_available, description=updated_hall.description)
 
-async def service_get_all_halls(db: AsyncSession, page: int) -> Pagination:
-  result = await crud_get_all_halls(db, page)
+async def service_get_all_halls(db: AsyncSession, page: int, filters: dict) -> Pagination:
+  result = await crud_get_all_halls(db, page, filters)
 
   pagination = get_pagination(result, page)
 
