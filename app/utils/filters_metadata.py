@@ -13,3 +13,12 @@ class HallFilterNames(str, Enum):
 
 class HallFilterLabels(str, Enum):
   AVAILABLE = "Only available halls"
+
+class ReservationFilterNames(str, Enum):
+  ID = "filter_id"
+  USER = "user_filter"
+  HALL = "hall_filter"
+
+class ReservationFilterLabels(str, Enum):
+  USER = "Filter by user id"
+  HALL = "Filter by hall id"
