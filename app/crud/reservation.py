@@ -37,18 +37,18 @@ async def crud_update_reservation_status(new_status: ReservationStatus, reservat
 async def crud_get_reservations(
   db: AsyncSession,
   page: int,
-  filter_id: int | None = None,
-  user_filter: bool = False,
-  hall_filter: bool = False
+  filters: dict
 ) -> PaginationCRUD:
   stmt = select(Reservation).order_by(Reservation.id.desc())
   total_records_stmt = select(func.count()).select_from(Reservation)
 
-  if filter_id:
-    if user_filter:
+  filter_id = filters.get("filter_id")
+
+  if filters.get("filter_id") is not None:
+    if filters.get("user_filter") is not None:
       stmt = stmt.where(Reservation.user_id == filter_id)
       total_records_stmt = total_records_stmt.where(Reservation.user_id == filter_id)
-    elif hall_filter:
+    elif filters.get("hall_filter") is not None:
       stmt = stmt.where(Reservation.hall_id == filter_id)
       total_records_stmt = total_records_stmt.where(Reservation.hall_id == filter_id)
 
