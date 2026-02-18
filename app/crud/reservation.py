@@ -19,7 +19,11 @@ async def crud_create_new_reservation(
   hall_id: int,
   reservation_date: date
 ):
-  new_reservation = Reservation(user_id=user_id, hall_id=hall_id, reservation_date=reservation_date)
+  new_reservation = Reservation(
+    user_id=user_id,
+    hall_id=hall_id,
+    reservation_date=reservation_date
+  )
   db.add(new_reservation)
   return new_reservation
 
@@ -64,7 +68,9 @@ async def crud_get_reservations(
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
 
-  pages = math.ceil(total_records / settings.PAGINATION_LIMIT_PER_PAGE) if total_records > 0 else 1
+  pages = math.ceil(
+    total_records / settings.PAGINATION_LIMIT_PER_PAGE
+  ) if total_records > 0 else 1
 
   current_page = max(1, min(page, pages))
 
@@ -85,4 +91,10 @@ async def crud_get_reservations(
     for item in result_items
   ]
 
-  return PaginationCRUD(items=list(data), total=total_records, per_page=settings.PAGINATION_LIMIT_PER_PAGE, pages=pages, current_page=current_page)
+  return PaginationCRUD(
+    items=list(data),
+    total=total_records,
+    per_page=settings.PAGINATION_LIMIT_PER_PAGE,
+    pages=pages,
+    current_page=current_page
+  )

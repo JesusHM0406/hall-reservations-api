@@ -26,7 +26,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
       headers={"WWW-Authenticate": "Bearer"},
   )
   try:
-    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    payload = jwt.decode(
+      token,
+      settings.SECRET_KEY,
+      algorithms=[settings.ALGORITHM]
+    )
     username = payload.get("sub")
     if username is None:
       raise credentials_exception
@@ -41,7 +45,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
   if user is None:
     raise credentials_exception
 
-  return UserComplete(id=user.id, name=user.name, role=user.role, is_active=user.is_active)
+  return UserComplete(
+    id=user.id,
+    name=user.name,
+    role=user.role,
+    is_active=user.is_active
+  )
 
 async def get_current_active_user(user: Annotated[UserComplete, Depends(get_current_user)]):
   if not user.is_active:

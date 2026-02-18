@@ -24,7 +24,12 @@ async def create_reservation(
   user: UserDep
 ) -> ReservationRead:
   async with db.begin():
-    return await service_create_new_reservation(db, user.id, reservation.hall_id, reservation.reservation_date)
+    return await service_create_new_reservation(
+      db,
+      user.id,
+      reservation.hall_id,
+      reservation.reservation_date
+    )
 
 @router.get("/", response_model=Pagination)
 async def get_reservations(
@@ -58,7 +63,12 @@ async def finish_reservation(
   id: int
 ) -> ReservationRead:
   async with db.begin():
-    return await service_update_reservation_status(db, id, ReservationStatus.FINISHED.value, user.id)
+    return await service_update_reservation_status(
+      db,
+      id,
+      ReservationStatus.FINISHED.value,
+      user.id
+    )
 
 @router.patch("/{id}/cancel", response_model=ReservationRead)
 async def cancel_reservation(
@@ -67,4 +77,9 @@ async def cancel_reservation(
   id: int
 ) -> ReservationRead:
   async with db.begin():
-    return await service_update_reservation_status(db, id, ReservationStatus.CANCELLED.value, user.id)
+    return await service_update_reservation_status(
+      db,
+      id,
+      ReservationStatus.CANCELLED.value,
+      user.id
+    )

@@ -24,11 +24,21 @@ async def service_create_new_hall(
   if hall:
     raise ConflictError("There's already a hall with that name.")
 
-  created_hall = await crud_create_new_hall(db, name, description, is_available)
+  created_hall = await crud_create_new_hall(
+    db,
+    name,
+    description,
+    is_available
+  )
 
   await db.flush()
 
-  return HallRead(id=created_hall.id, name=name, description=description, is_available=is_available)
+  return HallRead(
+    id=created_hall.id,
+    name=name,
+    description=description,
+    is_available=is_available
+  )
 
 async def service_get_hall_by_id(db: AsyncSession, id: int) -> HallRead:
   hall = await crud_get_hall_by_id(db, id)
@@ -36,7 +46,12 @@ async def service_get_hall_by_id(db: AsyncSession, id: int) -> HallRead:
   if not hall:
     raise NotFoundError("Hall not found.")
 
-  return HallRead(id=hall.id, name=hall.name, description=hall.description, is_available=hall.is_available)
+  return HallRead(
+    id=hall.id,
+    name=hall.name,
+    description=hall.description,
+    is_available=hall.is_available
+  )
 
 async def service_get_hall_by_name(db: AsyncSession, name: str) -> HallRead:
   hall = await crud_get_hall_by_name(db, name)
@@ -44,7 +59,12 @@ async def service_get_hall_by_name(db: AsyncSession, name: str) -> HallRead:
   if not hall:
     raise NotFoundError("Hall not found.")
 
-  return HallRead(id=hall.id, name=hall.name, description=hall.description, is_available=hall.is_available)
+  return HallRead(
+    id=hall.id,
+    name=hall.name,
+    description=hall.description,
+    is_available=hall.is_available
+  )
 
 async def service_update_hall(
   db: AsyncSession,
@@ -60,7 +80,12 @@ async def service_update_hall(
 
   updated_hall = await crud_update_hall(hall, name, description, is_available)
 
-  return HallRead(id=updated_hall.id, name=updated_hall.name, description=updated_hall.description, is_available=updated_hall.is_available)
+  return HallRead(
+    id=updated_hall.id,
+    name=updated_hall.name,
+    description=updated_hall.description,
+    is_available=updated_hall.is_available
+  )
 
 async def service_update_hall_availability(
   db: AsyncSession,
@@ -74,7 +99,12 @@ async def service_update_hall_availability(
 
   updated_hall = await crud_update_hall_availability(hall, is_available)
 
-  return HallRead(id=updated_hall.id, name=updated_hall.name, is_available=updated_hall.is_available, description=updated_hall.description)
+  return HallRead(
+    id=updated_hall.id,
+    name=updated_hall.name,
+    is_available=updated_hall.is_available,
+    description=updated_hall.description
+  )
 
 async def service_get_all_halls(
   db: AsyncSession,

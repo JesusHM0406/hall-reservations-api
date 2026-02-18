@@ -44,7 +44,12 @@ async def service_get_user_by_id(db: AsyncSession, id: int) -> UserComplete:
   if not user:
     raise NotFoundError("User not found.")
 
-  return UserComplete(id=user.id, name=user.name, role=user.role, is_active=user.is_active)
+  return UserComplete(
+    id=user.id,
+    name=user.name,
+    role=user.role,
+    is_active=user.is_active
+  )
 
 async def service_update_user(
   db: AsyncSession,

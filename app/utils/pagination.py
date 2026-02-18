@@ -32,4 +32,11 @@ class Pagination(BaseModel):
     return self.current_page + 1 if self.has_next else None
 
 def get_pagination(pagination: PaginationCRUD, page: int) -> Pagination:
-  return Pagination(items=pagination.items, requested_page=page, per_page=pagination.per_page, total=pagination.total, pages=pagination.pages, current_page=pagination.current_page)
+  return Pagination(
+    items=pagination.items,
+    requested_page=page,
+    per_page=pagination.per_page,
+    total=pagination.total,
+    pages=pagination.pages,
+    current_page=pagination.current_page
+  )

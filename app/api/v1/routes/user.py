@@ -20,7 +20,12 @@ router = APIRouter()
 @router.post("/", status_code=201, response_model=UserRead)
 async def add_user(user: UserCreate, db: DBDep) -> UserRead:
   async with db.begin():
-    return await service_create_user(db, user.name, user.password, user.password_confirm)
+    return await service_create_user(
+      db,
+      user.name,
+      user.password,
+      user.password_confirm
+    )
 
 @router.get("/", response_model=Pagination)
 async def get_all_users(

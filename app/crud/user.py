@@ -44,15 +44,23 @@ async def crud_get_all_users(
 
   if active_filter is not  None:
     stmt = stmt.where(User.is_active == active_filter)
-    total_records_stmt = total_records_stmt.where(User.is_active == active_filter)
+    total_records_stmt = total_records_stmt.where(
+      User.is_active == active_filter
+    )
   if admin_filter is not None:
-    stmt = stmt.where(User.role == (UserRole.ADMIN if admin_filter else UserRole.USER))
-    total_records_stmt = total_records_stmt.where(User.role == (UserRole.ADMIN if admin_filter else UserRole.USER))
+    stmt = stmt.where(
+      User.role == (UserRole.ADMIN if admin_filter else UserRole.USER)
+    )
+    total_records_stmt = total_records_stmt.where(
+      User.role == (UserRole.ADMIN if admin_filter else UserRole.USER)
+    )
 
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
 
-  pages = math.ceil(total_records / settings.PAGINATION_LIMIT_PER_PAGE) if total_records > 0 else 1
+  pages = math.ceil(
+    total_records / settings.PAGINATION_LIMIT_PER_PAGE
+  ) if total_records > 0 else 1
 
   current_page = max(1, min(page, pages))
 
@@ -72,4 +80,10 @@ async def crud_get_all_users(
     for user in result_items
   ]
 
-  return PaginationCRUD(items=list(data), total=total_records, per_page=settings.PAGINATION_LIMIT_PER_PAGE, pages=pages, current_page=current_page)
+  return PaginationCRUD(
+    items=list(data),
+    total=total_records,
+    per_page=settings.PAGINATION_LIMIT_PER_PAGE,
+    pages=pages,
+    current_page=current_page
+  )

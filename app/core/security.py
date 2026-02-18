@@ -24,14 +24,26 @@ async def authenticate_user(db: AsyncSession, name: str, password: str):
   if not verify_password(password, user.pw_hash):
     return False
 
-  return UserComplete(id=user.id, name=user.name, role=user.role, is_active=user.is_active)
+  return UserComplete(
+    id=user.id,
+    name=user.name,
+    role=user.role,
+    is_active=user.is_active
+  )
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
   to_encode = data.copy()
   if expires_delta:
     expire = datetime.now(timezone.utc) + expires_delta
   else:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = (
+      datetime.now(timezone.utc) +
+      timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
   to_encode.update({"exp": expire})
-  encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+  encoded_jwt = jwt.encode(
+    to_encode,
+    settings.SECRET_KEY,
+    algorithm=settings.ALGORITHM
+  )
   return encoded_jwt

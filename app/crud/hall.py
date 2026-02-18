@@ -16,7 +16,11 @@ async def crud_create_new_hall(
   description: str,
   is_available: bool
 ):
-  new_hall = Hall(name=name, description=description, is_available=is_available)
+  new_hall = Hall(
+    name=name,
+    description=description,
+    is_available=is_available
+  )
   db.add(new_hall)
   return new_hall
 
@@ -65,7 +69,9 @@ async def crud_get_all_halls(
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
 
-  pages = math.ceil(total_records / settings.PAGINATION_LIMIT_PER_PAGE) if total_records > 0 else 1
+  pages = math.ceil(
+    total_records / settings.PAGINATION_LIMIT_PER_PAGE
+  ) if total_records > 0 else 1
 
   current_page = max(1, min(page, pages))
 
@@ -85,4 +91,9 @@ async def crud_get_all_halls(
     for hall in result_items
   ]
 
-  return PaginationCRUD(items=list(data), total=total_records, per_page=settings.PAGINATION_LIMIT_PER_PAGE, pages=pages, current_page=current_page)
+  return PaginationCRUD(
+    items=list(data),
+    total=total_records,
+    per_page=settings.PAGINATION_LIMIT_PER_PAGE,
+    pages=pages, current_page=current_page
+  )

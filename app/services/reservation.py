@@ -41,10 +41,23 @@ async def service_create_new_reservation(
     raise BusinessLogicError("The hall isn't available in this moment.")
 
   try:
-    reservation = await crud_create_new_reservation(db, user_id, hall_id, reservation_date)
+    reservation = await crud_create_new_reservation(
+      db,
+      user_id,
+      hall_id,
+      reservation_date
+    )
     await db.flush()
 
-    return ReservationRead(id=reservation.id, user_id=user_id, user_name=user.name, hall_id=hall_id, hall_name=hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
+    return ReservationRead(
+      id=reservation.id,
+      user_id=user_id,
+      user_name=user.name,
+      hall_id=hall_id,
+      hall_name=hall.name,
+      status=reservation.status,
+      reservation_date=reservation.reservation_date
+    )
   except IntegrityError:
     raise ConflictError("There's already an active reservation in that date.")
 
@@ -57,7 +70,15 @@ async def service_get_reservation(
   if not reservation:
     raise NotFoundError("Reservation not found.")
 
-  return ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
+  return ReservationRead(
+    id=reservation.id,
+    user_id=reservation.user_id,
+    user_name=reservation.user.name,
+    hall_id=reservation.hall_id,
+    hall_name=reservation.hall.name,
+    status=reservation.status,
+    reservation_date=reservation.reservation_date
+  )
 
 async def service_update_reservation_status(
   db: AsyncSession,
@@ -71,7 +92,11 @@ async def service_update_reservation_status(
     },
     ReservationStatus.CONFIRMED.value: {
       "has_transitions": True,
-      "transitions": [ReservationStatus.CANCELLED.value, ReservationStatus.FINISHED.value, ReservationStatus.EXPIRED.value]
+      "transitions": [
+        ReservationStatus.CANCELLED.value,
+        ReservationStatus.FINISHED.value,
+        ReservationStatus.EXPIRED.value
+      ]
     },
     ReservationStatus.EXPIRED.value: {
       "has_transitions": False
@@ -102,20 +127,37 @@ async def service_update_reservation_status(
   if not transitions_map[reservation.status.value]["has_transitions"]:
     raise BusinessLogicError("You cannot change the status of this reservation; it has already been cancelled, finished, or expired.")
 
-  if new_status not in [ReservationStatus.CANCELLED.value, ReservationStatus.CONFIRMED.value, ReservationStatus.EXPIRED.value, ReservationStatus.FINISHED.value]:
+  if new_status not in [
+    ReservationStatus.CANCELLED.value,
+    ReservationStatus.CONFIRMED.value,
+    ReservationStatus.EXPIRED.value,
+    ReservationStatus.FINISHED.value
+  ]:
     raise BusinessLogicError("Invalid status.")
 
   if new_status not in transitions_map[reservation.status.value]["transitions"]:
     raise BusinessLogicError(f"The status cannot be set as {new_status} because the reservation has a {reservation.status.value} status.")
 
-  if new_status == ReservationStatus.FINISHED.value and date.today() != reservation.reservation_date:
+  if (new_status == ReservationStatus.FINISHED.value and
+    date.today() != reservation.reservation_date):
     raise BusinessLogicError("The reservation cannot be finalized because today is not the reservation date.")
 
   status_enum = ReservationStatus(new_status)
 
-  updated_reservation = await crud_update_reservation_status(status_enum, reservation)
+  updated_reservation = await crud_update_reservation_status(
+    status_enum,
+    reservation
+  )
 
-  return ReservationRead(id=reservation.id, user_id=user.id, user_name=user.name, hall_id=hall.id, hall_name=hall.name, status=updated_reservation.status, reservation_date=reservation.reservation_date)
+  return ReservationRead(
+    id=reservation.id,
+    user_id=user.id,
+    user_name=user.name,
+    hall_id=hall.id,
+    hall_name=hall.name,
+    status=updated_reservation.status,
+    reservation_date=reservation.reservation_date
+  )
 
 async def service_get_all_reservations(
   db: AsyncSession,
