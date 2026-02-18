@@ -32,7 +32,7 @@ async def service_create_user(
   if user is not None:
     raise ConflictError("The name already exists.")
 
-  pw_hash = get_password_hash(password)
+  pw_hash = get_password_hash(password=password)
   new_user = await crud_create_new_user(db=db, name=name, pw_hash=pw_hash)
 
   await db.flush()

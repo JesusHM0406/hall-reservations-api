@@ -10,18 +10,18 @@ from app.schemas.user import UserComplete
 
 password_hash = PasswordHash.recommended()
 
-def verify_password(plain_password: str, hashed_password: str):
+def verify_password(*, plain_password: str, hashed_password: str):
   return password_hash.verify(plain_password, hashed_password)
 
-def get_password_hash(password: str):
+def get_password_hash(*, password: str):
   return password_hash.hash(password)
 
-async def authenticate_user(db: AsyncSession, name: str, password: str):
+async def authenticate_user(*, db: AsyncSession, name: str, password: str):
   user = await crud_get_user_by_name(db=db, name=name)
 
   if not user:
     return False
-  if not verify_password(password, user.pw_hash):
+  if not verify_password(plain_password=password, hashed_password=user.pw_hash):
     return False
 
   return UserComplete(
@@ -31,7 +31,7 @@ async def authenticate_user(db: AsyncSession, name: str, password: str):
     is_active=user.is_active
   )
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(*, data: dict, expires_delta: timedelta | None = None):
   to_encode = data.copy()
   if expires_delta:
     expire = datetime.now(timezone.utc) + expires_delta
