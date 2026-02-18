@@ -2,6 +2,7 @@ from fastapi import APIRouter, status
 
 from app.api.deps import AdminDep, DBDep, UserDep
 from app.models.reservation_status import ReservationStatus
+from app.utils.filters_metadata import ReservationFilterNames
 from app.utils.pagination import Pagination
 from app.schemas.reservation import (
   ReservationCreate,
@@ -22,9 +23,20 @@ async def create_reservation(reservation: ReservationCreate, user: UserDep, db: 
     return await service_create_new_reservation(db, user.id, reservation.hall_id, reservation.reservation_date)
 
 @router.get("/", response_model=Pagination)
-async def get_reservations(db: DBDep, admin: AdminDep, page: int = 1, user_id: int | None = None, hall_id: int | None = None) -> Pagination:
+async def get_reservations(
+  db: DBDep,
+  admin: AdminDep,
+  page: int = 1,
+  user_id: int | None = None,
+  hall_id: int | None = None
+) -> Pagination:
+  filters = {
+    ReservationFilterNames.USER.value: user_id,
+    ReservationFilterNames.HALL.value: hall_id
+  }
+
   async with db.begin():
-    return await service_get_all_reservations(db, page, user_id, hall_id)
+    return await service_get_all_reservations(db, page, filters)
 
 @router.get("/{id}", response_model=ReservationRead)
 async def get_single_reservation(id: int, admin: AdminDep, db: DBDep) -> ReservationRead:
