@@ -18,7 +18,12 @@ from app.utils.filters_metadata import ReservationFilterNames
 from app.utils.pagination import Pagination, get_pagination
 
 
-async def service_create_new_reservation(db: AsyncSession, user_id: int, hall_id: int, reservation_date: date) -> ReservationRead:
+async def service_create_new_reservation(
+  db: AsyncSession,
+  user_id: int,
+  hall_id: int,
+  reservation_date: date
+) -> ReservationRead:
   today = date.today()
   if reservation_date < today or reservation_date == today:
     raise BusinessLogicError("The date is invalid; it must be at least one day after the current date.")
@@ -43,7 +48,10 @@ async def service_create_new_reservation(db: AsyncSession, user_id: int, hall_id
   except IntegrityError:
     raise ConflictError("There's already an active reservation in that date.")
 
-async def service_get_reservation(db: AsyncSession, id: int) -> ReservationRead:
+async def service_get_reservation(
+  db: AsyncSession,
+  id: int
+) -> ReservationRead:
   reservation = await crud_get_reservation(db, id)
 
   if not reservation:
@@ -51,7 +59,12 @@ async def service_get_reservation(db: AsyncSession, id: int) -> ReservationRead:
 
   return ReservationRead(id=reservation.id, user_id=reservation.user_id, user_name=reservation.user.name, hall_id=reservation.hall_id, hall_name=reservation.hall.name, status=reservation.status, reservation_date=reservation.reservation_date)
 
-async def service_update_reservation_status(db: AsyncSession, reservation_id: int, new_status: str, user_id: int) -> ReservationRead:
+async def service_update_reservation_status(
+  db: AsyncSession,
+  reservation_id: int,
+  new_status: str,
+  user_id: int
+)-> ReservationRead:
   transitions_map = {
     ReservationStatus.CANCELLED.value: {
       "has_transitions": False
@@ -104,7 +117,11 @@ async def service_update_reservation_status(db: AsyncSession, reservation_id: in
 
   return ReservationRead(id=reservation.id, user_id=user.id, user_name=user.name, hall_id=hall.id, hall_name=hall.name, status=updated_reservation.status, reservation_date=reservation.reservation_date)
 
-async def service_get_all_reservations(db: AsyncSession, page: int, filters: dict) -> Pagination:
+async def service_get_all_reservations(
+  db: AsyncSession,
+  page: int,
+  filters: dict
+) -> Pagination:
 
   result = await crud_get_reservations(
     db,

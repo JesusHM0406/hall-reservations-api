@@ -13,7 +13,12 @@ from app.schemas.hall import HallRead
 from app.utils.pagination import Pagination, get_pagination
 
 
-async def service_create_new_hall(db: AsyncSession, name: str, description: str, is_available: bool) -> HallRead:
+async def service_create_new_hall(
+  db: AsyncSession,
+  name: str,
+  description: str,
+  is_available: bool
+) -> HallRead:
   hall = await crud_get_hall_by_name(db, name)
 
   if hall:
@@ -41,7 +46,13 @@ async def service_get_hall_by_name(db: AsyncSession, name: str) -> HallRead:
 
   return HallRead(id=hall.id, name=hall.name, description=hall.description, is_available=hall.is_available)
 
-async def service_update_hall(db: AsyncSession, name: str | None, description: str | None, is_available: bool | None, id: int) -> HallRead:
+async def service_update_hall(
+  db: AsyncSession,
+  name: str | None,
+  description: str | None,
+  is_available: bool | None,
+  id: int
+) -> HallRead:
   hall = await crud_get_hall_by_id(db, id)
 
   if not hall:
@@ -51,7 +62,11 @@ async def service_update_hall(db: AsyncSession, name: str | None, description: s
 
   return HallRead(id=updated_hall.id, name=updated_hall.name, description=updated_hall.description, is_available=updated_hall.is_available)
 
-async def service_update_hall_availability(db: AsyncSession, id: int, is_available: bool) -> HallRead:
+async def service_update_hall_availability(
+  db: AsyncSession,
+  id: int,
+  is_available: bool
+) -> HallRead:
   hall = await crud_get_hall_by_id(db, id)
 
   if not hall:
@@ -61,7 +76,11 @@ async def service_update_hall_availability(db: AsyncSession, id: int, is_availab
 
   return HallRead(id=updated_hall.id, name=updated_hall.name, is_available=updated_hall.is_available, description=updated_hall.description)
 
-async def service_get_all_halls(db: AsyncSession, page: int, filters: dict) -> Pagination:
+async def service_get_all_halls(
+  db: AsyncSession,
+  page: int,
+  filters: dict
+) -> Pagination:
   result = await crud_get_all_halls(db, page, filters)
 
   pagination = get_pagination(result, page)

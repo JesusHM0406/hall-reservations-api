@@ -17,12 +17,20 @@ from app.utils.pagination import Pagination
 router = APIRouter()
 
 @router.post("/", response_model=HallRead, status_code=HTTP_201_CREATED)
-async def create_new_hall(db: DBDep, admin: AdminDep, hall: HallCreate) -> HallRead:
+async def create_new_hall(
+  db: DBDep,
+  admin: AdminDep,
+  hall: HallCreate
+) -> HallRead:
   async with db.begin():
     return await service_create_new_hall(db, hall.name, hall.description, hall.is_available)
 
 @router.get("/", response_model=Pagination)
-async def get_all_halls(db: DBDep, page: int = 1, available_filter: bool | None = None) -> Pagination:
+async def get_all_halls(
+  db: DBDep,
+  page: int = 1,
+  available_filter: bool | None = None
+) -> Pagination:
   current_filters = {
     HallFilterNames.AVAILABLE.value: available_filter
   }
@@ -40,11 +48,21 @@ async def get_hall_by_id(db: DBDep, id: int) -> HallRead:
     return await service_get_hall_by_id(db, id)
 
 @router.patch("/{id}", response_model=HallRead)
-async def update_hall(db: DBDep, admin: AdminDep, id: int, hall: HallUpdate) -> HallRead:
+async def update_hall(
+  db: DBDep,
+  admin: AdminDep,
+  id: int,
+  hall: HallUpdate
+) -> HallRead:
   async with db.begin():
     return await service_update_hall(db, hall.name, hall.description, hall.is_available, id)
 
 @router.patch("/{id}/availability", response_model=HallRead)
-async def update_hall_availability(db: DBDep, admin: AdminDep, id: int, update: HallUpdateAvailability) -> HallRead:
+async def update_hall_availability(
+  db: DBDep,
+  admin: AdminDep,
+  id: int,
+  update: HallUpdateAvailability
+) -> HallRead:
   async with db.begin():
     return await service_update_hall_availability(db, id, update.is_available)

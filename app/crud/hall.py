@@ -10,7 +10,12 @@ from app.utils.filters_metadata import HallFilterNames
 from app.utils.pagination_crud import PaginationCRUD
 
 
-async def crud_create_new_hall(db: AsyncSession, name: str, description: str, is_available: bool):
+async def crud_create_new_hall(
+  db: AsyncSession,
+  name: str,
+  description: str,
+  is_available: bool
+):
   new_hall = Hall(name=name, description=description, is_available=is_available)
   db.add(new_hall)
   return new_hall
@@ -23,7 +28,12 @@ async def crud_get_hall_by_name(db: AsyncSession, name: str):
   result = await db.execute(select(Hall).where(Hall.name == name))
   return result.scalar_one_or_none()
 
-async def crud_update_hall(hall: Hall, name: str | None, description: str | None, is_available: bool | None):
+async def crud_update_hall(
+  hall: Hall,
+  name: str | None,
+  description: str | None,
+  is_available: bool | None
+):
   if name:
     hall.name = name
   if description:
@@ -38,7 +48,11 @@ async def crud_update_hall_availability(hall: Hall, is_available: bool):
 
   return hall
 
-async def crud_get_all_halls(db: AsyncSession, page: int, filters: dict) -> PaginationCRUD:
+async def crud_get_all_halls(
+  db: AsyncSession,
+  page: int,
+  filters: dict
+) -> PaginationCRUD:
   stmt = select(Hall).order_by(Hall.id.desc())
   total_records_stmt = select(func.count()).select_from(Hall)
 

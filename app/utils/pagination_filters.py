@@ -12,7 +12,12 @@ class AvailableFilter(BaseModel):
 
 class FilterFactory:
   @staticmethod
-  def select(name: str, label: str, options: Dict[str, str], current: Any = None):
+  def select(
+    name: str,
+    label: str,
+    options: Dict[str, str],
+    current: Any = None
+  ):
     formatted_options = [{"label": v, "value": k} for k, v in options.items()]
     return AvailableFilter(
       name=name,

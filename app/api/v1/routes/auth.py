@@ -13,7 +13,10 @@ from app.utils.token import Token
 router = APIRouter()
 
 @router.post("/login")
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: DBDep) -> Token:
+async def login_for_access_token(
+  form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+  db: DBDep
+) -> Token:
   async with db.begin():
     user = await authenticate_user(db, form_data.username, form_data.password)
 

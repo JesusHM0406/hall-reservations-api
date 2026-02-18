@@ -23,7 +23,13 @@ async def add_user(user: UserCreate, db: DBDep) -> UserRead:
     return await service_create_user(db, user.name, user.password, user.password_confirm)
 
 @router.get("/", response_model=Pagination)
-async def get_all_users(db: DBDep, admin: AdminDep, page: int = 1, active_filter: bool | None = None, admin_filter: bool | None = None) -> Pagination:
+async def get_all_users(
+  db: DBDep,
+  admin: AdminDep,
+  page: int = 1,
+  active_filter: bool | None = None,
+  admin_filter: bool | None = None
+) -> Pagination:
   current_filters = {
     UserFilterNames.ACTIVE.value: active_filter,
     UserFilterNames.ADMIN.value: admin_filter
@@ -40,7 +46,11 @@ async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserComplete:
   return await service_get_user_by_id(db, id)
 
 @router.patch("/me", response_model=UserRead)
-async def update_current_user(db: DBDep, user: UserDep, update: UserUpdate) -> UserRead:
+async def update_current_user(
+  db: DBDep,
+  user: UserDep,
+  update: UserUpdate
+) -> UserRead:
   async with db.begin():
     return await service_update_user(db, update.name, user.id)
 

@@ -13,7 +13,12 @@ from app.utils.filters_metadata import ReservationFilterNames
 from app.utils.pagination_crud import PaginationCRUD
 
 
-async def crud_create_new_reservation(db: AsyncSession, user_id: int, hall_id: int, reservation_date: date):
+async def crud_create_new_reservation(
+  db: AsyncSession,
+  user_id: int,
+  hall_id: int,
+  reservation_date: date
+):
   new_reservation = Reservation(user_id=user_id, hall_id=hall_id, reservation_date=reservation_date)
   db.add(new_reservation)
   return new_reservation
@@ -31,7 +36,10 @@ async def crud_get_reservation(db: AsyncSession, reservation_id: int):
   reservation = await db.execute(stmt)
   return reservation.scalar_one_or_none()
 
-async def crud_update_reservation_status(new_status: ReservationStatus, reservation: Reservation):
+async def crud_update_reservation_status(
+  new_status: ReservationStatus,
+  reservation: Reservation
+):
   reservation.status = new_status
   return reservation
 

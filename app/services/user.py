@@ -15,7 +15,12 @@ from app.utils.pagination import Pagination, get_pagination
 
 MIN_PASSWORD_SIZE = 8
 
-async def service_create_user(db: AsyncSession, name: str, password: str, password_confirm: str) -> UserRead:
+async def service_create_user(
+  db: AsyncSession,
+  name: str,
+  password: str,
+  password_confirm: str
+) -> UserRead:
   if len(password) < MIN_PASSWORD_SIZE:
     raise BusinessLogicError("The password must contain at least 8 characters.")
   if password != password_confirm:
@@ -41,7 +46,11 @@ async def service_get_user_by_id(db: AsyncSession, id: int) -> UserComplete:
 
   return UserComplete(id=user.id, name=user.name, role=user.role, is_active=user.is_active)
 
-async def service_update_user(db: AsyncSession, name: str, id: int) -> UserRead:
+async def service_update_user(
+  db: AsyncSession,
+  name: str,
+  id: int
+) -> UserRead:
   user = await crud_get_user_by_id(db, id)
 
   if not user:
@@ -65,7 +74,11 @@ async def service_delete_user(db: AsyncSession, id: int):
 
   return
 
-async def service_get_all_users(db: AsyncSession, page: int, filters: dict[str, bool | None]) -> Pagination:
+async def service_get_all_users(
+  db: AsyncSession,
+  page: int,
+  filters: dict[str, bool | None]
+) -> Pagination:
   result = await crud_get_all_users(db, page, filters)
 
   pagination = get_pagination(result, page)
