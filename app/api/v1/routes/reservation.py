@@ -10,8 +10,6 @@ from app.schemas.reservation import (
 from app.services.reservation import (
   service_create_new_reservation,
   service_get_all_reservations,
-  service_get_all_reservations_by_hall_id,
-  service_get_all_reservations_by_user_id,
   service_get_reservation,
   service_update_reservation_status,
 )
@@ -26,13 +24,7 @@ async def create_reservation(reservation: ReservationCreate, user: UserDep, db: 
 @router.get("/", response_model=Pagination)
 async def get_reservations(db: DBDep, admin: AdminDep, page: int = 1, user_id: int | None = None, hall_id: int | None = None) -> Pagination:
   async with db.begin():
-    if user_id:
-      return await service_get_all_reservations_by_user_id(db, page, user_id)
-
-    if hall_id:
-      return await service_get_all_reservations_by_hall_id(db, page, hall_id)
-
-    return await service_get_all_reservations(db, page)
+    return await service_get_all_reservations(db, page, user_id, hall_id)
 
 @router.get("/{id}", response_model=ReservationRead)
 async def get_single_reservation(id: int, admin: AdminDep, db: DBDep) -> ReservationRead:

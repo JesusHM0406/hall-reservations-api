@@ -49,7 +49,7 @@ async def crud_get_reservations(
   if user_id is not None:
     stmt = stmt.where(Reservation.user_id == user_id)
     total_records_stmt = total_records_stmt.where(Reservation.user_id == user_id)
-  elif hall_id is not None:
+  if hall_id is not None:
     stmt = stmt.where(Reservation.hall_id == hall_id)
     total_records_stmt = total_records_stmt.where(Reservation.hall_id == hall_id)
 
