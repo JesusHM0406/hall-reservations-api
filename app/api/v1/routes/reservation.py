@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 
 from app.api.deps import AdminDep, DBDep, UserDep
-from app.utils.reservation_status import ReservationStatus
+from app.models.reservation_status import ReservationStatus
 from app.utils.pagination import Pagination
 from app.schemas.reservation import (
   ReservationCreate,

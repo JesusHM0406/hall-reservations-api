@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.utils.reservation_status import ReservationStatus
+from app.models.reservation_status import ReservationStatus
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 

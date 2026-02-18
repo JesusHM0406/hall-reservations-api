@@ -12,6 +12,7 @@ from app.services.user import (
   service_get_user_by_id,
   service_update_user,
 )
+from app.utils.filters_metadata import UserFilterNames
 from app.utils.pagination import Pagination
 
 router = APIRouter()
@@ -22,8 +23,13 @@ async def add_user(user: UserCreate, db: DBDep) -> UserRead:
     return await service_create_user(db, user.name, user.password, user.password_confirm)
 
 @router.get("/", response_model=Pagination)
-async def get_all_users(db: DBDep, admin: AdminDep, page: int = 1) -> Pagination:
-  return await service_get_all_users(db, page)
+async def get_all_users(db: DBDep, admin: AdminDep, page: int = 1, active_filter: bool | None = None, admin_filter: bool | None = None) -> Pagination:
+  current_filters = {
+    UserFilterNames.ACTIVE.value: active_filter,
+    UserFilterNames.ADMIN.value: admin_filter
+  }
+
+  return await service_get_all_users(db, page, current_filters)
 
 @router.get("/me", response_model=UserComplete)
 async def read_current_user(user: UserDep) -> UserComplete:
