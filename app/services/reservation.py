@@ -178,6 +178,6 @@ async def service_get_all_reservations(
     }
   )
 
-  pagination = get_pagination(result, page)
+  pagination = get_pagination(pagination=result, page=page)
 
   return pagination

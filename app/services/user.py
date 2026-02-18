@@ -93,6 +93,6 @@ async def service_get_all_users(
 ) -> Pagination:
   result = await crud_get_all_users(db=db, page=page, filters=filters)
 
-  pagination = get_pagination(result, page)
+  pagination = get_pagination(pagination=result, page=page)
 
   return pagination
