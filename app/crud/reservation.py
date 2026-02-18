@@ -43,17 +43,15 @@ async def crud_get_reservations(
   stmt = select(Reservation).order_by(Reservation.id.desc())
   total_records_stmt = select(func.count()).select_from(Reservation)
 
-  filter_id = filters.get(ReservationFilterNames.ID.value)
-  user_filter = filters.get(ReservationFilterNames.USER.value)
-  hall_filter = filters.get(ReservationFilterNames.HALL.value)
+  user_id = filters.get(ReservationFilterNames.USER.value)
+  hall_id = filters.get(ReservationFilterNames.HALL.value)
 
-  if filter_id is not None:
-    if user_filter is not None:
-      stmt = stmt.where(Reservation.user_id == filter_id)
-      total_records_stmt = total_records_stmt.where(Reservation.user_id == filter_id)
-    elif hall_filter is not None:
-      stmt = stmt.where(Reservation.hall_id == filter_id)
-      total_records_stmt = total_records_stmt.where(Reservation.hall_id == filter_id)
+  if user_id is not None:
+    stmt = stmt.where(Reservation.user_id == user_id)
+    total_records_stmt = total_records_stmt.where(Reservation.user_id == user_id)
+  elif hall_id is not None:
+    stmt = stmt.where(Reservation.hall_id == hall_id)
+    total_records_stmt = total_records_stmt.where(Reservation.hall_id == hall_id)
 
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
