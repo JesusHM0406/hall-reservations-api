@@ -1,6 +1,6 @@
 import math
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -100,3 +100,34 @@ async def crud_get_all_halls(
     per_page=settings.PAGINATION_LIMIT_PER_PAGE,
     pages=pages, current_page=current_page
   )
+
+async def crud_search_halls(*, db: AsyncSession, search_query: str):
+  query_str = search_query.strip().lower()
+  if not query_str:
+      return []
+
+  formatted_fts = " & ".join(f"{word}:*" for word in query_str.split())
+  ts_query = func.to_tsquery('simple', formatted_fts)
+
+  relevance = (
+    func.ts_rank(Hall.search_vector, ts_query) +
+    func.similarity(Hall.name, query_str) +
+    (1.0 if query_str else 0.0)
+  ).label("rank")
+
+  stmt = (
+    select(Hall, relevance)
+    .filter(
+      or_(
+        Hall.search_vector.op("@@")(ts_query),
+        Hall.name.op("%")(query_str),
+        Hall.name.ilike(f"{query_str}%"),
+        Hall.description.ilike(f"% {query_str}%")
+      )
+    )
+    .order_by(relevance.desc())
+    .limit(settings.SEARCH_LIMIT)
+  )
+
+  result = await db.execute(stmt)
+  return result.all()
