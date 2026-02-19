@@ -12,7 +12,9 @@ from app.crud.user import (
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
 from app.schemas.filters.user import UserFilters
 from app.schemas.user import UserComplete, UserRead
+from app.utils.filters_metadata import UserFilterLabels, UserFilterNames
 from app.utils.pagination import Pagination, get_pagination
+from app.utils.pagination_filters import FilterFactory
 
 MIN_PASSWORD_SIZE = 8
 
@@ -92,6 +94,19 @@ async def service_get_all_users(
   page: int,
   filters: UserFilters
 ) -> Pagination:
+  user_availables_filters = [
+    FilterFactory.boolean(
+      name=UserFilterNames.ACTIVE.value,
+      label=UserFilterLabels.ACTIVE.value,
+      current=filters.active_filter
+    ),
+    FilterFactory.boolean(
+      name=UserFilterNames.ADMIN.value,
+      label=UserFilterLabels.ADMIN.value,
+      current=filters.admin_filter
+    )
+  ]
+
   result = await crud_get_all_users(db=db, page=page, filters=filters)
 
   pagination = get_pagination(pagination=result, page=page)
