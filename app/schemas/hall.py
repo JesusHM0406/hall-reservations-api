@@ -16,3 +16,8 @@ class HallUpdate(BaseModel):
 
 class HallUpdateAvailability(BaseModel):
   is_available: bool
+
+class HallSearchResponse(BaseModel):
+  id: int
+  name: int
+  rank: float
