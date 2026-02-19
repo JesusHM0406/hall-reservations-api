@@ -46,6 +46,22 @@ async def get_reservations(
       filters=filters
     )
 
+@router.get("/me", response_model=Pagination)
+async def get_reservations_for_the_current_user(
+  db: DBDep,
+  user: UserDep,
+  filters: Annotated[ReservationFilters, Depends()],
+  page: int = 1
+) -> Pagination:
+  filters.user_id = user.id
+
+  async with db.begin():
+    return await service_get_all_reservations(
+      db=db,
+      page=page,
+      filters=filters
+    )
+
 @router.get("/{id}", response_model=ReservationRead)
 async def get_single_reservation(
   db: DBDep,
