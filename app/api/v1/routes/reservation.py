@@ -53,7 +53,7 @@ async def get_reservations_for_the_current_user(
   filters: Annotated[ReservationFilters, Depends()],
   page: int = 1
 ) -> Pagination:
-  filters.user_id = user.id
+  filters.user_name = user.name
 
   async with db.begin():
     return await service_get_all_reservations(

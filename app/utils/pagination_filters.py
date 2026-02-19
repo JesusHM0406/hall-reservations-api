@@ -39,20 +39,6 @@ class FilterFactory:
     )
 
   @staticmethod
-  def number(
-    *,
-    name: str,
-    label: str,
-    current: int | None = None
-  ):
-    return AvailableFilter(
-      name=name,
-      label=label,
-      type="number",
-      current_value=current
-    )
-
-  @staticmethod
   def text(
     *,
     name: str,

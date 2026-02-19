@@ -175,15 +175,13 @@ async def service_get_all_reservations(
     reservation_status_filter_dict[status.value] = status.value.capitalize()
 
   reservation_availables_filters = [
-    FilterFactory.number(
+    FilterFactory.text(
       name=ReservationFilterNames.USER.value,
-      label=ReservationFilterLabels.USER.value,
-      current=filters.user_id
+      label=ReservationFilterLabels.USER.value
     ),
-    FilterFactory.number(
+    FilterFactory.text(
       name=ReservationFilterNames.HALL.value,
-      label=ReservationFilterLabels.HALL.value,
-      current=filters.hall_id
+      label=ReservationFilterLabels.HALL.value
     ),
     FilterFactory.select(
       name=ReservationFilterNames.STATUS.value,

@@ -3,7 +3,7 @@ from datetime import date
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import contains_eager, joinedload
 
 from app.core.config import settings
 from app.models.hall import Hall
@@ -56,28 +56,26 @@ async def crud_get_reservations(
   page: int,
   filters: ReservationFilters
 ) -> PaginationCRUD:
-  stmt = (
-    select(Reservation)
-    .options(
-      joinedload(Reservation.user).load_only(User.name),
-      joinedload(Reservation.hall).load_only(Hall.name)
-    ).order_by(Reservation.id.desc())
-  )
+  stmt = select(Reservation).order_by(Reservation.id.desc())
   total_records_stmt = select(func.count()).select_from(Reservation)
 
-  user_id = filters.user_id
-  hall_id = filters.hall_id
-  status_filter = filters.status
+  if filters.user_name:
+    stmt = stmt.join(Reservation.user).where(User.name.ilike(f"%{filters.user_name}%"))
+    total_records_stmt = total_records_stmt.join(Reservation.user).where(User.name.ilike(f"%{filters.user_name}%"))
+    stmt = stmt.options(contains_eager(Reservation.user).load_only(User.name))
+  else:
+    stmt = stmt.options(joinedload(Reservation.user).load_only(User.name))
 
-  if user_id is not None:
-    stmt = stmt.where(Reservation.user_id == user_id)
-    total_records_stmt = total_records_stmt.where(Reservation.user_id == user_id)
-  if hall_id is not None:
-    stmt = stmt.where(Reservation.hall_id == hall_id)
-    total_records_stmt = total_records_stmt.where(Reservation.hall_id == hall_id)
-  if status_filter is not None:
-    stmt = stmt.where(Reservation.status == status_filter)
-    total_records_stmt = total_records_stmt.where(Reservation.status == status_filter)
+  if filters.hall_name:
+    stmt = stmt.join(Reservation.hall).where(Hall.name.ilike(f"%{filters.hall_name}%"))
+    total_records_stmt = total_records_stmt.join(Reservation.hall).where(Hall.name.ilike(f"%{filters.hall_name}%"))
+    stmt = stmt.options(contains_eager(Reservation.hall).load_only(Hall.name))
+  else:
+    stmt = stmt.options(joinedload(Reservation.hall).load_only(Hall.name))
+
+  if filters.status:
+    stmt = stmt.where(Reservation.status == filters.status)
+    total_records_stmt = total_records_stmt.join(Reservation.hall).where(Reservation.status == filters.status)
 
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
