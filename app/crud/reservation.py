@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.models.hall import Hall
 from app.models.reservation import Reservation, ReservationStatus
 from app.models.user import User
-from app.utils.filters_metadata import ReservationFilterNames
+from app.schemas.filters.resevation import ReservationFilters
 from app.utils.pagination_crud import PaginationCRUD
 
 
@@ -53,13 +53,13 @@ async def crud_get_reservations(
   *,
   db: AsyncSession,
   page: int,
-  filters: dict
+  filters: ReservationFilters
 ) -> PaginationCRUD:
   stmt = select(Reservation).order_by(Reservation.id.desc())
   total_records_stmt = select(func.count()).select_from(Reservation)
 
-  user_id = filters.get(ReservationFilterNames.USER.value)
-  hall_id = filters.get(ReservationFilterNames.HALL.value)
+  user_id = filters.user_id
+  hall_id = filters.hall_id
 
   if user_id is not None:
     stmt = stmt.where(Reservation.user_id == user_id)

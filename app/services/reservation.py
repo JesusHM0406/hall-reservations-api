@@ -13,8 +13,8 @@ from app.crud.reservation import (
 )
 from app.crud.user import crud_get_user_by_id
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
+from app.schemas.filters.resevation import ReservationFilters
 from app.schemas.reservation import ReservationRead
-from app.utils.filters_metadata import ReservationFilterNames
 from app.utils.pagination import Pagination, get_pagination
 
 
@@ -166,16 +166,13 @@ async def service_get_all_reservations(
   *,
   db: AsyncSession,
   page: int,
-  filters: dict
+  filters: ReservationFilters
 ) -> Pagination:
 
   result = await crud_get_reservations(
     db=db,
     page=page,
-    filters={
-      ReservationFilterNames.USER.value: filters.get("user_id"),
-      ReservationFilterNames.HALL.value: filters.get("hall_id")
-    }
+    filters=filters
   )
 
   pagination = get_pagination(pagination=result, page=page)
