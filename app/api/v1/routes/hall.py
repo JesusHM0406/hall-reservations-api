@@ -35,8 +35,7 @@ async def create_new_hall(
 async def get_all_halls(
   db: DBDep,
   filters: Annotated[HallFilters, Depends()],
-  page: int = 1,
-  available_filter: bool | None = None
+  page: int = 1
 ) -> Pagination:
   return await service_get_all_halls(
     db=db,

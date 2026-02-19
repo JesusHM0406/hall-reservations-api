@@ -13,7 +13,7 @@ from app.crud.reservation import (
 )
 from app.crud.user import crud_get_user_by_id
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
-from app.schemas.filters.resevation import ReservationFilters
+from app.schemas.filters.reservation import ReservationFilters
 from app.schemas.reservation import ReservationRead
 from app.utils.pagination import Pagination, get_pagination
 

@@ -33,7 +33,7 @@ async def get_all_users(
   db: DBDep,
   admin: AdminDep,
   filters: Annotated[UserFilters, Depends()],
-  page: int = 1,
+  page: int = 1
 ) -> Pagination:
   return await service_get_all_users(
     db=db,

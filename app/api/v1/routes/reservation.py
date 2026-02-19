@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.api.deps import AdminDep, DBDep, UserDep
 from app.models.reservation_status import ReservationStatus
-from app.schemas.filters.resevation import ReservationFilters
+from app.schemas.filters.reservation import ReservationFilters
 from app.utils.pagination import Pagination
 from app.schemas.reservation import (
   ReservationCreate,
@@ -37,9 +37,7 @@ async def get_reservations(
   db: DBDep,
   admin: AdminDep,
   filters: Annotated[ReservationFilters, Depends()],
-  page: int = 1,
-  user_id: int | None = None,
-  hall_id: int | None = None
+  page: int = 1
 ) -> Pagination:
   async with db.begin():
     return await service_get_all_reservations(

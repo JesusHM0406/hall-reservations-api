@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.models.hall import Hall
 from app.models.reservation import Reservation, ReservationStatus
 from app.models.user import User
-from app.schemas.filters.resevation import ReservationFilters
+from app.schemas.filters.reservation import ReservationFilters
 from app.utils.pagination_crud import PaginationCRUD
 
 
