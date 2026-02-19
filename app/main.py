@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
@@ -10,8 +12,19 @@ from app.api.v1.routes.reservation import router as reservation_router
 from app.api.v1.routes.user import router as user_router
 from app.core.config import settings
 from app.exceptions.base import AppError
+from app.utils.tasks import clean_expired_reservations
 
-app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  task = asyncio.create_task(clean_expired_reservations())
+  print("¡Reservation clearing process activated!")
+
+  yield
+
+  task.cancel()
+  print("Closing background task... API turned off.")
+
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION, lifespan=lifespan)
 
 origins = settings.ALLOWED_ORIGINS.split(",")
 
