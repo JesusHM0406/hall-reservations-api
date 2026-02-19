@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,15 +15,22 @@ from app.core.config import settings
 from app.exceptions.base import AppError
 from app.utils.tasks import clean_expired_reservations
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+  logger.info("Starting worker for reservation cleaning...")
   task = asyncio.create_task(clean_expired_reservations())
-  print("¡Reservation clearing process activated!")
 
   yield
 
+  logger.info("Canceling background tasks...")
   task.cancel()
-  print("Closing background task... API turned off.")
+  try:
+    await task
+  except asyncio.CancelledError:
+    logger.info("Worker stopped cleanly.")
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION, lifespan=lifespan)
 
@@ -62,7 +70,7 @@ async def integrity_exception_handler(request: Request, exc: IntegrityError):
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-  # I need to log the error
+  logger.error(f"Unhandled error in {request.url.path}: {str(exc)}", exc_info=True)
   return JSONResponse(
     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
     content={
@@ -73,7 +81,7 @@ async def general_exception_handler(request: Request, exc: Exception):
     }
   )
 
-app.include_router(auth_router, prefix="/auth")
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(user_router, prefix="/users", tags=["Users"])
 app.include_router(hall_router, prefix="/halls", tags=["Halls"])
 app.include_router(reservation_router, prefix="/reservations", tags=["Reservations"])
