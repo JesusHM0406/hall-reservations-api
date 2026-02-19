@@ -19,5 +19,5 @@ class HallUpdateAvailability(BaseModel):
 
 class HallSearchResponse(BaseModel):
   id: int
-  name: int
+  name: str
   rank: float
