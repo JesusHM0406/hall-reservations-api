@@ -11,7 +11,9 @@ from app.crud.hall import (
 from app.exceptions.exceptions import ConflictError, NotFoundError
 from app.schemas.filters.hall import HallFilters
 from app.schemas.hall import HallRead
+from app.utils.filters_metadata import HallFilterLabels, HallFilterNames
 from app.utils.pagination import Pagination, get_pagination
+from app.utils.pagination_filters import FilterFactory
 
 
 async def service_create_new_hall(
@@ -124,6 +126,14 @@ async def service_get_all_halls(
   page: int,
   filters: HallFilters
 ) -> Pagination:
+  hall_available_filters = [
+    FilterFactory.boolean(
+      name=HallFilterNames.AVAILABLE.value,
+      label=HallFilterLabels.AVAILABLE.value,
+      current=filters.available_filter
+    )
+  ]
+
   result = await crud_get_all_halls(db=db, page=page, filters=filters)
 
   pagination = get_pagination(pagination=result, page=page)
