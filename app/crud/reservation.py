@@ -60,6 +60,7 @@ async def crud_get_reservations(
 
   user_id = filters.user_id
   hall_id = filters.hall_id
+  status_filter = filters.status
 
   if user_id is not None:
     stmt = stmt.where(Reservation.user_id == user_id)
@@ -67,6 +68,9 @@ async def crud_get_reservations(
   if hall_id is not None:
     stmt = stmt.where(Reservation.hall_id == hall_id)
     total_records_stmt = total_records_stmt.where(Reservation.hall_id == hall_id)
+  if status_filter is not None:
+    stmt = stmt.where(Reservation.status == status_filter)
+    total_records_stmt = total_records_stmt.where(Reservation.status == status_filter)
 
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
