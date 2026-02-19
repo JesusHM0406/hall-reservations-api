@@ -200,6 +200,6 @@ async def service_get_all_reservations(
     filters=filters
   )
 
-  pagination = get_pagination(pagination=result, page=page)
+  pagination = get_pagination(pagination=result, page=page, available_filters=reservation_availables_filters)
 
   return pagination

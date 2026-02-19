@@ -31,12 +31,13 @@ class Pagination(BaseModel):
   def next_num(self) -> int | None:
     return self.current_page + 1 if self.has_next else None
 
-def get_pagination(*, pagination: PaginationCRUD, page: int) -> Pagination:
+def get_pagination(*, pagination: PaginationCRUD, page: int, available_filters: List[AvailableFilter]) -> Pagination:
   return Pagination(
     items=pagination.items,
     requested_page=page,
     per_page=pagination.per_page,
     total=pagination.total,
     pages=pagination.pages,
-    current_page=pagination.current_page
+    current_page=pagination.current_page,
+    available_filters=available_filters
   )

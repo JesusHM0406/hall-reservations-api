@@ -136,6 +136,6 @@ async def service_get_all_halls(
 
   result = await crud_get_all_halls(db=db, page=page, filters=filters)
 
-  pagination = get_pagination(pagination=result, page=page)
+  pagination = get_pagination(pagination=result, page=page, available_filters=hall_available_filters)
 
   return pagination
