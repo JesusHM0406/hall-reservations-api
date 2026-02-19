@@ -1,15 +1,16 @@
-from typing import Annotated
-from fastapi import APIRouter, Depends
+from typing import Annotated, List
+from fastapi import APIRouter, Depends, Query
 from starlette.status import HTTP_201_CREATED
 
 from app.api.deps import AdminDep, DBDep
 from app.schemas.filters.hall import HallFilters
-from app.schemas.hall import HallCreate, HallRead, HallUpdate, HallUpdateAvailability
+from app.schemas.hall import HallCreate, HallRead, HallSearchResponse, HallUpdate, HallUpdateAvailability
 from app.services.hall import (
   service_create_new_hall,
   service_get_all_halls,
   service_get_hall_by_id,
   service_get_hall_by_name,
+  service_search_halls,
   service_update_hall,
   service_update_hall_availability,
 )
@@ -42,6 +43,11 @@ async def get_all_halls(
     page=page,
     filters=filters
   )
+
+@router.get("/search", response_model=List[HallSearchResponse])
+async def search_halls(db: DBDep, q: Annotated[str, Query(min_length=2)]) -> List[HallSearchResponse]:
+  async with db.begin():
+    return await service_search_halls(db=db, search_query=q)
 
 @router.get("/{name}", response_model=HallRead)
 async def get_hall_by_name(db: DBDep, name: str) -> HallRead:
