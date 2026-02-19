@@ -15,7 +15,9 @@ from app.crud.user import crud_get_user_by_id
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
 from app.schemas.filters.reservation import ReservationFilters
 from app.schemas.reservation import ReservationRead
+from app.utils.filters_metadata import ReservationFilterLabels, ReservationFilterNames
 from app.utils.pagination import Pagination, get_pagination
+from app.utils.pagination_filters import FilterFactory
 
 
 async def service_create_new_reservation(
@@ -168,6 +170,29 @@ async def service_get_all_reservations(
   page: int,
   filters: ReservationFilters
 ) -> Pagination:
+  reservation_status_filter_dict: dict[str, str] = {}
+
+  for status in ReservationStatus:
+    reservation_status_filter_dict[status.value] = status.value.capitalize()
+
+  reservation_availables_filters = [
+    FilterFactory.number(
+      name=ReservationFilterNames.USER.value,
+      label=ReservationFilterLabels.USER.value,
+      current=filters.user_id
+    ),
+    FilterFactory.number(
+      name=ReservationFilterNames.HALL.value,
+      label=ReservationFilterLabels.HALL.value,
+      current=filters.hall_id
+    ),
+    FilterFactory.select(
+      name=ReservationFilterNames.STATUS.value,
+      label=ReservationFilterLabels.STATUS.value,
+      options=reservation_status_filter_dict,
+      current=filters.status
+    )
+  ]
 
   result = await crud_get_reservations(
     db=db,
