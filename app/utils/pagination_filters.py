@@ -37,3 +37,17 @@ class FilterFactory:
       type="boolean",
       current_value=current
     )
+
+  @staticmethod
+  def number(
+    *,
+    name: str,
+    label: str,
+    current: int | None = None
+  ):
+    return AvailableFilter(
+      name=name,
+      label=label,
+      type="number",
+      current_value=current
+    )
