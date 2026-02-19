@@ -10,6 +10,7 @@ from app.models.hall import Hall
 from app.models.reservation import Reservation, ReservationStatus
 from app.models.user import User
 from app.schemas.filters.reservation import ReservationFilters
+from app.schemas.reservation import ReservationRead
 from app.utils.pagination_crud import PaginationCRUD
 
 
@@ -55,7 +56,13 @@ async def crud_get_reservations(
   page: int,
   filters: ReservationFilters
 ) -> PaginationCRUD:
-  stmt = select(Reservation).order_by(Reservation.id.desc())
+  stmt = (
+    select(Reservation)
+    .options(
+      joinedload(Reservation.user).load_only(User.name),
+      joinedload(Reservation.hall).load_only(Hall.name)
+    ).order_by(Reservation.id.desc())
+  )
   total_records_stmt = select(func.count()).select_from(Reservation)
 
   user_id = filters.user_id
@@ -88,13 +95,15 @@ async def crud_get_reservations(
   result = await db.execute(stmt)
   result_items = result.scalars().all()
   data = [
-    {
-      "id": item.id,
-      "user_id": item.user_id,
-      "hall_id": item.hall_id,
-      "status": item.status.value if hasattr(item.status, 'value') else item.status,
-      "reservation_date": item.reservation_date
-    }
+    ReservationRead(
+      id=item.id,
+      user_id=item.user_id,
+      user_name=item.user.name,
+      hall_id=item.hall_id,
+      hall_name=item.hall.name,
+      status=item.status.value if hasattr(item.status, 'value') else item.status,
+      reservation_date=item.reservation_date,
+    )
     for item in result_items
   ]
 
