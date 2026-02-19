@@ -9,9 +9,8 @@ from app.crud.hall import (
   crud_update_hall_availability,
 )
 from app.exceptions.exceptions import ConflictError, NotFoundError
-from app.schemas.filters.hall import HallFilters
+from app.schemas.filters.hall import HallFilters, HallFilterLabels, HallFilterNames
 from app.schemas.hall import HallRead
-from app.utils.filters_metadata import HallFilterLabels, HallFilterNames
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
 

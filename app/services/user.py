@@ -10,9 +10,8 @@ from app.crud.user import (
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
-from app.schemas.filters.user import UserFilters
+from app.schemas.filters.user import UserFilters, UserFilterLabels, UserFilterNames
 from app.schemas.user import UserComplete, UserRead
-from app.utils.filters_metadata import UserFilterLabels, UserFilterNames
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
 
