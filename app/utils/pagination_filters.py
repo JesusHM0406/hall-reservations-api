@@ -51,3 +51,15 @@ class FilterFactory:
       type="number",
       current_value=current
     )
+
+  @staticmethod
+  def text(
+    *,
+    name: str,
+    label: str
+  ):
+    return AvailableFilter(
+      name=name,
+      label=label,
+      type="text"
+    )
