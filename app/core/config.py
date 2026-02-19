@@ -14,5 +14,6 @@ class Settings(BaseSettings):
   ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
   ALLOWED_ORIGINS: str = os.environ["ALLOWED_ORIGINS"]
   PAGINATION_LIMIT_PER_PAGE: int = 10
+  SEARCH_LIMIT: int = 10
 
 settings = Settings()
