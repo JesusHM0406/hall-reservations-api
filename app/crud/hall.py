@@ -107,7 +107,7 @@ async def crud_search_halls(*, db: AsyncSession, search_query: str):
       return []
 
   formatted_fts = " & ".join(f"{word}:*" for word in query_str.split())
-  ts_query = func.to_tsquery('simple', formatted_fts)
+  ts_query = func.to_tsquery("english", formatted_fts)
 
   relevance = (
     func.ts_rank(Hall.search_vector, ts_query) +
