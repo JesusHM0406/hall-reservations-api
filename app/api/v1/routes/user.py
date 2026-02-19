@@ -1,9 +1,11 @@
-from fastapi import APIRouter
+from typing_extensions import Annotated
+from fastapi import APIRouter, Depends
 
 from app.api.deps import AdminDep, DBDep, UserDep
 from app.models.hall import Hall as Hall
 from app.models.reservation import Reservation as Reservation
 from app.models.user import User as User
+from app.schemas.filters.user import UserFilters
 from app.schemas.user import UserComplete, UserCreate, UserRead, UserUpdate
 from app.services.user import (
   service_create_user,
@@ -12,7 +14,6 @@ from app.services.user import (
   service_get_user_by_id,
   service_update_user,
 )
-from app.utils.filters_metadata import UserFilterNames
 from app.utils.pagination import Pagination
 
 router = APIRouter()
@@ -31,19 +32,14 @@ async def add_user(user: UserCreate, db: DBDep) -> UserRead:
 async def get_all_users(
   db: DBDep,
   admin: AdminDep,
+  filters: Annotated[UserFilters, Depends()],
   page: int = 1,
-  active_filter: bool | None = None,
-  admin_filter: bool | None = None
 ) -> Pagination:
-  current_filters = {
-    UserFilterNames.ACTIVE.value: active_filter,
-    UserFilterNames.ADMIN.value: admin_filter
-  }
 
   return await service_get_all_users(
     db=db,
     page=page,
-    filters=current_filters
+    filters=filters
   )
 
 @router.get("/me", response_model=UserComplete)

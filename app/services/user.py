@@ -10,6 +10,7 @@ from app.crud.user import (
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
+from app.schemas.filters.user import UserFilters
 from app.schemas.user import UserComplete, UserRead
 from app.utils.pagination import Pagination, get_pagination
 
@@ -89,7 +90,7 @@ async def service_get_all_users(
   *,
   db: AsyncSession,
   page: int,
-  filters: dict[str, bool | None]
+  filters: UserFilters
 ) -> Pagination:
   result = await crud_get_all_users(db=db, page=page, filters=filters)
 

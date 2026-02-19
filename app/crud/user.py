@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.user import User
-from app.utils.filters_metadata import UserFilterNames
+from app.schemas.filters.user import UserFilters
 from app.utils.pagination_crud import PaginationCRUD
 from app.schemas.user import UserComplete
 from app.models.user_role import UserRole
@@ -35,13 +35,13 @@ async def crud_get_all_users(
   *,
   db: AsyncSession,
   page: int,
-  filters: dict
+  filters: UserFilters
 ) -> PaginationCRUD:
   stmt = select(User).order_by(User.id.desc())
   total_records_stmt = select(func.count()).select_from(User)
 
-  active_filter = filters.get(UserFilterNames.ACTIVE.value)
-  admin_filter = filters.get(UserFilterNames.ADMIN.value)
+  active_filter = filters.active_filter
+  admin_filter = filters.admin_filter
 
   if active_filter is not  None:
     stmt = stmt.where(User.is_active == active_filter)
