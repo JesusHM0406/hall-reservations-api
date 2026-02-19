@@ -1,3 +1,4 @@
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.hall import (
@@ -5,12 +6,13 @@ from app.crud.hall import (
   crud_get_all_halls,
   crud_get_hall_by_id,
   crud_get_hall_by_name,
+  crud_search_halls,
   crud_update_hall,
   crud_update_hall_availability,
 )
 from app.exceptions.exceptions import ConflictError, NotFoundError
 from app.schemas.filters.hall import HallFilters, HallFilterLabels, HallFilterNames
-from app.schemas.hall import HallRead
+from app.schemas.hall import HallRead, HallSearchResponse
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
 
@@ -138,3 +140,21 @@ async def service_get_all_halls(
   pagination = get_pagination(pagination=result, page=page, available_filters=hall_available_filters)
 
   return pagination
+
+async def service_search_halls(
+  *,
+  db: AsyncSession,
+  search_query: str
+) -> List[HallSearchResponse]:
+  result = await crud_search_halls(db=db, search_query=search_query)
+
+  data = [
+    HallSearchResponse(
+      id=row.Hall.id,
+      name=row.Hall.name,
+      rank=row.rank
+    )
+    for row in result
+  ]
+
+  return data
