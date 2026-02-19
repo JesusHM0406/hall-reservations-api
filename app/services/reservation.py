@@ -98,12 +98,8 @@ async def service_update_reservation_status(
       "has_transitions": True,
       "transitions": [
         ReservationStatus.CANCELLED.value,
-        ReservationStatus.FINISHED.value,
-        ReservationStatus.EXPIRED.value
+        ReservationStatus.FINISHED.value
       ]
-    },
-    ReservationStatus.EXPIRED.value: {
-      "has_transitions": False
     },
     ReservationStatus.FINISHED.value: {
       "has_transitions": False
@@ -134,7 +130,6 @@ async def service_update_reservation_status(
   if new_status not in [
     ReservationStatus.CANCELLED.value,
     ReservationStatus.CONFIRMED.value,
-    ReservationStatus.EXPIRED.value,
     ReservationStatus.FINISHED.value
   ]:
     raise BusinessLogicError("Invalid status.")
