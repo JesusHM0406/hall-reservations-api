@@ -9,6 +9,7 @@ from app.crud.hall import (
   crud_update_hall_availability,
 )
 from app.exceptions.exceptions import ConflictError, NotFoundError
+from app.schemas.filters.hall import HallFilters
 from app.schemas.hall import HallRead
 from app.utils.pagination import Pagination, get_pagination
 
@@ -121,7 +122,7 @@ async def service_get_all_halls(
   *,
   db: AsyncSession,
   page: int,
-  filters: dict
+  filters: HallFilters
 ) -> Pagination:
   result = await crud_get_all_halls(db=db, page=page, filters=filters)
 

@@ -35,7 +35,6 @@ async def get_all_users(
   filters: Annotated[UserFilters, Depends()],
   page: int = 1,
 ) -> Pagination:
-
   return await service_get_all_users(
     db=db,
     page=page,

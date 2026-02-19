@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from starlette.status import HTTP_201_CREATED
 
 from app.api.deps import AdminDep, DBDep
+from app.schemas.filters.hall import HallFilters
 from app.schemas.hall import HallCreate, HallRead, HallUpdate, HallUpdateAvailability
 from app.services.hall import (
   service_create_new_hall,
@@ -11,7 +13,6 @@ from app.services.hall import (
   service_update_hall,
   service_update_hall_availability,
 )
-from app.utils.filters_metadata import HallFilterNames
 from app.utils.pagination import Pagination
 
 router = APIRouter()
@@ -33,17 +34,14 @@ async def create_new_hall(
 @router.get("/", response_model=Pagination)
 async def get_all_halls(
   db: DBDep,
+  filters: Annotated[HallFilters, Depends()],
   page: int = 1,
   available_filter: bool | None = None
 ) -> Pagination:
-  current_filters = {
-    HallFilterNames.AVAILABLE.value: available_filter
-  }
-
   return await service_get_all_halls(
     db=db,
     page=page,
-    filters=current_filters
+    filters=filters
   )
 
 @router.get("/{name}", response_model=HallRead)
