@@ -1,7 +1,7 @@
 import math
 from datetime import date
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager, joinedload
 
@@ -112,3 +112,17 @@ async def crud_get_reservations(
     pages=pages,
     current_page=current_page
   )
+
+async def crud_finish_reservations(*, db: AsyncSession):
+  now = date.today()
+
+  stmt = (
+    update(Reservation)
+    .where(
+      Reservation.status == ReservationStatus.CONFIRMED,
+      Reservation.reservation_date < now
+    )
+    .values(status=ReservationStatus.FINISHED)
+  )
+
+  await db.execute(stmt)
