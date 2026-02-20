@@ -2,10 +2,13 @@ import asyncio
 from typing import AsyncGenerator
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from app.api.deps import get_db
 from app.db.base_class import Base
+from app.main import app
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -41,3 +44,17 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
   async with TestingSessionLocal() as session:
     yield session
     await session.rollback()
+
+@pytest.fixture
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+  """Fixture to create an HTTP client that uses the fake db."""
+
+  async def _get_test_db():
+    yield db_session
+
+  app.dependency_overrides[get_db] = _get_test_db
+
+  async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    yield ac
+
+  app.dependency_overrides.clear()
