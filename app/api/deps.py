@@ -19,7 +19,10 @@ DBDep = Annotated[AsyncSession, Depends(get_db)]
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserComplete:
+async def get_current_user(
+  token: Annotated[str, Depends(oauth2_scheme)],
+  db: DBDep
+) -> UserComplete:
   credentials_exception = HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
       detail="Could not validate credentials",
@@ -39,8 +42,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
     print(e)
     raise credentials_exception
 
-  async with AsyncSessionLocal() as db:
-    user = await crud_get_user_by_name(db=db, name=username)
+  user = await crud_get_user_by_name(db=db, name=username)
 
   if user is None:
     raise credentials_exception
