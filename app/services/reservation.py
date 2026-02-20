@@ -18,6 +18,11 @@ from app.schemas.reservation import ReservationRead
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
 
+STATUS_TRANSITIONS = {
+    ReservationStatus.CONFIRMED: [ReservationStatus.CANCELLED, ReservationStatus.FINISHED],
+    ReservationStatus.CANCELLED: [],
+    ReservationStatus.FINISHED: []
+}
 
 async def service_create_new_reservation(
   *,
@@ -90,22 +95,6 @@ async def service_update_reservation_status(
   new_status: str,
   user_id: int
 )-> ReservationRead:
-  transitions_map = {
-    ReservationStatus.CANCELLED.value: {
-      "has_transitions": False
-    },
-    ReservationStatus.CONFIRMED.value: {
-      "has_transitions": True,
-      "transitions": [
-        ReservationStatus.CANCELLED.value,
-        ReservationStatus.FINISHED.value
-      ]
-    },
-    ReservationStatus.FINISHED.value: {
-      "has_transitions": False
-    }
-  }
-
   user = await crud_get_user_by_id(db=db, id=user_id)
 
   if not user:
@@ -124,9 +113,6 @@ async def service_update_reservation_status(
   if reservation.user_id != user.id:
     raise BusinessLogicError("The reservation is not from this user.")
 
-  if not transitions_map[reservation.status.value]["has_transitions"]:
-    raise BusinessLogicError("You cannot change the status of this reservation; it has already been cancelled, finished, or expired.")
-
   if new_status not in [
     ReservationStatus.CANCELLED.value,
     ReservationStatus.CONFIRMED.value,
@@ -134,14 +120,14 @@ async def service_update_reservation_status(
   ]:
     raise BusinessLogicError("Invalid status.")
 
-  if new_status not in transitions_map[reservation.status.value]["transitions"]:
-    raise BusinessLogicError(f"The status cannot be set as {new_status} because the reservation has a {reservation.status.value} status.")
+  status_enum = ReservationStatus(new_status)
+
+  if status_enum not in STATUS_TRANSITIONS.get(reservation.status, []):
+    raise BusinessLogicError(f"Transition from {reservation.status.value} to {new_status} is not allowed.")
 
   if (new_status == ReservationStatus.FINISHED.value and
     date.today() != reservation.reservation_date):
     raise BusinessLogicError("The reservation cannot be finalized because today is not the reservation date.")
-
-  status_enum = ReservationStatus(new_status)
 
   updated_reservation = await crud_update_reservation_status(
     new_status=status_enum,
