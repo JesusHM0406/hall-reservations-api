@@ -1,4 +1,5 @@
 import asyncio
+from typing import AsyncGenerator
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -33,3 +34,10 @@ async def setup_database():
   yield
   async with engine.begin() as conn:
     await conn.run_sync(Base.metadata.drop_all)
+
+@pytest.fixture
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
+  """Fixture to get a clean DB session in each test."""
+  async with TestingSessionLocal() as session:
+    yield session
+    await session.rollback()
