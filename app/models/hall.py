@@ -1,8 +1,12 @@
-from app.db.base_class import Base
-from sqlalchemy import Integer, String, Boolean, Text as SQLtext, Computed, Index
+from typing import TYPE_CHECKING, List, Text
+
+from sqlalchemy import Boolean, Computed, Index, Integer, String, event
+from sqlalchemy import Text as SQLtext
 from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Text, TYPE_CHECKING, List
+
+from app.db.base_class import Base
 
 if TYPE_CHECKING:
   from app.models.reservation import Reservation
@@ -14,14 +18,7 @@ class Hall(Base):
   name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
   description: Mapped[Text] = mapped_column(SQLtext, nullable=False)
   is_available: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-  search_vector: Mapped[TSVECTOR] = mapped_column(
-      TSVECTOR,
-      Computed(
-        "setweight(to_tsvector('english', name), 'A') || "
-        "setweight(to_tsvector('english', description), 'B')",
-        persisted=True
-      )
-    )
+  search_vector: Mapped[TSVECTOR] = mapped_column(TSVECTOR, nullable=True)
 
   # Relationships
   reservations: Mapped[List["Reservation"]] = relationship("Reservation", back_populates="hall", lazy="raise")
@@ -30,3 +27,20 @@ class Hall(Base):
       Index("idx_room_search_vector", "search_vector", postgresql_using="gin"),
       Index("idx_room_name_trgm", "name", postgresql_using="gist", postgresql_ops={"name": "gist_trgm_ops"}),
     )
+
+@event.listens_for(Hall.__table__, "before_create")
+def add_computed_column(target, connection, **kw):
+  # When testing with SQLite, we don't want to calculate this column because
+  # SQLite doesn't have those functions, so we omit those calculations
+  if connection.dialect.name != "sqlite":
+    # If the dialect is not sqlite, then it is postgresql which, of course,
+    # has those functions and therefore we can calculate this column.
+    target.c.search_vector.server_default = Computed(
+      "setweight(to_tsvector('english', name), 'A') || "
+      "setweight(to_tsvector('english', description), 'B')",
+      persisted=True
+    )
+
+@compiles(TSVECTOR, "sqlite")
+def compile_tsvector_sqlite(type_, compiler, **kw):
+  return "TEXT"
