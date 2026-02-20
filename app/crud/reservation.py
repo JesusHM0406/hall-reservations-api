@@ -1,4 +1,3 @@
-import math
 from datetime import date
 
 from sqlalchemy import func, select, update
@@ -11,6 +10,7 @@ from app.models.reservation import Reservation, ReservationStatus
 from app.models.user import User
 from app.schemas.filters.reservation import ReservationFilters
 from app.schemas.reservation import ReservationRead
+from app.utils.pagination import get_pagination_computed_fields
 from app.utils.pagination_crud import PaginationCRUD
 
 
@@ -80,15 +80,12 @@ async def crud_get_reservations(
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
 
-  pages = math.ceil(
-    total_records / settings.PAGINATION_LIMIT_PER_PAGE
-  ) if total_records > 0 else 1
+  computed_fields = get_pagination_computed_fields(
+    total_records=total_records,
+    page=page
+  )
 
-  current_page = max(1, min(page, pages))
-
-  current_offset = (current_page - 1) * settings.PAGINATION_LIMIT_PER_PAGE
-
-  stmt = stmt.limit(settings.PAGINATION_LIMIT_PER_PAGE).offset(current_offset)
+  stmt = stmt.limit(settings.PAGINATION_LIMIT_PER_PAGE).offset(computed_fields.current_offset)
 
   result = await db.execute(stmt)
   result_items = result.scalars().all()
@@ -109,8 +106,8 @@ async def crud_get_reservations(
     items=list(data),
     total=total_records,
     per_page=settings.PAGINATION_LIMIT_PER_PAGE,
-    pages=pages,
-    current_page=current_page
+    pages=computed_fields.pages,
+    current_page=computed_fields.current_page
   )
 
 async def crud_finish_reservations(*, db: AsyncSession):
