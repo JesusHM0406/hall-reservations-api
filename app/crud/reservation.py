@@ -96,7 +96,7 @@ async def crud_get_reservations(
       user_name=item.user.name,
       hall_id=item.hall_id,
       hall_name=item.hall.name,
-      status=item.status.value if hasattr(item.status, 'value') else item.status,
+      status=item.status.value,
       reservation_date=item.reservation_date,
     )
     for item in result_items
