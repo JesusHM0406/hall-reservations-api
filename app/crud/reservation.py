@@ -75,7 +75,7 @@ async def crud_get_reservations(
 
   if filters.status:
     stmt = stmt.where(Reservation.status == filters.status)
-    total_records_stmt = total_records_stmt.join(Reservation.hall).where(Reservation.status == filters.status)
+    total_records_stmt = total_records_stmt.where(Reservation.status == filters.status)
 
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
