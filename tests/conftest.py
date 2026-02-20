@@ -30,7 +30,7 @@ def event_loop():
   loop.close()
 
 @pytest.fixture(scope="session", autouse=True)
-async def setup_database():
+async def setup_database(event_loop):
   """Create the tables before the tests and delete them at the end."""
   async with engine.begin() as conn:
     await conn.run_sync(Base.metadata.create_all)
