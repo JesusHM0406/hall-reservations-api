@@ -83,7 +83,7 @@ async def service_delete_user(*, db: AsyncSession, id: int):
   if not user.is_active:
     raise BusinessLogicError("The user has already been deactivated previously.")
 
-  await crud_delete_user(db=db, id=id)
+  await crud_delete_user(db=db, user=user)
 
   return
 
