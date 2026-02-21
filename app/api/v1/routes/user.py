@@ -20,13 +20,12 @@ router = APIRouter()
 
 @router.post("/", status_code=201, response_model=UserRead)
 async def add_user(user: UserCreate, db: DBDep) -> UserRead:
-  async with db.begin():
-    return await service_create_user(
-      db=db,
-      name=user.name,
-      password=user.password,
-      password_confirm=user.password_confirm
-    )
+  return await service_create_user(
+    db=db,
+    name=user.name,
+    password=user.password,
+    password_confirm=user.password_confirm
+  )
 
 @router.get("/", response_model=Pagination)
 async def get_all_users(
@@ -55,14 +54,12 @@ async def update_current_user(
   user: UserDep,
   update: UserUpdate
 ) -> UserRead:
-  async with db.begin():
-    return await service_update_user(
-      db=db,
-      name=update.name,
-      id=user.id
-    )
+  return await service_update_user(
+    db=db,
+    name=update.name,
+    id=user.id
+  )
 
 @router.delete("/me", status_code=204)
 async def delete_current_user(db: DBDep, user: UserDep):
-  async with db.begin():
-    await service_delete_user(db=db, id=user.id)
+  await service_delete_user(db=db, id=user.id)

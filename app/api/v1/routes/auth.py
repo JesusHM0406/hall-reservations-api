@@ -17,12 +17,11 @@ async def login_for_access_token(
   form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
   db: DBDep
 ) -> Token:
-  async with db.begin():
-    user = await authenticate_user(
-      db=db,
-      name=form_data.username,
-      password=form_data.password
-    )
+  user = await authenticate_user(
+    db=db,
+    name=form_data.username,
+    password=form_data.password
+  )
 
   if not user:
     raise HTTPException(

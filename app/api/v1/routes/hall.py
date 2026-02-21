@@ -24,13 +24,12 @@ async def create_new_hall(
   admin: AdminDep,
   hall: HallCreate
 ) -> HallRead:
-  async with db.begin():
-    return await service_create_new_hall(
-      db=db,
-      name=hall.name,
-      description=hall.description,
-      is_available=hall.is_available
-    )
+  return await service_create_new_hall(
+    db=db,
+    name=hall.name,
+    description=hall.description,
+    is_available=hall.is_available
+  )
 
 @router.get("/", response_model=Pagination)
 async def get_all_halls(
@@ -46,18 +45,15 @@ async def get_all_halls(
 
 @router.get("/search", response_model=List[HallSearchResponse])
 async def search_halls(db: DBDep, q: Annotated[str, Query(min_length=2)]) -> List[HallSearchResponse]:
-  async with db.begin():
-    return await service_search_halls(db=db, search_query=q)
+  return await service_search_halls(db=db, search_query=q)
 
 @router.get("/{name}", response_model=HallRead)
 async def get_hall_by_name(db: DBDep, name: str) -> HallRead:
-  async with db.begin():
-    return await service_get_hall_by_name(db=db, name=name)
+  return await service_get_hall_by_name(db=db, name=name)
 
 @router.get("/{id}", response_model=HallRead)
 async def get_hall_by_id(db: DBDep, id: int) -> HallRead:
-  async with db.begin():
-    return await service_get_hall_by_id(db=db, id=id)
+  return await service_get_hall_by_id(db=db, id=id)
 
 @router.patch("/{id}", response_model=HallRead)
 async def update_hall(
@@ -66,14 +62,13 @@ async def update_hall(
   id: int,
   hall: HallUpdate
 ) -> HallRead:
-  async with db.begin():
-    return await service_update_hall(
-      db=db,
-      name=hall.name,
-      description=hall.description,
-      is_available=hall.is_available,
-      id=id
-    )
+  return await service_update_hall(
+    db=db,
+    name=hall.name,
+    description=hall.description,
+    is_available=hall.is_available,
+    id=id
+  )
 
 @router.patch("/{id}/availability", response_model=HallRead)
 async def update_hall_availability(
@@ -82,9 +77,8 @@ async def update_hall_availability(
   id: int,
   update: HallUpdateAvailability
 ) -> HallRead:
-  async with db.begin():
-    return await service_update_hall_availability(
-      db=db,
-      id=id,
-      is_available=update.is_available
-    )
+  return await service_update_hall_availability(
+    db=db,
+    id=id,
+    is_available=update.is_available
+  )

@@ -24,13 +24,12 @@ async def create_reservation(
   reservation: ReservationCreate,
   user: UserDep
 ) -> ReservationRead:
-  async with db.begin():
-    return await service_create_new_reservation(
-      db=db,
-      user_id=user.id,
-      hall_id=reservation.hall_id,
-      reservation_date=reservation.reservation_date
-    )
+  return await service_create_new_reservation(
+    db=db,
+    user_id=user.id,
+    hall_id=reservation.hall_id,
+    reservation_date=reservation.reservation_date
+  )
 
 @router.get("/", response_model=Pagination)
 async def get_reservations(
@@ -39,12 +38,11 @@ async def get_reservations(
   filters: Annotated[ReservationFilters, Depends()],
   page: int = 1
 ) -> Pagination:
-  async with db.begin():
-    return await service_get_all_reservations(
-      db=db,
-      page=page,
-      filters=filters
-    )
+  return await service_get_all_reservations(
+    db=db,
+    page=page,
+    filters=filters
+  )
 
 @router.get("/me", response_model=Pagination)
 async def get_reservations_for_the_current_user(
@@ -55,12 +53,11 @@ async def get_reservations_for_the_current_user(
 ) -> Pagination:
   filters.user_name = user.name
 
-  async with db.begin():
-    return await service_get_all_reservations(
-      db=db,
-      page=page,
-      filters=filters
-    )
+  return await service_get_all_reservations(
+    db=db,
+    page=page,
+    filters=filters
+  )
 
 @router.get("/{id}", response_model=ReservationRead)
 async def get_single_reservation(
@@ -68,8 +65,7 @@ async def get_single_reservation(
   id: int,
   admin: AdminDep
 ) -> ReservationRead:
-  async with db.begin():
-    return await service_get_reservation(db=db, id=id)
+  return await service_get_reservation(db=db, id=id)
 
 @router.patch("/{id}/finish", response_model=ReservationRead)
 async def finish_reservation(
@@ -77,13 +73,12 @@ async def finish_reservation(
   user: UserDep,
   id: int
 ) -> ReservationRead:
-  async with db.begin():
-    return await service_update_reservation_status(
-      db=db,
-      reservation_id=id,
-      new_status=ReservationStatus.FINISHED.value,
-      user_id=user.id
-    )
+  return await service_update_reservation_status(
+    db=db,
+    reservation_id=id,
+    new_status=ReservationStatus.FINISHED.value,
+    user_id=user.id
+  )
 
 @router.patch("/{id}/cancel", response_model=ReservationRead)
 async def cancel_reservation(
@@ -91,10 +86,9 @@ async def cancel_reservation(
   user: UserDep,
   id: int
 ) -> ReservationRead:
-  async with db.begin():
-    return await service_update_reservation_status(
-      db=db,
-      reservation_id=id,
-      new_status=ReservationStatus.CANCELLED.value,
-      user_id=user.id
-    )
+  return await service_update_reservation_status(
+    db=db,
+    reservation_id=id,
+    new_status=ReservationStatus.CANCELLED.value,
+    user_id=user.id
+  )

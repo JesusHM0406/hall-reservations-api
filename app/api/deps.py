@@ -13,7 +13,8 @@ from app.schemas.user import UserComplete
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
   async with AsyncSessionLocal() as session:
-    yield session
+    async with session.begin():
+      yield session
 
 DBDep = Annotated[AsyncSession, Depends(get_db)]
 
