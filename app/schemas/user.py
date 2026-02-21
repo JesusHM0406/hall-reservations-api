@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from app.core.config import settings
 
 
 class UserRead(BaseModel):
@@ -6,9 +8,9 @@ class UserRead(BaseModel):
   name: str
 
 class UserCreate(BaseModel):
-  name: str
-  password: str
-  password_confirm: str
+  name: str = Field(..., min_length=3, max_length=30)
+  password: str = Field(..., min_length=settings.MIN_PASSWORD_SIZE, max_length=72)
+  password_confirm: str = Field(..., min_length=settings.MIN_PASSWORD_SIZE, max_length=72)
 
 class UserUpdate(BaseModel):
   name: str

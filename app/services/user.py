@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.messages import ErrorMessages
 from app.core.security import get_password_hash
 from app.crud.user import (
@@ -16,8 +17,6 @@ from app.schemas.user import UserComplete, UserRead
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
 
-MIN_PASSWORD_SIZE = 8
-
 async def service_create_user(
   *,
   db: AsyncSession,
@@ -25,10 +24,14 @@ async def service_create_user(
   password: str,
   password_confirm: str
 ) -> UserRead:
-  if len(password) < MIN_PASSWORD_SIZE:
+  if len(password) < settings.MIN_PASSWORD_SIZE:
     raise BusinessLogicError(ErrorMessages.SHORT_PASSWORD)
   if password != password_confirm:
     raise BusinessLogicError(ErrorMessages.PASSWORDS_MISMATCH)
+
+  name = name.strip()
+  if not name:
+    raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
 
   user = await crud_get_user_by_name(db=db, name=name)
 
