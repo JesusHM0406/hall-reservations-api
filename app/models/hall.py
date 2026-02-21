@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List, Text
 
-from sqlalchemy import Boolean, Computed, Index, Integer, String, event
+from sqlalchemy import Boolean, Computed, FetchedValue, Index, Integer, String, event
 from sqlalchemy import Text as SQLtext
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.ext.compiler import compiles
@@ -18,7 +18,12 @@ class Hall(Base):
   name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
   description: Mapped[Text] = mapped_column(SQLtext, nullable=False)
   is_available: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-  search_vector: Mapped[TSVECTOR] = mapped_column(TSVECTOR, nullable=True)
+  search_vector: Mapped[TSVECTOR] = mapped_column(
+    TSVECTOR,
+    nullable=True,
+    server_default=FetchedValue(),
+    server_onupdate=FetchedValue()
+  )
 
   # Relationships
   reservations: Mapped[List["Reservation"]] = relationship("Reservation", back_populates="hall", lazy="raise")
