@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.messages import ErrorMessages
 from app.core.security import get_password_hash
 from app.crud.user import (
   crud_create_new_user,
@@ -25,14 +26,14 @@ async def service_create_user(
   password_confirm: str
 ) -> UserRead:
   if len(password) < MIN_PASSWORD_SIZE:
-    raise BusinessLogicError("The password must contain at least 8 characters.")
+    raise BusinessLogicError(ErrorMessages.SHORT_PASSWORD)
   if password != password_confirm:
-    raise BusinessLogicError("The passwords don't match.")
+    raise BusinessLogicError(ErrorMessages.PASSWORDS_MISMATCH)
 
   user = await crud_get_user_by_name(db=db, name=name)
 
   if user is not None:
-    raise ConflictError("The name already exists.")
+    raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
 
   pw_hash = get_password_hash(password=password)
   new_user = await crud_create_new_user(db=db, name=name, pw_hash=pw_hash)
@@ -49,7 +50,7 @@ async def service_get_user_by_id(
   user = await crud_get_user_by_id(db=db, id=id)
 
   if not user:
-    raise NotFoundError("User not found.")
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   return UserComplete(
     id=user.id,
@@ -67,9 +68,9 @@ async def service_update_user(
   user = await crud_get_user_by_id(db=db, id=id)
 
   if not user:
-    raise NotFoundError("User not found.")
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
   if not user.is_active:
-    raise BusinessLogicError("The user is inactive.")
+    raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
 
   await crud_update_user(db=db, name=name, id=id)
 
@@ -79,9 +80,9 @@ async def service_delete_user(*, db: AsyncSession, id: int):
   user = await crud_get_user_by_id(db=db, id=id)
 
   if not user:
-    raise NotFoundError("The user you want to delete doesn't exist.")
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
   if not user.is_active:
-    raise BusinessLogicError("The user has already been deactivated previously.")
+    raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
 
   await crud_delete_user(db=db, user=user)
 

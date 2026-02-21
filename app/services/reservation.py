@@ -1,5 +1,6 @@
 from datetime import date
 
+from app.core.messages import ErrorMessages
 from app.models.reservation_status import ReservationStatus
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,19 +34,19 @@ async def service_create_new_reservation(
 ) -> ReservationRead:
   today = date.today()
   if reservation_date < today or reservation_date == today:
-    raise BusinessLogicError("The date is invalid; it must be at least one day after the current date.")
+    raise BusinessLogicError(ErrorMessages.INVALID_DATE)
 
   user = await crud_get_user_by_id(db=db, id=user_id)
   if not user:
-    raise NotFoundError("The user doesn't exist.")
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
   if not user.is_active:
-    raise BusinessLogicError("The user is inactive.")
+    raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
 
   hall = await crud_get_hall_by_id(db=db, id=hall_id)
   if not hall:
-    raise NotFoundError("The hall doesn't exist.")
+    raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
   if not hall.is_available:
-    raise BusinessLogicError("The hall isn't available in this moment.")
+    raise BusinessLogicError(ErrorMessages.UNAVAILABLE_HALL)
 
   try:
     reservation = await crud_create_new_reservation(
@@ -66,7 +67,7 @@ async def service_create_new_reservation(
       reservation_date=reservation.reservation_date
     )
   except IntegrityError:
-    raise ConflictError("There's already an active reservation in that date.")
+    raise ConflictError(ErrorMessages.DUPLICATED_RESERVATION)
 
 async def service_get_reservation(
   *,
@@ -76,7 +77,7 @@ async def service_get_reservation(
   reservation = await crud_get_reservation(db=db, reservation_id=id)
 
   if not reservation:
-    raise NotFoundError("Reservation not found.")
+    raise NotFoundError(ErrorMessages.RESERVATION_NOT_FOUND)
 
   return ReservationRead(
     id=reservation.id,
@@ -98,36 +99,36 @@ async def service_update_reservation_status(
   user = await crud_get_user_by_id(db=db, id=user_id)
 
   if not user:
-    raise NotFoundError("User not found.")
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   reservation = await crud_get_reservation(db=db, reservation_id=reservation_id)
 
   if not reservation:
-    raise NotFoundError("Reservation not found.")
+    raise NotFoundError(ErrorMessages.RESERVATION_NOT_FOUND)
 
   hall = await crud_get_hall_by_id(db=db, id=reservation.hall_id)
 
   if not hall:
-    raise NotFoundError("It appears the hall was deleted.")
+    raise NotFoundError(ErrorMessages.DELETED_HALL)
 
   if reservation.user_id != user.id:
-    raise BusinessLogicError("The reservation is not from this user.")
+    raise BusinessLogicError(ErrorMessages.RESERVATION_USER_CONFLICT)
 
   if new_status not in [
     ReservationStatus.CANCELLED.value,
     ReservationStatus.CONFIRMED.value,
     ReservationStatus.FINISHED.value
   ]:
-    raise BusinessLogicError("Invalid status.")
+    raise BusinessLogicError(ErrorMessages.INVALID_STATUS)
 
   status_enum = ReservationStatus(new_status)
 
   if status_enum not in STATUS_TRANSITIONS.get(reservation.status, []):
-    raise BusinessLogicError(f"Transition from {reservation.status.value} to {new_status} is not allowed.")
+    raise BusinessLogicError(ErrorMessages.INVALID_TRANSITION)
 
   if (new_status == ReservationStatus.FINISHED.value and
     date.today() != reservation.reservation_date):
-    raise BusinessLogicError("The reservation cannot be finalized because today is not the reservation date.")
+      raise BusinessLogicError(ErrorMessages.INVALID_FINALIZATION)
 
   updated_reservation = await crud_update_reservation_status(
     new_status=status_enum,

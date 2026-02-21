@@ -1,7 +1,8 @@
+from app.core.messages import ErrorMessages
 from app.exceptions.base import AppError
 
 class NotFoundError(AppError):
-  def __init__(self, message: str = "Resource not found"):
+  def __init__(self, message: str = ErrorMessages.RESOURCE_NOT_FOUND):
     super().__init__(message, status_code=404, code="NOT_FOUND")
 
 class BusinessLogicError(AppError):

@@ -12,6 +12,7 @@ from app.api.v1.routes.hall import router as hall_router
 from app.api.v1.routes.reservation import router as reservation_router
 from app.api.v1.routes.user import router as user_router
 from app.core.config import settings
+from app.core.messages import ErrorMessages
 from app.exceptions.base import AppError
 from app.utils.tasks import clean_expired_reservations
 
@@ -63,7 +64,7 @@ async def integrity_exception_handler(request: Request, exc: IntegrityError):
     content={
       "status": "error",
       "code": "DATABASE_INTEGRITY_ERROR",
-      "message": "Data integrity conflict (possible duplicate record).",
+      "message": ErrorMessages.INTEGRITY_ERROR,
       "path": request.url.path
     }
   )
@@ -76,7 +77,7 @@ async def general_exception_handler(request: Request, exc: Exception):
     content={
       "status": "error",
       "code": "INTERNAL_SERVER_ERROR",
-      "message": "An unexpected error has occurred on the server.",
+      "message": ErrorMessages.UNEXPECTED_ERROR,
       "path": request.url.path
     }
   )

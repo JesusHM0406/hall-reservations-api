@@ -1,6 +1,7 @@
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.messages import ErrorMessages
 from app.crud.hall import (
   crud_create_new_hall,
   crud_get_all_halls,
@@ -27,7 +28,7 @@ async def service_create_new_hall(
   hall = await crud_get_hall_by_name(db=db, name=name)
 
   if hall:
-    raise ConflictError("There's already a hall with that name.")
+    raise ConflictError(ErrorMessages.DUPLICATED_HALL_NAME)
 
   created_hall = await crud_create_new_hall(
     db=db,
@@ -49,7 +50,7 @@ async def service_get_hall_by_id(*, db: AsyncSession, id: int) -> HallRead:
   hall = await crud_get_hall_by_id(db=db, id=id)
 
   if not hall:
-    raise NotFoundError("Hall not found.")
+    raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
 
   return HallRead(
     id=hall.id,
@@ -62,7 +63,7 @@ async def service_get_hall_by_name(*, db: AsyncSession, name: str) -> HallRead:
   hall = await crud_get_hall_by_name(db=db, name=name)
 
   if not hall:
-    raise NotFoundError("Hall not found.")
+    raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
 
   return HallRead(
     id=hall.id,
@@ -82,7 +83,7 @@ async def service_update_hall(
   hall = await crud_get_hall_by_id(db=db, id=id)
 
   if not hall:
-    raise NotFoundError("Hall not found.")
+    raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
 
   updated_hall = await crud_update_hall(
     hall=hall,
@@ -107,7 +108,7 @@ async def service_update_hall_availability(
   hall = await crud_get_hall_by_id(db=db, id=id)
 
   if not hall:
-    raise NotFoundError("Hall not found.")
+    raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
 
   updated_hall = await crud_update_hall_availability(
     hall=hall,

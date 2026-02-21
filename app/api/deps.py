@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import PyJWTError
 
 from app.core.config import settings
+from app.core.messages import ErrorMessages
 from app.crud.user import crud_get_user_by_name
 from app.db.session import AsyncSession, AsyncSessionLocal
 from app.schemas.user import UserComplete
@@ -26,7 +27,7 @@ async def get_current_user(
 ) -> UserComplete:
   credentials_exception = HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
-      detail="Could not validate credentials",
+      detail=ErrorMessages.INVALID_CREDENTIALS,
       headers={"WWW-Authenticate": "Bearer"},
   )
   try:
@@ -57,12 +58,18 @@ async def get_current_user(
 
 async def get_current_active_user(user: Annotated[UserComplete, Depends(get_current_user)]):
   if not user.is_active:
-    raise HTTPException(status_code=400, detail="Inactive user")
+    raise HTTPException(
+      status_code=400,
+      detail=ErrorMessages.INACTIVE_USER
+    )
   return user
 
 async def get_current_active_admin(user: Annotated[UserComplete, Depends(get_current_active_user)]):
   if user.role != "admin":
-    raise HTTPException(status_code=403, detail="Not enough permissions.")
+    raise HTTPException(
+      status_code=403,
+      detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS
+    )
   return user
 
 UserDep = Annotated[UserComplete, Depends(get_current_active_user)]
