@@ -41,9 +41,11 @@ async def setup_database(event_loop):
 @pytest.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
   """Fixture to get a clean DB session in each test."""
-  async with TestingSessionLocal() as session:
-    yield session
-    await session.rollback()
+  async with engine.connect() as connection:
+    transaction = await connection.begin()
+    async with AsyncSession(bind=connection, expire_on_commit=False) as session:
+      yield session
+    await transaction.rollback()
 
 @pytest.fixture
 async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
