@@ -353,3 +353,46 @@ class TestGetUsers:
     # Only users and active ones (mixed)
     res = await client.get(f"/users/?{UserFilterNames.ROLE.value}={UserRoleFilter.USER.value}&{UserFilterNames.STATUS.value}={UserStatusFilter.ACTIVE.value}")
     assert res.json()["total"] == 2
+
+class TestGetMe:
+  async def test_get_me_success(self, client: AsyncClient):
+    me_mock = UserComplete(
+      id=123,
+      name="isaias",
+      role=UserRole.USER,
+      is_active=True
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: me_mock
+
+    response = await client.get("/users/me")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["name"] == "isaias"
+    assert data["id"] == 123
+    assert data["role"] == UserRole.USER
+
+  async def test_get_me_unauthenticated(self, client: AsyncClient):
+    app.dependency_overrides = {}
+
+    response = await client.get("/users/me")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated" # Default message
+
+  async def test_get_me_inactive(self, client: AsyncClient):
+    inactive_me = UserComplete(
+      id=123,
+      name="isaias",
+      role=UserRole.USER,
+      is_active=False
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: inactive_me
+
+    response = await client.get("/users/me")
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == ErrorMessages.INACTIVE_USER
