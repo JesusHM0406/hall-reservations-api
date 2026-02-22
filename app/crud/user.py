@@ -35,8 +35,11 @@ async def crud_update_user(
 
   return user
 
-async def crud_delete_user(*, db: AsyncSession, user: User):
+async def crud_delete_user(*, user: User):
+  import time
+  user.is_deleted = True
   user.is_active = False
+  user.name = f"{user.name}_del_{int(time.time())}"
 
 async def crud_get_user_by_name(*, db: AsyncSession, name: str):
   result = await db.execute(select(User).where(User.name == name))

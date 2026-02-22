@@ -120,10 +120,8 @@ async def service_delete_user(*, db: AsyncSession, id: int):
 
   if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
-  if not user.is_active:
-    raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
 
-  await crud_delete_user(db=db, user=user)
+  await crud_delete_user(user=user)
 
   return
 
