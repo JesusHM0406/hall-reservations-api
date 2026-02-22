@@ -12,7 +12,7 @@ from app.crud.hall import (
   crud_update_hall_availability,
 )
 from app.exceptions.exceptions import ConflictError, NotFoundError
-from app.schemas.filters.hall import HallFilters, HallFilterLabels, HallFilterNames
+from app.schemas.filters.hall import HallFilters, HallFilterLabels, HallFilterNames, HallStatusFilter
 from app.schemas.hall import HallRead, HallSearchResponse
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
@@ -128,11 +128,17 @@ async def service_get_all_halls(
   page: int,
   filters: HallFilters
 ) -> Pagination:
+  hall_status_filter_dict: dict[str, str] = {}
+
+  for status in HallStatusFilter:
+    hall_status_filter_dict[status.value] = status.value.capitalize()
+
   hall_available_filters = [
-    FilterFactory.boolean(
-      name=HallFilterNames.AVAILABLE.value,
-      label=HallFilterLabels.AVAILABLE.value,
-      current=filters.available_filter
+    FilterFactory.select(
+      name=HallFilterNames.STATUS.value,
+      label=HallFilterLabels.STATUS.value,
+      options=hall_status_filter_dict,
+      current=filters.status
     )
   ]
 

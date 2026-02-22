@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.hall import Hall
-from app.schemas.filters.hall import HallFilters
+from app.schemas.filters.hall import HallFilters, HallStatusFilter
 from app.schemas.hall import HallRead
 from app.utils.pagination import get_pagination_computed_fields
 from app.utils.pagination_crud import PaginationCRUD
@@ -62,11 +62,18 @@ async def crud_get_all_halls(
   stmt = select(Hall).order_by(Hall.id.desc())
   total_records_stmt = select(func.count()).select_from(Hall)
 
-  available_filter = filters.available_filter
+  filters_to_apply = []
 
-  if available_filter is not None:
-    stmt = stmt.where(Hall.is_available == available_filter)
-    total_records_stmt = total_records_stmt.where(Hall.is_available == available_filter)
+  status_filter = filters.status
+
+  if status_filter == HallStatusFilter.AVAILABLE:
+    filters_to_apply.append(Hall.is_available.is_(True))
+  elif status_filter == HallStatusFilter.UNAVAILABLE:
+    filters_to_apply.append(Hall.is_available.is_(False))
+
+  for condition in filters_to_apply:
+    stmt = stmt.where(condition)
+    total_records_stmt = total_records_stmt.where(condition)
 
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0

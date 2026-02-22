@@ -2,11 +2,16 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 
+class HallStatusFilter(str, Enum):
+  AVAILABLE = "available"
+  UNAVAILABLE = "unavailable"
+  ALL = "all"
+
 class HallFilters(BaseModel):
-  available_filter: bool | None = Field(None)
+  status: HallStatusFilter | None = Field(None)
 
 class HallFilterNames(str, Enum):
-  AVAILABLE = "available_filter"
+  STATUS = "status"
 
 class HallFilterLabels(str, Enum):
-  AVAILABLE = "Only available halls"
+  STATUS = "By availability"
