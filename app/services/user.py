@@ -12,7 +12,7 @@ from app.crud.user import (
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
-from app.schemas.filters.user import UserFilters, UserFilterLabels, UserFilterNames
+from app.schemas.filters.user import UserFilters, UserFilterLabels, UserFilterNames, UserRoleFilter, UserStatusFilter
 from app.schemas.user import UserComplete, UserRead
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
@@ -97,16 +97,28 @@ async def service_get_all_users(
   page: int,
   filters: UserFilters
 ) -> Pagination:
+  user_role_filter_dict: dict[str, str] = {}
+
+  for status in UserRoleFilter:
+    user_role_filter_dict[status.value] = status.value.capitalize()
+
+  user_status_filter_dict: dict[str, str] = {}
+
+  for status in UserStatusFilter:
+    user_status_filter_dict[status.value] = status.value.capitalize()
+
   user_availables_filters = [
-    FilterFactory.boolean(
-      name=UserFilterNames.ACTIVE.value,
-      label=UserFilterLabels.ACTIVE.value,
-      current=filters.active_filter
+    FilterFactory.select(
+      name=UserFilterNames.STATUS.value,
+      label=UserFilterLabels.STATUS.value,
+      options=user_role_filter_dict,
+      current=filters.status
     ),
-    FilterFactory.boolean(
-      name=UserFilterNames.ADMIN.value,
-      label=UserFilterLabels.ADMIN.value,
-      current=filters.admin_filter
+    FilterFactory.select(
+      name=UserFilterNames.ROLE.value,
+      label=UserFilterLabels.ROLE.value,
+      options=user_status_filter_dict,
+      current=filters.role
     )
   ]
 

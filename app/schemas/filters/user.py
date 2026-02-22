@@ -1,15 +1,27 @@
 from enum import Enum
 from pydantic import BaseModel, Field
 
+from app.models.user_role import UserRole
+
+
+class UserRoleFilter(str, Enum):
+  ADMIN = UserRole.ADMIN.value
+  USER = UserRole.USER.value
+  ALL = "all"
+
+class UserStatusFilter(str, Enum):
+  ACTIVE = "active"
+  INACTIVE = "inactive"
+  ALL = "all"
 
 class UserFilters(BaseModel):
-  active_filter: bool | None = Field(None)
-  admin_filter: bool | None = Field(None)
+  role: UserRoleFilter | None = Field(None)
+  status: UserStatusFilter | None = Field(None)
 
 class UserFilterNames(str, Enum):
-  ACTIVE = "active_filter"
-  ADMIN = "admin_filter"
+  ROLE = "role"
+  STATUS = "status"
 
 class UserFilterLabels(str, Enum):
-  ACTIVE = "Only active users"
-  ADMIN = "Only admins"
+  ROLE = "By role"
+  STATUS = "By status"

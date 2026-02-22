@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.user import User
-from app.schemas.filters.user import UserFilters
+from app.schemas.filters.user import UserFilters, UserRoleFilter, UserStatusFilter
 from app.utils.pagination import get_pagination_computed_fields
 from app.utils.pagination_crud import PaginationCRUD
 from app.schemas.user import UserComplete
@@ -39,21 +39,24 @@ async def crud_get_all_users(
   stmt = select(User).order_by(User.id.desc())
   total_records_stmt = select(func.count()).select_from(User)
 
-  active_filter = filters.active_filter
-  admin_filter = filters.admin_filter
+  filters_to_apply = []
 
-  if active_filter is not  None:
-    stmt = stmt.where(User.is_active == active_filter)
-    total_records_stmt = total_records_stmt.where(
-      User.is_active == active_filter
-    )
-  if admin_filter is not None:
-    stmt = stmt.where(
-      User.role == (UserRole.ADMIN if admin_filter else UserRole.USER)
-    )
-    total_records_stmt = total_records_stmt.where(
-      User.role == (UserRole.ADMIN if admin_filter else UserRole.USER)
-    )
+  status_filter = filters.status
+  role_filter = filters.role
+
+  if status_filter == UserStatusFilter.ACTIVE:
+    filters_to_apply.append(User.is_active.is_(True))
+  elif status_filter == UserStatusFilter.INACTIVE:
+    filters_to_apply.append(User.is_active.is_(False))
+
+  if role_filter == UserRoleFilter.ADMIN:
+    filters_to_apply.append(User.role == UserRole.ADMIN)
+  elif role_filter == UserRoleFilter.USER:
+    filters_to_apply.append(User.is_active == UserRole.USER)
+
+  for condition in filters_to_apply:
+    stmt = stmt.where(condition)
+    total_records_stmt = total_records_stmt.where(condition)
 
   total_res = await db.execute(total_records_stmt)
   total_records = total_res.scalar() or 0
