@@ -60,7 +60,8 @@ async def service_get_user_by_id(
     id=user.id,
     name=user.name,
     role=user.role,
-    is_active=user.is_active
+    is_active=user.is_active,
+    is_deleted=user.is_deleted
   )
 
 async def service_update_user(
@@ -110,7 +111,8 @@ async def service_update_user_as_admin(
     id=id,
     name=updated_user.name,
     role=updated_user.role,
-    is_active=updated_user.is_active
+    is_active=updated_user.is_active,
+    is_deleted=updated_user.is_deleted
   )
 
 async def service_delete_user(*, db: AsyncSession, id: int):

@@ -87,7 +87,8 @@ async def crud_get_all_users(
       id=user.id,
       name=user.name,
       role=user.role,
-      is_active=user.is_active
+      is_active=user.is_active,
+      is_deleted=user.is_deleted
     )
     for user in result_items
   ]

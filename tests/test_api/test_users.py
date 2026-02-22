@@ -183,7 +183,8 @@ class TestGetUsers:
       id=999,
       name="admin",
       role=UserRole.ADMIN,
-      is_active=True
+      is_active=True,
+      is_deleted=False
     )
 
     app.dependency_overrides[get_current_user] = lambda: admin_mock
@@ -203,7 +204,8 @@ class TestGetUsers:
       id=1,
       name="user",
       role=UserRole.USER,
-      is_active=True
+      is_active=True,
+      is_deleted=False
     )
 
     app.dependency_overrides[get_current_user] = lambda: user_mock
@@ -229,7 +231,8 @@ class TestGetUsers:
       id=1,
       name="admin",
       role=UserRole.ADMIN,
-      is_active=False
+      is_active=False,
+      is_deleted=False
     )
 
     app.dependency_overrides[get_current_user] = lambda: admin_mock
@@ -247,7 +250,8 @@ class TestGetUsers:
       id=999,
       name="admin",
       role=UserRole.ADMIN,
-      is_active=True
+      is_active=True,
+      is_deleted=False
     )
     app.dependency_overrides[get_current_user] = lambda: admin_mock
 
@@ -272,7 +276,13 @@ class TestGetUsers:
       assert "password" not in user
 
   async def test_get_users_pagination_logic(self, client: AsyncClient, db_session: AsyncSession):
-    admin_mock = UserComplete(id=999, name="admin", role=UserRole.ADMIN, is_active=True)
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
     app.dependency_overrides[get_current_user] = lambda: admin_mock
 
     users = [User(name=f"user_{i}", pw_hash="hash") for i in range(15)]
@@ -301,7 +311,13 @@ class TestGetUsers:
     assert data["prev_num"] == 1
 
   async def test_get_users_pagination_boundaries(self, client: AsyncClient, db_session: AsyncSession):
-    admin_mock = UserComplete(id=999, name="admin", role=UserRole.ADMIN, is_active=True)
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
     app.dependency_overrides[get_current_user] = lambda: admin_mock
     users = [User(name=f"u{i}", pw_hash="h") for i in range(15)]
     db_session.add_all(users)
@@ -328,7 +344,13 @@ class TestGetUsers:
     assert len(data["items"]) == 5
 
   async def test_get_users_filters(self, client: AsyncClient, db_session: AsyncSession):
-    admin_mock = UserComplete(id=999, name="admin", role=UserRole.ADMIN, is_active=True)
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
     app.dependency_overrides[get_current_user] = lambda: admin_mock
 
     # 1 active admin, 2 active users, 1 inactive user
@@ -360,7 +382,8 @@ class TestGetMe:
       id=123,
       name="isaias",
       role=UserRole.USER,
-      is_active=True
+      is_active=True,
+      is_deleted=False
     )
 
     app.dependency_overrides[get_current_user] = lambda: me_mock
@@ -387,7 +410,8 @@ class TestGetMe:
       id=123,
       name="isaias",
       role=UserRole.USER,
-      is_active=False
+      is_active=False,
+      is_deleted=False
     )
 
     app.dependency_overrides[get_current_user] = lambda: inactive_me
@@ -399,7 +423,13 @@ class TestGetMe:
 
 class TestGetUserByID:
   async def test_get_user_by_id_success(self, client: AsyncClient, db_session: AsyncSession):
-    admin_mock = UserComplete(id=999, name="admin", role=UserRole.ADMIN, is_active=True)
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
     app.dependency_overrides[get_current_user] = lambda: admin_mock
 
     fake_user = User(name="fake", pw_hash="h")
@@ -418,7 +448,13 @@ class TestGetUserByID:
     assert data["role"] == UserRole.USER
 
   async def test_get_user_by_id_not_found(self, client: AsyncClient):
-    admin_mock = UserComplete(id=999, name="admin", role=UserRole.ADMIN, is_active=True)
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
     app.dependency_overrides[get_current_user] = lambda: admin_mock
 
     # It is assumed that ID 9999 does not exist
@@ -429,7 +465,13 @@ class TestGetUserByID:
 
   async def test_get_user_by_id_as_regular_user(self, client: AsyncClient):
     # User without admin role
-    user_mock = UserComplete(id=1, name="user", role=UserRole.USER, is_active=True)
+    user_mock = UserComplete(
+      id=1,
+      name="user",
+      role=UserRole.USER,
+      is_active=True,
+      is_deleted=False
+    )
     app.dependency_overrides[get_current_user] = lambda: user_mock
 
     response = await client.get("/users/2")
@@ -447,7 +489,8 @@ class TestUpdateMe:
       id=fake_db_user.id,
       name=fake_db_user.name,
       role=fake_db_user.role,
-      is_active=fake_db_user.is_active
+      is_active=fake_db_user.is_active,
+      is_deleted=False
     )
     app.dependency_overrides[get_current_user] = lambda: user_mock
 
@@ -481,7 +524,8 @@ class TestUpdateMe:
       id=fake_db_user.id,
       name=fake_db_user.name,
       role=fake_db_user.role,
-      is_active=fake_db_user.is_active
+      is_active=fake_db_user.is_active,
+      is_deleted=False
     )
     app.dependency_overrides[get_current_user] = lambda: user_mock
 
@@ -496,7 +540,13 @@ class TestUpdateMe:
     db_session.add_all([user1, user2])
     await db_session.flush()
 
-    user_mock = UserComplete(id=user1.id, name="user1", role=UserRole.USER, is_active=True)
+    user_mock = UserComplete(
+      id=user1.id,
+      name="user1",
+      role=UserRole.USER,
+      is_active=True,
+      is_deleted=False
+    )
     app.dependency_overrides[get_current_user] = lambda: user_mock
 
     user_update = UserUpdate(name="user2")

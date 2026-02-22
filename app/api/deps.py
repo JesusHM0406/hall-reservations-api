@@ -58,7 +58,8 @@ async def get_current_user(
     id=user.id,
     name=user.name,
     role=user.role,
-    is_active=user.is_active
+    is_active=user.is_active,
+    is_deleted=user.is_deleted
   )
 
 async def get_current_active_user(user: Annotated[UserComplete, Depends(get_current_user)]):

@@ -28,7 +28,8 @@ async def authenticate_user(*, db: AsyncSession, name: str, password: str):
     id=user.id,
     name=user.name,
     role=user.role,
-    is_active=user.is_active
+    is_active=user.is_active,
+    is_deleted=user.is_deleted
   )
 
 def create_access_token(*, data: dict, expires_delta: timedelta | None = None):

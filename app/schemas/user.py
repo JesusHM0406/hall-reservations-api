@@ -24,3 +24,4 @@ class UserAdminUpdate(BaseModel):
 class UserComplete(UserRead):
   role: str
   is_active: bool
+  is_deleted: bool
