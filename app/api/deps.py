@@ -48,6 +48,11 @@ async def get_current_user(
 
   if user is None:
     raise credentials_exception
+  if user.is_deleted:
+    HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail=ErrorMessages.DELETED_USER
+  )
 
   return UserComplete(
     id=user.id,

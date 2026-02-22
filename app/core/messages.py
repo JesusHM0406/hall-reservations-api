@@ -6,6 +6,7 @@ class ErrorMessages:
   UNAUTHORIZED = "Incorrect username or password."
   INVALID_CREDENTIALS = "Could not validate credentials"
   NOT_ENOUGH_PERMISSIONS = "You don't have enough permissions to perform this action."
+  DELETED_USER = "The user was deleted."
 
   # Unhandled errors
   INTEGRITY_ERROR = "Data integrity conflict (possible duplicate record)."
