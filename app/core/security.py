@@ -19,7 +19,7 @@ def get_password_hash(*, password: str):
 async def authenticate_user(*, db: AsyncSession, name: str, password: str):
   user = await crud_get_user_by_name(db=db, name=name)
 
-  if not user or user.is_deleted:
+  if not user:
     return False
   if not verify_password(plain_password=password, hashed_password=user.pw_hash):
     return False
