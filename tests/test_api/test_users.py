@@ -396,3 +396,43 @@ class TestGetMe:
 
     assert response.status_code == 400
     assert response.json()["detail"] == ErrorMessages.INACTIVE_USER
+
+class TestGetUserByID:
+  async def test_get_user_by_id_success(self, client: AsyncClient, db_session: AsyncSession):
+    admin_mock = UserComplete(id=999, name="admin", role=UserRole.ADMIN, is_active=True)
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    fake_user = User(name="fake", pw_hash="h")
+    other_user = User(name="other", pw_hash="h")
+
+    db_session.add_all([fake_user, other_user])
+    await db_session.flush()
+
+    res = await client.get(f"/users/{fake_user.id}")
+
+    assert res.status_code == 200
+
+    data = res.json()
+
+    assert data["name"] == "fake"
+    assert data["role"] == UserRole.USER
+
+  async def test_get_user_by_id_not_found(self, client: AsyncClient):
+    admin_mock = UserComplete(id=999, name="admin", role=UserRole.ADMIN, is_active=True)
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    # It is assumed that ID 9999 does not exist
+    response = await client.get("/users/9999")
+
+    assert response.status_code == 404
+    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+
+  async def test_get_user_by_id_as_regular_user(self, client: AsyncClient):
+    # User without admin role
+    user_mock = UserComplete(id=1, name="user", role=UserRole.USER, is_active=True)
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    response = await client.get("/users/2")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == ErrorMessages.NOT_ENOUGH_PERMISSIONS
