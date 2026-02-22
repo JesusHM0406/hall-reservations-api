@@ -6,13 +6,14 @@ from app.models.hall import Hall as Hall
 from app.models.reservation import Reservation as Reservation
 from app.models.user import User as User
 from app.schemas.filters.user import UserFilters
-from app.schemas.user import UserComplete, UserCreate, UserRead, UserUpdate
+from app.schemas.user import UserAdminUpdate, UserComplete, UserCreate, UserRead, UserUpdate
 from app.services.user import (
   service_create_user,
   service_delete_user,
   service_get_all_users,
   service_get_user_by_id,
   service_update_user,
+  service_update_user_as_admin,
 )
 from app.utils.pagination import Pagination
 
@@ -58,6 +59,21 @@ async def update_current_user(
     db=db,
     name=update.name,
     id=user.id
+  )
+
+@router.patch("/{id}", response_model=UserComplete)
+async def update_user_as_admin(
+  db: DBDep,
+  admin: AdminDep,
+  update: UserAdminUpdate,
+  id: int
+) -> UserComplete:
+  return await service_update_user_as_admin(
+    db=db,
+    name=update.name,
+    role=update.role,
+    is_active=update.is_active,
+    id=id
   )
 
 @router.delete("/me", status_code=204)

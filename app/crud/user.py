@@ -1,4 +1,4 @@
-from sqlalchemy import select, update, func
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -19,9 +19,21 @@ async def crud_get_user_by_id(*, db: AsyncSession, id: int):
   result = await db.execute(select(User).where(User.id == id))
   return result.scalar_one_or_none()
 
-async def crud_update_user(*, db: AsyncSession, name: str, id: int):
-  await db.execute(update(User).where(User.id == id).values(name=name))
-  return
+async def crud_update_user(
+  *,
+  user: User,
+  name: str | None = None,
+  role: UserRole | None = None,
+  is_active: bool | None = None
+):
+  if name:
+    user.name = name
+  if role:
+    user.role = role
+  if is_active is not None:
+    user.is_active = is_active
+
+  return user
 
 async def crud_delete_user(*, db: AsyncSession, user: User):
   user.is_active = False

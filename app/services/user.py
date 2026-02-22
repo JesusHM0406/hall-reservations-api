@@ -12,6 +12,7 @@ from app.crud.user import (
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
+from app.models.user_role import UserRole
 from app.schemas.filters.user import UserFilters, UserFilterLabels, UserFilterNames, UserRoleFilter, UserStatusFilter
 from app.schemas.user import UserComplete, UserRead
 from app.utils.pagination import Pagination, get_pagination
@@ -80,9 +81,37 @@ async def service_update_user(
   if existing_user:
     raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
 
-  await crud_update_user(db=db, name=name, id=id)
+  await crud_update_user(user=user, name=name)
 
-  return UserRead(id=id, name=name )
+  return UserRead(id=id, name=name)
+
+async def service_update_user_as_admin(
+  *,
+  db: AsyncSession,
+  name: str | None = None,
+  role: UserRole | None = None,
+  is_active: bool | None = None,
+  id: int
+) -> UserComplete:
+  user = await crud_get_user_by_id(db=db, id=id)
+
+  if not user:
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
+
+  if name:
+    existing_user = await crud_get_user_by_name(db=db, name=name)
+
+    if existing_user and existing_user.id != id:
+      raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
+
+  updated_user = await crud_update_user(user=user, name=name, role=role, is_active=is_active)
+
+  return UserComplete(
+    id=id,
+    name=updated_user.name,
+    role=updated_user.role,
+    is_active=updated_user.is_active
+  )
 
 async def service_delete_user(*, db: AsyncSession, id: int):
   user = await crud_get_user_by_id(db=db, id=id)
