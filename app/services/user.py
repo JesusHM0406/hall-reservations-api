@@ -75,6 +75,11 @@ async def service_update_user(
   if not user.is_active:
     raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
 
+  existing_user = await crud_get_user_by_name(db=db, name=name)
+
+  if existing_user:
+    raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
+
   await crud_update_user(db=db, name=name, id=id)
 
   return UserRead(id=id, name=name )

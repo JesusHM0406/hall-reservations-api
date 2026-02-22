@@ -9,7 +9,7 @@ from app.main import app
 from app.models.user import User
 from app.models.user_role import UserRole
 from app.schemas.filters.user import UserFilterNames, UserRoleFilter, UserStatusFilter
-from app.schemas.user import UserComplete, UserCreate
+from app.schemas.user import UserComplete, UserCreate, UserUpdate
 
 
 class TestCreateUser:
@@ -436,3 +436,72 @@ class TestGetUserByID:
 
     assert response.status_code == 403
     assert response.json()["detail"] == ErrorMessages.NOT_ENOUGH_PERMISSIONS
+
+class TestUpdateMe:
+  async def test_update_user_success(self, client: AsyncClient, db_session: AsyncSession):
+    fake_db_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_db_user)
+    await db_session.flush()
+
+    user_mock = UserComplete(
+      id=fake_db_user.id,
+      name=fake_db_user.name,
+      role=fake_db_user.role,
+      is_active=fake_db_user.is_active
+    )
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    user_update = UserUpdate(name="newname")
+
+    response = await client.patch("/users/me", json=user_update.model_dump())
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "newname"
+
+    user_res = await db_session.execute(select(User).where(User.name == "newname"))
+    user_db = user_res.scalar_one_or_none()
+
+    assert user_db is not None
+    assert user_db.id == fake_db_user.id
+
+  async def test_update_me_unauthenticated(self, client: AsyncClient):
+    app.dependency_overrides = {}
+
+    response = await client.patch("/users/me")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated" # Default message
+
+  async def test_update_me_inactive(self, client: AsyncClient, db_session: AsyncSession):
+    fake_db_user = User(name="user", role=UserRole.USER, is_active=False, pw_hash="h")
+    db_session.add(fake_db_user)
+    await db_session.flush()
+
+    user_mock = UserComplete(
+      id=fake_db_user.id,
+      name=fake_db_user.name,
+      role=fake_db_user.role,
+      is_active=fake_db_user.is_active
+    )
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    response = await client.patch("/users/me")
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == ErrorMessages.INACTIVE_USER
+
+  async def test_update_me_duplicate_name(self, client: AsyncClient, db_session: AsyncSession):
+    user1 = User(name="user1", role=UserRole.USER, is_active=True, pw_hash="h")
+    user2 = User(name="user2", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add_all([user1, user2])
+    await db_session.flush()
+
+    user_mock = UserComplete(id=user1.id, name="user1", role=UserRole.USER, is_active=True)
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    user_update = UserUpdate(name="user2")
+
+    response = await client.patch("/users/me", json=user_update.model_dump())
+
+    assert response.status_code == 409
+    assert response.json()["message"] == ErrorMessages.DUPLICATED_USERNAME
