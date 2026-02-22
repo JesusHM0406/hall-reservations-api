@@ -52,7 +52,7 @@ async def crud_get_all_users(
   if role_filter == UserRoleFilter.ADMIN:
     filters_to_apply.append(User.role == UserRole.ADMIN)
   elif role_filter == UserRoleFilter.USER:
-    filters_to_apply.append(User.is_active == UserRole.USER)
+    filters_to_apply.append(User.role == UserRole.USER)
 
   for condition in filters_to_apply:
     stmt = stmt.where(condition)
