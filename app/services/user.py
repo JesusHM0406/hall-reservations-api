@@ -53,7 +53,7 @@ async def service_get_user_by_id(
 ) -> UserComplete:
   user = await crud_get_user_by_id(db=db, id=id)
 
-  if not user:
+  if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   return UserComplete(
@@ -71,7 +71,7 @@ async def service_update_user(
 ) -> UserRead:
   user = await crud_get_user_by_id(db=db, id=id)
 
-  if not user:
+  if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
   if not user.is_active:
     raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
@@ -116,7 +116,7 @@ async def service_update_user_as_admin(
 async def service_delete_user(*, db: AsyncSession, id: int):
   user = await crud_get_user_by_id(db=db, id=id)
 
-  if not user:
+  if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
   if not user.is_active:
     raise BusinessLogicError(ErrorMessages.INACTIVE_USER)

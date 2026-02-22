@@ -2,9 +2,7 @@ from typing_extensions import Annotated
 from fastapi import APIRouter, Depends
 
 from app.api.deps import AdminDep, DBDep, UserDep
-from app.models.hall import Hall as Hall
 from app.models.reservation import Reservation as Reservation
-from app.models.user import User as User
 from app.schemas.filters.user import UserFilters
 from app.schemas.user import UserAdminUpdate, UserComplete, UserCreate, UserRead, UserUpdate
 from app.services.user import (

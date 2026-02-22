@@ -37,7 +37,7 @@ async def service_create_new_reservation(
     raise BusinessLogicError(ErrorMessages.INVALID_DATE)
 
   user = await crud_get_user_by_id(db=db, id=user_id)
-  if not user:
+  if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
   if not user.is_active:
     raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
@@ -98,7 +98,7 @@ async def service_update_reservation_status(
 )-> ReservationRead:
   user = await crud_get_user_by_id(db=db, id=user_id)
 
-  if not user:
+  if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   reservation = await crud_get_reservation(db=db, reservation_id=reservation_id)
