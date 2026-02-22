@@ -66,13 +66,7 @@ async def update_user_as_admin(
   update: UserAdminUpdate,
   id: int
 ) -> UserComplete:
-  return await service_update_user_as_admin(
-    db=db,
-    name=update.name,
-    role=update.role,
-    is_active=update.is_active,
-    id=id
-  )
+  return await service_update_user_as_admin(db=db, update=update, id=id)
 
 @router.delete("/me", status_code=204)
 async def delete_current_user(db: DBDep, user: UserDep):
