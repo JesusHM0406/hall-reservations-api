@@ -73,7 +73,7 @@ async def crud_get_all_users(
   elif status_filter == UserStatusFilter.DELETED:
     filters_to_apply.append(User.is_deleted.is_(True))
   elif status_filter == UserStatusFilter.NOT_DELETED:
-      filters_to_apply.append(User.is_deleted.is_(False))
+    filters_to_apply.append(User.is_deleted.is_(False))
 
   if role_filter == UserRoleFilter.ADMIN:
     filters_to_apply.append(User.role == UserRole.ADMIN)
