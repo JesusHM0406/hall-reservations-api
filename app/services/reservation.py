@@ -14,8 +14,10 @@ from app.crud.reservation import (
 )
 from app.crud.user import crud_get_user_by_id
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
+from app.models.user_role import UserRole
 from app.schemas.filters.reservation import ReservationFilters, ReservationFilterLabels, ReservationFilterNames
 from app.schemas.reservation import ReservationRead
+from app.schemas.user import UserComplete
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
 
@@ -72,12 +74,16 @@ async def service_create_new_reservation(
 async def service_get_reservation(
   *,
   db: AsyncSession,
-  id: int
+  id: int,
+  user: UserComplete
 ) -> ReservationRead:
   reservation = await crud_get_reservation(db=db, reservation_id=id)
 
   if not reservation:
     raise NotFoundError(ErrorMessages.RESERVATION_NOT_FOUND)
+
+  if user.role != UserRole.ADMIN and reservation.user_id != user.id:
+    raise BusinessLogicError(ErrorMessages.RESERVATION_FROM_OTHER_USER)
 
   return ReservationRead(
     id=reservation.id,

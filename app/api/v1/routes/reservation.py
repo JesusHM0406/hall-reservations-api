@@ -63,9 +63,9 @@ async def get_reservations_for_the_current_user(
 async def get_single_reservation(
   db: DBDep,
   id: int,
-  admin: AdminDep
+  user: UserDep
 ) -> ReservationRead:
-  return await service_get_reservation(db=db, id=id)
+  return await service_get_reservation(db=db, id=id, user=user)
 
 @router.patch("/{id}/finish", response_model=ReservationRead)
 async def finish_reservation(

@@ -35,3 +35,4 @@ class ErrorMessages:
   INVALID_STATUS = "Invalid status."
   INVALID_TRANSITION = "Invalid status transition."
   INVALID_FINALIZATION = "The reservation cannot be finalized because today is not the reservation date."
+  RESERVATION_FROM_OTHER_USER = "You are not the owner of this reservation and you do not have permission to access it."
