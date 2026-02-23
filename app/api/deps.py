@@ -4,6 +4,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import PyJWTError
+from starlette.status import HTTP_400_BAD_REQUEST
 
 from app.core.config import settings
 from app.core.messages import ErrorMessages
@@ -48,11 +49,6 @@ async def get_current_user(
 
   if user is None:
     raise credentials_exception
-  if user.is_deleted:
-    raise HTTPException(
-      status_code=status.HTTP_401_UNAUTHORIZED,
-      detail=ErrorMessages.DELETED_USER
-  )
 
   return UserComplete(
     id=user.id,
@@ -63,9 +59,15 @@ async def get_current_user(
   )
 
 async def get_current_active_user(user: Annotated[UserComplete, Depends(get_current_user)]):
+  if user.is_deleted:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail=ErrorMessages.DELETED_USER
+  )
+
   if not user.is_active:
     raise HTTPException(
-      status_code=400,
+      status_code=HTTP_400_BAD_REQUEST,
       detail=ErrorMessages.INACTIVE_USER
     )
   return user
