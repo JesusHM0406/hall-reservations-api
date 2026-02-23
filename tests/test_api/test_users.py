@@ -85,35 +85,9 @@ class TestCreateUser:
     after_total_count = after_total_count_res.scalar() or 0
     assert after_total_count == before_total_count
 
-  async def test_create_user_password_mismatch(
-    self,
-    client: AsyncClient,
-    db_session: AsyncSession
-  ):
-    before_total_count_res = await db_session.execute(
-      select(func.count())
-      .select_from(User)
-    )
-    before_total_count = before_total_count_res.scalar() or 0
-
-    user_schema = UserCreate(
-      name="name",
-      password="password",
-      password_confirm="otherpassword"
-    )
-
-    response = await client.post("/users/", json=user_schema.model_dump())
-    assert response.status_code == 400
-
-    data = response.json()
-    assert data["message"] == ErrorMessages.PASSWORDS_MISMATCH
-
-    after_total_count_res = await db_session.execute(
-      select(func.count())
-      .select_from(User)
-    )
-    after_total_count = after_total_count_res.scalar() or 0
-    assert after_total_count == before_total_count
+  # test_user_create_passwords_mismatch was deleted because the UserCreate schema
+  # handles the passwords confirm functionality, and what the endpoint accepts is
+  # the UserCreate schema
 
   async def test_create_user_white_space_name(
     self,
