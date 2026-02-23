@@ -93,7 +93,7 @@ async def service_update_reservation_status(
   *,
   db: AsyncSession,
   reservation_id: int,
-  new_status: str,
+  new_status: ReservationStatus,
   user_id: int
 )-> ReservationRead:
   user = await crud_get_user_by_id(db=db, id=user_id)
@@ -114,24 +114,15 @@ async def service_update_reservation_status(
   if reservation.user_id != user.id:
     raise BusinessLogicError(ErrorMessages.RESERVATION_USER_CONFLICT)
 
-  if new_status not in [
-    ReservationStatus.CANCELLED.value,
-    ReservationStatus.CONFIRMED.value,
-    ReservationStatus.FINISHED.value
-  ]:
-    raise BusinessLogicError(ErrorMessages.INVALID_STATUS)
-
-  status_enum = ReservationStatus(new_status)
-
-  if status_enum not in STATUS_TRANSITIONS.get(reservation.status, []):
+  if new_status not in STATUS_TRANSITIONS.get(reservation.status, []):
     raise BusinessLogicError(ErrorMessages.INVALID_TRANSITION)
 
-  if (new_status == ReservationStatus.FINISHED.value and
+  if (new_status == ReservationStatus.FINISHED and
     date.today() != reservation.reservation_date):
       raise BusinessLogicError(ErrorMessages.INVALID_FINALIZATION)
 
   updated_reservation = await crud_update_reservation_status(
-    new_status=status_enum,
+    new_status=new_status,
     reservation=reservation
   )
 

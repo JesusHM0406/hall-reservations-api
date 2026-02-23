@@ -76,7 +76,7 @@ async def finish_reservation(
   return await service_update_reservation_status(
     db=db,
     reservation_id=id,
-    new_status=ReservationStatus.FINISHED.value,
+    new_status=ReservationStatus.FINISHED,
     user_id=user.id
   )
 
@@ -89,6 +89,6 @@ async def cancel_reservation(
   return await service_update_reservation_status(
     db=db,
     reservation_id=id,
-    new_status=ReservationStatus.CANCELLED.value,
+    new_status=ReservationStatus.CANCELLED,
     user_id=user.id
   )
