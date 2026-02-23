@@ -21,6 +21,9 @@ class UserAdminUpdate(BaseModel):
   role: UserRole | None = Field(None)
   is_active: bool | None = Field(None)
 
+class UserRestoreUpdate(BaseModel):
+  name: str = Field(..., min_length=3, max_length=30)
+
 class UserComplete(UserRead):
   role: str
   is_active: bool

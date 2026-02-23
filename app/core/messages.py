@@ -19,6 +19,7 @@ class ErrorMessages:
   USER_NOT_FOUND = "User not found."
   INACTIVE_USER = "The user account is inactive."
   EMPTY_NAME = "The name cannot be empty."
+  USER_ALREADY_ACTIVE = "The user is already active."
 
   # Hall errors
   DUPLICATED_HALL_NAME = "There's already a hall with that name."

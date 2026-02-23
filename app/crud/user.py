@@ -41,6 +41,13 @@ async def crud_delete_user(*, user: User):
   user.is_active = False
   user.name = f"{user.name}_del_{int(time.time())}"
 
+async def crud_restore_user(*, user: User, new_name: str):
+  user.is_deleted = False
+  user.is_active = True
+  user.name = new_name
+
+  return user
+
 async def crud_get_user_by_name(*, db: AsyncSession, name: str):
   result = await db.execute(select(User).where(User.name == name))
   return result.scalar_one_or_none()

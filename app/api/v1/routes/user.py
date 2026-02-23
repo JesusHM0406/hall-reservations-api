@@ -4,12 +4,13 @@ from fastapi import APIRouter, Depends
 from app.api.deps import AdminDep, DBDep, UserDep
 from app.models.reservation import Reservation as Reservation
 from app.schemas.filters.user import UserFilters
-from app.schemas.user import UserAdminUpdate, UserComplete, UserCreate, UserRead, UserUpdate
+from app.schemas.user import UserAdminUpdate, UserComplete, UserCreate, UserRead, UserRestoreUpdate, UserUpdate
 from app.services.user import (
   service_create_user,
   service_delete_user,
   service_get_all_users,
   service_get_user_by_id,
+  service_restore_user,
   service_update_user,
   service_update_user_as_admin,
 )
@@ -75,3 +76,12 @@ async def delete_current_user(db: DBDep, user: UserDep):
 @router.delete("/{id}", status_code=204)
 async def delete_user_as_admin(db: DBDep, admin: AdminDep, id: int):
   await service_delete_user(db=db, id=id)
+
+@router.patch("/{id}/restore", response_model=UserComplete)
+async def restore_user(
+  db: DBDep,
+  admin: AdminDep,
+  update: UserRestoreUpdate,
+  id: int
+):
+  return await service_restore_user(db=db, id=id, new_name=update.name)

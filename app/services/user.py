@@ -9,6 +9,7 @@ from app.crud.user import (
   crud_get_all_users,
   crud_get_user_by_id,
   crud_get_user_by_name,
+  crud_restore_user,
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
@@ -126,6 +127,30 @@ async def service_delete_user(*, db: AsyncSession, id: int):
   await crud_delete_user(user=user)
 
   return
+
+async def service_restore_user(*, db: AsyncSession, id: int, new_name: str) -> UserComplete:
+  user = await crud_get_user_by_id(db=db, id=id)
+
+  if not user:
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
+
+  if user.is_deleted is False:
+    raise ConflictError(ErrorMessages.USER_ALREADY_ACTIVE)
+
+  existing_user = await crud_get_user_by_name(db=db, name=new_name)
+
+  if existing_user:
+    raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
+
+  await crud_restore_user(user=user, new_name=new_name)
+
+  return UserComplete(
+    id=user.id,
+    name=user.name,
+    role=user.role,
+    is_active=user.is_active,
+    is_deleted=user.is_deleted
+  )
 
 async def service_get_all_users(
   *,
