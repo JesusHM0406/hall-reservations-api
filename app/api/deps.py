@@ -8,7 +8,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 
 from app.core.config import settings
 from app.core.messages import ErrorMessages
-from app.crud.user import crud_get_user_by_name
+from app.crud.user import crud_get_user_by_id
 from app.db.session import AsyncSession, AsyncSessionLocal
 from app.schemas.user import UserComplete
 
@@ -37,13 +37,13 @@ async def get_current_user(
       settings.SECRET_KEY,
       algorithms=[settings.ALGORITHM]
     )
-    username = payload.get("sub")
-    if username is None:
+    id = payload.get("sub")
+    if id is None:
       raise credentials_exception
   except PyJWTError:
     raise credentials_exception
 
-  user = await crud_get_user_by_name(db=db, name=username)
+  user = await crud_get_user_by_id(db=db, id=int(id))
 
   if user is None:
     raise credentials_exception
