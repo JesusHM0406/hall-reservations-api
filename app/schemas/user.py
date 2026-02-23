@@ -37,6 +37,6 @@ class UserRestoreUpdate(BaseModel):
   name: str = Field(..., min_length=3, max_length=30)
 
 class UserComplete(UserRead):
-  role: str
+  role: UserRole
   is_active: bool
   is_deleted: bool
