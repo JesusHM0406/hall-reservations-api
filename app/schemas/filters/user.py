@@ -12,6 +12,8 @@ class UserRoleFilter(str, Enum):
 class UserStatusFilter(str, Enum):
   ACTIVE = "active"
   INACTIVE = "inactive"
+  DELETED = "deleted"
+  NOT_DELETED = "not_deleted"
   ALL = "all"
 
 class UserFilters(BaseModel):

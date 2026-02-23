@@ -160,26 +160,26 @@ async def service_get_all_users(
 ) -> Pagination:
   user_role_filter_dict: dict[str, str] = {}
 
-  for status in UserRoleFilter:
-    user_role_filter_dict[status.value] = status.value.capitalize()
+  for role in UserRoleFilter:
+    user_role_filter_dict[role.value] = role.value.capitalize()
 
   user_status_filter_dict: dict[str, str] = {}
 
   for status in UserStatusFilter:
-    user_status_filter_dict[status.value] = status.value.capitalize()
+    user_status_filter_dict[status.value] = status.value.capitalize().replace("_", " ")
 
   user_availables_filters = [
     FilterFactory.select(
-      name=UserFilterNames.STATUS.value,
-      label=UserFilterLabels.STATUS.value,
-      options=user_role_filter_dict,
-      current=filters.status
-    ),
-    FilterFactory.select(
       name=UserFilterNames.ROLE.value,
       label=UserFilterLabels.ROLE.value,
-      options=user_status_filter_dict,
+      options=user_role_filter_dict,
       current=filters.role
+    ),
+    FilterFactory.select(
+      name=UserFilterNames.STATUS.value,
+      label=UserFilterLabels.STATUS.value,
+      options=user_status_filter_dict,
+      current=filters.status
     )
   ]
 
