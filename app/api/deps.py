@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.messages import ErrorMessages
 from app.crud.user import crud_get_user_by_id
 from app.db.session import AsyncSession, AsyncSessionLocal
+from app.models.user_role import UserRole
 from app.schemas.user import UserComplete
 
 
@@ -71,7 +72,7 @@ async def get_current_active_user(user: Annotated[UserComplete, Depends(get_curr
   return user
 
 async def get_current_active_admin(user: Annotated[UserComplete, Depends(get_current_active_user)]):
-  if user.role != "admin":
+  if user.role != UserRole.ADMIN:
     raise HTTPException(
       status_code=403,
       detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS
