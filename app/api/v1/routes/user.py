@@ -44,10 +44,6 @@ async def get_all_users(
 async def read_current_user(user: UserDep) -> UserComplete:
   return user
 
-@router.get("/{id}", response_model=UserComplete)
-async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserComplete:
-  return await service_get_user_by_id(db=db, id=id)
-
 @router.patch("/me", response_model=UserRead)
 async def update_current_user(
   db: DBDep,
@@ -60,6 +56,14 @@ async def update_current_user(
     id=user.id
   )
 
+@router.delete("/me", status_code=204)
+async def delete_current_user(db: DBDep, user: UserDep):
+  await service_delete_user(db=db, id=user.id)
+
+@router.get("/{id}", response_model=UserComplete)
+async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserComplete:
+  return await service_get_user_by_id(db=db, id=id)
+
 @router.patch("/{id}", response_model=UserComplete)
 async def update_user_as_admin(
   db: DBDep,
@@ -68,10 +72,6 @@ async def update_user_as_admin(
   id: int
 ) -> UserComplete:
   return await service_update_user_as_admin(db=db, update=update, id=id)
-
-@router.delete("/me", status_code=204)
-async def delete_current_user(db: DBDep, user: UserDep):
-  await service_delete_user(db=db, id=user.id)
 
 @router.delete("/{id}", status_code=204)
 async def delete_user_as_admin(db: DBDep, admin: AdminDep, id: int):
