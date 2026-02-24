@@ -529,3 +529,85 @@ class TestUpdateMe:
 
     assert response.status_code == 409
     assert response.json()["message"] == ErrorMessages.DUPLICATED_USERNAME
+
+class TestsDeleteMe:
+  async def test_delete_me_success(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user = User(
+      name="user",
+      pw_hash="h",
+      role=UserRole.USER,
+      is_active=True,
+      is_deleted=False
+    )
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    user_mock = UserComplete(
+      id=fake_user.id,
+      name=fake_user.name,
+      role=fake_user.role,
+      is_active=fake_user.is_active,
+      is_deleted=fake_user.is_deleted
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    res = await client.delete("/users/me")
+
+    assert res.status_code == 204
+
+    assert fake_user.is_deleted is True # Then, the data is updated in the db (if there are no errors after)
+
+  async def test_delete_me_deleted(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user = User(
+      name="user",
+      pw_hash="h",
+      role=UserRole.USER,
+      is_active=False,
+      is_deleted=True
+    )
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    user_mock = UserComplete(
+      id=fake_user.id,
+      name=fake_user.name,
+      role=fake_user.role,
+      is_active=fake_user.is_active,
+      is_deleted=fake_user.is_deleted
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    res = await client.delete("/users/me")
+
+    assert res.status_code == 404
+    assert res.json()["detail"] == ErrorMessages.DELETED_USER
+    assert fake_user.is_deleted is True
+
+  async def test_delete_me_inactive(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user = User(
+      name="user",
+      pw_hash="h",
+      role=UserRole.USER,
+      is_active=False,
+      is_deleted=False
+    )
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    user_mock = UserComplete(
+      id=fake_user.id,
+      name=fake_user.name,
+      role=fake_user.role,
+      is_active=fake_user.is_active,
+      is_deleted=fake_user.is_deleted
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    res = await client.delete("/users/me")
+
+    assert res.status_code == 400
+    assert res.json()["detail"] == ErrorMessages.INACTIVE_USER
+    assert fake_user.is_deleted is False
