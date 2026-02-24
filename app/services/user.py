@@ -50,11 +50,12 @@ async def service_create_user(
 async def service_get_user_by_id(
   *,
   db: AsyncSession,
-  id: int
+  id: int,
+  admin: UserComplete
 ) -> UserComplete:
   user = await crud_get_user_by_id(db=db, id=id)
 
-  if not user or user.is_deleted:
+  if not user or user.is_deleted or (user.role == UserRole.SUPERADMIN and admin.role != UserRole.SUPERADMIN):
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   return UserComplete(
@@ -91,11 +92,12 @@ async def service_update_user_as_admin(
   *,
   db: AsyncSession,
   update: UserAdminUpdate,
-  id: int
+  id: int,
+  admin: UserComplete
 ) -> UserComplete:
   user = await crud_get_user_by_id(db=db, id=id)
 
-  if not user:
+  if not user or user.is_deleted or (user.role == UserRole.SUPERADMIN and admin.role != UserRole.SUPERADMIN):
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   if update.name:
@@ -132,7 +134,7 @@ async def service_delete_current_user(*, db: AsyncSession, id: int):
 async def service_delete_user_as_admin(*, db: AsyncSession, id_delete: int, admin: UserComplete):
   user = await crud_get_user_by_id(db=db, id=id_delete)
 
-  if not user or user.is_deleted:
+  if not user or user.is_deleted or (user.role == UserRole.SUPERADMIN and admin.role != UserRole.SUPERADMIN):
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   if user.id == admin.id:
@@ -142,14 +144,23 @@ async def service_delete_user_as_admin(*, db: AsyncSession, id_delete: int, admi
 
   return
 
-async def service_restore_user(*, db: AsyncSession, id: int, new_name: str) -> UserComplete:
+async def service_restore_user(
+  *,
+  db: AsyncSession,
+  id: int,
+  new_name: str,
+  admin: UserComplete
+) -> UserComplete:
   user = await crud_get_user_by_id(db=db, id=id)
 
-  if not user:
+  if not user or user.is_deleted or (user.role == UserRole.SUPERADMIN and admin.role != UserRole.SUPERADMIN):
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   if user.is_deleted is False:
     raise ConflictError(ErrorMessages.USER_ALREADY_ACTIVE)
+
+  if user.role == UserRole.ADMIN and admin.role != UserRole.SUPERADMIN:
+    raise BusinessLogicError(ErrorMessages.CANNOT_RESTORE_ADMIN)
 
   existing_user = await crud_get_user_by_name(db=db, name=new_name)
 

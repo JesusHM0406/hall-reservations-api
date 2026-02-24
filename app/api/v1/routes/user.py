@@ -64,7 +64,7 @@ async def delete_current_user(db: DBDep, user: UserDep):
 
 @router.get("/{id}", response_model=UserComplete)
 async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserComplete:
-  return await service_get_user_by_id(db=db, id=id)
+  return await service_get_user_by_id(db=db, id=id, admin=admin)
 
 @router.patch("/{id}", response_model=UserComplete)
 async def update_user_as_admin(
@@ -73,7 +73,7 @@ async def update_user_as_admin(
   update: UserAdminUpdate,
   id: int
 ) -> UserComplete:
-  return await service_update_user_as_admin(db=db, update=update, id=id)
+  return await service_update_user_as_admin(db=db, update=update, id=id, admin=admin)
 
 @router.delete("/{id}", status_code=204)
 async def delete_user_as_admin(db: DBDep, admin: AdminDep, id: int):
@@ -86,4 +86,4 @@ async def restore_user(
   update: UserRestoreUpdate,
   id: int
 ):
-  return await service_restore_user(db=db, id=id, new_name=update.name)
+  return await service_restore_user(db=db, id=id, new_name=update.name, admin=admin)
