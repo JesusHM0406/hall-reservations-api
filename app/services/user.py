@@ -97,14 +97,25 @@ async def service_update_user_as_admin(
 ) -> UserComplete:
   user = await crud_get_user_by_id(db=db, id=id)
 
-  if not user or user.is_deleted or (user.role == UserRole.SUPERADMIN and admin.role != UserRole.SUPERADMIN):
+  is_superadmin = admin.role == UserRole.SUPERADMIN
+
+  if not user or user.is_deleted or (user.role == UserRole.SUPERADMIN and not is_superadmin):
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
+
+  if user.role == UserRole.ADMIN and not is_superadmin:
+    raise BusinessLogicError(ErrorMessages.CANNOT_UPDATE_ADMIN)
+
+  if user.id == admin.id:
+    raise BusinessLogicError(ErrorMessages.CANNOT_UPDATE)
 
   if update.name:
     existing_user = await crud_get_user_by_name(db=db, name=update.name)
 
     if existing_user and existing_user.id != id:
       raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
+
+  if not is_superadmin:
+    update.role = None
 
   updated_user = await crud_update_user(
     user=user,

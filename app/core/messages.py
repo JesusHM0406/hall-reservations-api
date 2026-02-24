@@ -23,6 +23,8 @@ class ErrorMessages:
   DELETE_CURRENT_ADMIN = "You cannot delete yourself as admin through this endpoint; use the DELETE '/users/me' endpoint instead."
   CANNOT_RESTORE_ADMIN = "Only super admins can restore admin accounts."
   CANNOT_DELETE_ADMIN = "Only super admins can delete admin accounts."
+  CANNOT_UPDATE = "You cannot update your own information through this endpoint."
+  CANNOT_UPDATE_ADMIN = "Only super admins can update admin accounts."
 
   # Hall errors
   DUPLICATED_HALL_NAME = "There's already a hall with that name."
