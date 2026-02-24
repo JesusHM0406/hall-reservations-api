@@ -72,7 +72,7 @@ async def get_current_active_user(user: Annotated[UserComplete, Depends(get_curr
   return user
 
 async def get_current_active_admin(user: Annotated[UserComplete, Depends(get_current_active_user)]):
-  if user.role != UserRole.ADMIN:
+  if user.role not in [UserRole.ADMIN, UserRole.SUPERADMIN]:
     raise HTTPException(
       status_code=403,
       detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS

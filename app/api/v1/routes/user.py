@@ -38,7 +38,8 @@ async def get_all_users(
   return await service_get_all_users(
     db=db,
     page=page,
-    filters=filters
+    filters=filters,
+    admin=admin
   )
 
 @router.get("/me", response_model=UserComplete)

@@ -13,6 +13,7 @@ from app.crud.user import (
   crud_update_user,
 )
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
+from app.models.user_role import UserRole
 from app.schemas.filters.user import UserFilters, UserFilterLabels, UserFilterNames, UserRoleFilter, UserStatusFilter
 from app.schemas.user import UserAdminUpdate, UserComplete, UserRead
 from app.utils.pagination import Pagination, get_pagination
@@ -169,12 +170,18 @@ async def service_get_all_users(
   *,
   db: AsyncSession,
   page: int,
-  filters: UserFilters
+  filters: UserFilters,
+  admin: UserComplete
 ) -> Pagination:
   user_role_filter_dict: dict[str, str] = {}
 
   for role in UserRoleFilter:
     user_role_filter_dict[role.value] = role.value.capitalize()
+
+  if admin.role != UserRole.SUPERADMIN:
+    del user_role_filter_dict[UserRoleFilter.SUPERADMIN]
+    if filters.role == UserRoleFilter.SUPERADMIN:
+      filters.role = None
 
   user_status_filter_dict: dict[str, str] = {}
 
@@ -196,7 +203,7 @@ async def service_get_all_users(
     )
   ]
 
-  result = await crud_get_all_users(db=db, page=page, filters=filters)
+  result = await crud_get_all_users(db=db, page=page, filters=filters, admin=admin)
 
   pagination = get_pagination(pagination=result, page=page, available_filters=user_availables_filters)
 

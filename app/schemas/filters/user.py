@@ -5,6 +5,7 @@ from app.models.user_role import UserRole
 
 
 class UserRoleFilter(str, Enum):
+  SUPERADMIN = UserRole.SUPERADMIN.value
   ADMIN = UserRole.ADMIN.value
   USER = UserRole.USER.value
   ALL = "all"

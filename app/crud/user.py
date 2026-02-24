@@ -56,12 +56,17 @@ async def crud_get_all_users(
   *,
   db: AsyncSession,
   page: int,
-  filters: UserFilters
+  filters: UserFilters,
+  admin: UserComplete
 ) -> PaginationCRUD:
   stmt = select(User).order_by(User.id.desc())
+
   total_records_stmt = select(func.count()).select_from(User)
 
   filters_to_apply = []
+
+  if admin.role != UserRole.SUPERADMIN:
+    filters_to_apply.append(User.role != UserRole.SUPERADMIN)
 
   status_filter = filters.status
   role_filter = filters.role
@@ -79,6 +84,8 @@ async def crud_get_all_users(
     filters_to_apply.append(User.role == UserRole.ADMIN)
   elif role_filter == UserRoleFilter.USER:
     filters_to_apply.append(User.role == UserRole.USER)
+  elif role_filter == UserRoleFilter.SUPERADMIN and admin.role == UserRole.SUPERADMIN:
+    filters_to_apply.append(User.role == UserRole.SUPERADMIN)
 
   for condition in filters_to_apply:
     stmt = stmt.where(condition)
