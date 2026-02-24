@@ -22,6 +22,7 @@ class ErrorMessages:
   USER_ALREADY_ACTIVE = "The user is already active."
   DELETE_CURRENT_ADMIN = "You cannot delete yourself as admin through this endpoint; use the DELETE '/users/me' endpoint instead."
   CANNOT_RESTORE_ADMIN = "Only super admins can restore admin accounts."
+  CANNOT_DELETE_ADMIN = "Only super admins can delete admin accounts."
 
   # Hall errors
   DUPLICATED_HALL_NAME = "There's already a hall with that name."
