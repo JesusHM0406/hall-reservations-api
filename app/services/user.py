@@ -118,11 +118,24 @@ async def service_update_user_as_admin(
     is_deleted=updated_user.is_deleted
   )
 
-async def service_delete_user(*, db: AsyncSession, id: int):
+async def service_delete_current_user(*, db: AsyncSession, id: int):
   user = await crud_get_user_by_id(db=db, id=id)
 
   if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
+
+  await crud_delete_user(user=user)
+
+  return
+
+async def service_delete_user_as_admin(*, db: AsyncSession, id_delete: int, admin: UserComplete):
+  user = await crud_get_user_by_id(db=db, id=id_delete)
+
+  if not user or user.is_deleted:
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
+
+  if user.id == admin.id:
+    raise BusinessLogicError(ErrorMessages.DELETE_CURRENT_ADMIN)
 
   await crud_delete_user(user=user)
 

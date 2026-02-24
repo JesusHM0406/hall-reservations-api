@@ -20,6 +20,7 @@ class ErrorMessages:
   INACTIVE_USER = "The user account is inactive."
   EMPTY_NAME = "The name cannot be empty."
   USER_ALREADY_ACTIVE = "The user is already active."
+  DELETE_CURRENT_ADMIN = "You cannot delete yourself as admin through this endpoint; use the DELETE '/users/me' endpoint instead."
 
   # Hall errors
   DUPLICATED_HALL_NAME = "There's already a hall with that name."

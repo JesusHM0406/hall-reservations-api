@@ -7,7 +7,8 @@ from app.schemas.filters.user import UserFilters
 from app.schemas.user import UserAdminUpdate, UserComplete, UserCreate, UserRead, UserRestoreUpdate, UserUpdate
 from app.services.user import (
   service_create_user,
-  service_delete_user,
+  service_delete_current_user,
+  service_delete_user_as_admin,
   service_get_all_users,
   service_get_user_by_id,
   service_restore_user,
@@ -58,7 +59,7 @@ async def update_current_user(
 
 @router.delete("/me", status_code=204)
 async def delete_current_user(db: DBDep, user: UserDep):
-  await service_delete_user(db=db, id=user.id)
+  await service_delete_current_user(db=db, id=user.id)
 
 @router.get("/{id}", response_model=UserComplete)
 async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserComplete:
@@ -75,7 +76,7 @@ async def update_user_as_admin(
 
 @router.delete("/{id}", status_code=204)
 async def delete_user_as_admin(db: DBDep, admin: AdminDep, id: int):
-  await service_delete_user(db=db, id=id)
+  await service_delete_user_as_admin(db=db, id_delete=id, admin=admin)
 
 @router.patch("/{id}/restore", response_model=UserComplete)
 async def restore_user(
