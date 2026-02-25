@@ -79,9 +79,13 @@ async def service_update_user(
   if not user.is_active:
     raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
 
+  name = name.strip()
+  if not name:
+    raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
+
   existing_user = await crud_get_user_by_name(db=db, name=name)
 
-  if existing_user:
+  if existing_user and existing_user.id != id:
     raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
 
   await crud_update_user(user=user, name=name)
@@ -109,6 +113,11 @@ async def service_update_user_as_admin(
     raise BusinessLogicError(ErrorMessages.CANNOT_UPDATE)
 
   if update.name:
+    update.name = update.name.strip()
+
+    if not update.name:
+      raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
+
     existing_user = await crud_get_user_by_name(db=db, name=update.name)
 
     if existing_user and existing_user.id != id:
@@ -167,7 +176,7 @@ async def service_restore_user(
 ) -> UserComplete:
   user = await crud_get_user_by_id(db=db, id=id)
 
-  if not user or user.is_deleted or (user.role == UserRole.SUPERADMIN and admin.role != UserRole.SUPERADMIN):
+  if not user or (user.role == UserRole.SUPERADMIN and admin.role != UserRole.SUPERADMIN):
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   if user.is_deleted is False:
@@ -175,6 +184,10 @@ async def service_restore_user(
 
   if user.role == UserRole.ADMIN and admin.role != UserRole.SUPERADMIN:
     raise BusinessLogicError(ErrorMessages.CANNOT_RESTORE_ADMIN)
+
+  new_name = new_name.strip()
+  if not new_name:
+    raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
 
   existing_user = await crud_get_user_by_name(db=db, name=new_name)
 
