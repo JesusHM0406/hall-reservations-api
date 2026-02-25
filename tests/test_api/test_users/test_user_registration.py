@@ -88,9 +88,38 @@ class TestCreateUser:
     after_total_count = after_total_count_res.scalar() or 0
     assert after_total_count == before_total_count
 
-  # test_user_create_passwords_mismatch was deleted because the UserCreate schema
-  # handles the passwords confirm functionality, and what the endpoint accepts is
-  # the UserCreate schema
+  # Added again just to be sure I haven't forgotten the validation
+  async def test_create_user_passwords_mismatch(
+    self,
+    client: AsyncClient,
+    db_session: AsyncSession
+  ):
+    before_total_count_res = await db_session.execute(
+      select(func.count())
+      .select_from(User)
+    )
+    before_total_count = before_total_count_res.scalar() or 0
+
+    # IMPORTANT: This may fail for other reason if i update the UserCreate scheme
+    user_schema = {
+      "name":"Karl Marx",
+      "password":"password",
+      "password_confirm":"otherpassword"
+    }
+
+    response = await client.post("/users/", json=user_schema)
+
+    assert response.status_code == 422
+
+    data = response.json()
+    assert ErrorMessages.PASSWORDS_MISMATCH in data["detail"][0]["msg"] # Pydantic errors structure
+
+    after_total_count_res = await db_session.execute(
+      select(func.count())
+      .select_from(User)
+    )
+    after_total_count = after_total_count_res.scalar() or 0
+    assert after_total_count == before_total_count
 
   async def test_create_user_white_space_name(
     self,
@@ -151,3 +180,42 @@ class TestCreateUser:
     )
     after_total_count = after_total_count_res.scalar() or 0
     assert after_total_count == before_total_count + 1
+
+  async def test_create_user_role_injection(
+    self,
+    client: AsyncClient,
+    db_session: AsyncSession
+  ):
+    before_total_count_res = await db_session.execute(
+      select(func.count())
+      .select_from(User)
+    )
+    before_total_count = before_total_count_res.scalar() or 0
+
+    # IMPORTANT: This may fail for other reason if i update the UserCreate scheme
+    user_schema = {
+      "name":"Karl Marx",
+      "password":"password",
+      "password_confirm":"password",
+      "role":UserRole.SUPERADMIN
+    }
+
+    response = await client.post("/users/", json=user_schema)
+
+    assert response.status_code == 201
+
+    data = response.json()
+    assert data["id"] is not None
+    assert data["name"] == "Karl Marx"
+
+    after_total_count_res = await db_session.execute(
+      select(func.count())
+      .select_from(User)
+    )
+    after_total_count = after_total_count_res.scalar() or 0
+    assert after_total_count == before_total_count + 1
+
+    db_user = await db_session.get(User, data["id"])
+
+    assert db_user is not None
+    assert db_user.role == UserRole.USER
