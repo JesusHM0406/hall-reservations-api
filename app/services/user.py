@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -41,7 +42,12 @@ async def service_create_user(
     raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
 
   pw_hash = get_password_hash(password=password)
-  new_user = await crud_create_new_user(db=db, name=name, pw_hash=pw_hash)
+
+  try:
+    new_user = await crud_create_new_user(db=db, name=name, pw_hash=pw_hash)
+  except IntegrityError:
+    # This IntegrityError is most likely due to a violation of name uniqueness
+    raise ConflictError(ErrorMessages.DUPLICATED_RESERVATION)
 
   await db.flush()
 
