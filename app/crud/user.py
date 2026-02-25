@@ -52,6 +52,10 @@ async def crud_get_user_by_name(*, db: AsyncSession, name: str):
   result = await db.execute(select(User).where(User.name == name))
   return result.scalar_one_or_none()
 
+async def crud_count_superadmins(*, db: AsyncSession):
+  res = await db.execute(select(func.count()).where(User.role == UserRole.SUPERADMIN))
+  return res.scalar() or 0
+
 async def crud_get_all_users(
   *,
   db: AsyncSession,

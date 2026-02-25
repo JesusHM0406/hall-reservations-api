@@ -25,6 +25,8 @@ class ErrorMessages:
   CANNOT_DELETE_ADMIN = "Only super admins can delete admin accounts."
   CANNOT_UPDATE = "You cannot update your own information through this endpoint."
   CANNOT_UPDATE_ADMIN = "Only super admins can update admin accounts."
+  DELETE_LAST_SUPERADMIN = "You cannot delete the last super admin."
+  DISABLE_LAST_SUPERADMIN = "You can't disable the last super admin."
 
   # Hall errors
   DUPLICATED_HALL_NAME = "There's already a hall with that name."

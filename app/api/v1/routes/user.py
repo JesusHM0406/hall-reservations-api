@@ -60,7 +60,7 @@ async def update_current_user(
 
 @router.delete("/me", status_code=204)
 async def delete_current_user(db: DBDep, user: UserDep):
-  await service_delete_current_user(db=db, id=user.id)
+  await service_delete_current_user(db=db, id=user.id, current_user=user)
 
 @router.get("/{id}", response_model=UserComplete)
 async def get_user_by_id(db: DBDep, admin: AdminDep, id: int) -> UserComplete:

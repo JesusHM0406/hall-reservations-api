@@ -5,6 +5,7 @@ from app.core.config import settings
 from app.core.messages import ErrorMessages
 from app.core.security import get_password_hash
 from app.crud.user import (
+  crud_count_superadmins,
   crud_create_new_user,
   crud_delete_user,
   crud_get_all_users,
@@ -129,6 +130,11 @@ async def service_update_user_as_admin(
     if existing_user and existing_user.id != id:
       raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
 
+  if update.is_active is False and user.role == UserRole.SUPERADMIN and admin.role == UserRole.SUPERADMIN:
+    superadmin_count = await crud_count_superadmins(db=db)
+    if superadmin_count == 1:
+      raise BusinessLogicError(ErrorMessages.DISABLE_LAST_SUPERADMIN)
+
   if not is_superadmin:
     update.role = None
 
@@ -147,11 +153,16 @@ async def service_update_user_as_admin(
     is_deleted=updated_user.is_deleted
   )
 
-async def service_delete_current_user(*, db: AsyncSession, id: int):
+async def service_delete_current_user(*, db: AsyncSession, id: int, current_user: UserComplete):
   user = await crud_get_user_by_id(db=db, id=id)
 
   if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
+
+  if current_user.role == UserRole.SUPERADMIN:
+    superadmin_count = await crud_count_superadmins(db=db)
+    if superadmin_count == 1:
+      raise BusinessLogicError(ErrorMessages.DELETE_LAST_SUPERADMIN)
 
   await crud_delete_user(user=user)
 
@@ -168,6 +179,11 @@ async def service_delete_user_as_admin(*, db: AsyncSession, id_delete: int, admi
 
   if user.role == UserRole.ADMIN and admin.role != UserRole.SUPERADMIN:
     raise BusinessLogicError(ErrorMessages.CANNOT_DELETE_ADMIN)
+
+  if user.role == UserRole.SUPERADMIN and admin.role == UserRole.SUPERADMIN:
+    superadmin_count = await crud_count_superadmins(db=db)
+    if superadmin_count == 1:
+      raise BusinessLogicError(ErrorMessages.DELETE_LAST_SUPERADMIN)
 
   await crud_delete_user(user=user)
 
