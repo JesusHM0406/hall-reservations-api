@@ -210,6 +210,145 @@ class TestGetUsers:
     res = await client.get(f"/users/?{UserFilterNames.ROLE.value}={UserRoleFilter.USER.value}&{UserFilterNames.STATUS.value}={UserStatusFilter.ACTIVE.value}")
     assert res.json()["total"] == 2
 
+  async def test_get_users_deleted(self, client: AsyncClient, db_session: AsyncSession):
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    # 1 active admin, 2 active users, 3 deleted users
+    u1 = User(name="admin_active", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    u2 = User(name="user_active_1", role=UserRole.USER, is_active=True, pw_hash="h")
+    u3 = User(name="user_active_2", role=UserRole.USER, is_active=True, pw_hash="h")
+    u4 = User(name="user_deleted1", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+    u5 = User(name="user_deleted2", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+    u6 = User(name="user_deleted3", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+
+    db_session.add_all([u1, u2, u3, u4, u5, u6])
+    await db_session.flush()
+
+    # Only deleted ones
+    res = await client.get(f"/users/?{UserFilterNames.STATUS.value}={UserStatusFilter.DELETED.value}")
+    data = res.json()
+    items = data["items"]
+
+    assert data["total"] == 3
+    assert len(items) == 3
+
+    for i in range(len(items)):
+      assert items[i]["is_deleted"] is True
+
+  async def test_admin_cannot_see_superadmins(self, client: AsyncClient, db_session: AsyncSession):
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    # 3 active admins, 2 active users, 2 deleted users, 2 superadmins
+    u1 = User(name="admin_active", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    u2 = User(name="user_active_1", role=UserRole.USER, is_active=True, pw_hash="h")
+    u3 = User(name="user_active_2", role=UserRole.USER, is_active=True, pw_hash="h")
+    u4 = User(name="user_deleted1", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+    u5 = User(name="user_deleted2", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+    u6 = User(name="admin_active2", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    u7 = User(name="admin_active3", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    u8 = User(name="superadmin_active1", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    u9 = User(name="superadmin_active2", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+
+
+    db_session.add_all([u1, u2, u3, u4, u5, u6, u7, u8, u9])
+    await db_session.flush()
+
+    # All users except superadmins
+    res = await client.get("/users/")
+    data = res.json()
+    assert data["total"] == 7
+
+    filters = data["available_filters"]
+    role_filter = filters[0]
+    assert role_filter["name"] == UserFilterNames.ROLE
+    role_option_values = [o["value"] for o in role_filter["options"]]
+    assert UserRoleFilter.SUPERADMIN.value not in role_option_values
+    assert UserRoleFilter.ADMIN.value in role_option_values
+    assert UserRoleFilter.USER.value in role_option_values
+
+    items = data["items"]
+    assert len(items) == 7
+    roles = [item["role"] for item in items]
+    assert UserRole.SUPERADMIN not in roles
+
+    # Superadmin filter forced (ignored)
+    res = await client.get(f"/users/?{UserFilterNames.ROLE.value}={UserRoleFilter.SUPERADMIN.value}")
+    data = res.json()
+    assert data["total"] == 7
+
+    items = data["items"]
+    assert len(items) == 7
+    roles = [item["role"] for item in items]
+    assert UserRole.SUPERADMIN not in roles
+
+  async def test_get_all_users_superadmin(self, client: AsyncClient, db_session: AsyncSession):
+    admin_mock = UserComplete(
+      id=999,
+      name="superadmin",
+      role=UserRole.SUPERADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    # 3 active admins, 2 active users, 2 deleted users, 2 superadmins
+    u1 = User(name="admin_active", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    u2 = User(name="user_active_1", role=UserRole.USER, is_active=True, pw_hash="h")
+    u3 = User(name="user_active_2", role=UserRole.USER, is_active=True, pw_hash="h")
+    u4 = User(name="user_deleted1", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+    u5 = User(name="user_deleted2", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+    u6 = User(name="admin_active2", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    u7 = User(name="admin_active3", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    u8 = User(name="superadmin_active1", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    u9 = User(name="superadmin_active2", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+
+    db_session.add_all([u1, u2, u3, u4, u5, u6, u7, u8, u9])
+    await db_session.flush()
+
+    # All users including superadmins
+    res = await client.get("/users/")
+    data = res.json()
+    assert data["total"] == 9
+
+    items = data["items"]
+    roles = [item["role"] for item in items]
+    assert UserRole.SUPERADMIN in roles
+
+    filters = data["available_filters"]
+    role_filter = filters[0]
+    assert role_filter["name"] == UserFilterNames.ROLE
+    role_option_values = [o["value"] for o in role_filter["options"]]
+    assert UserRoleFilter.SUPERADMIN.value in role_option_values
+    assert UserRoleFilter.ADMIN.value in role_option_values
+    assert UserRoleFilter.USER.value in role_option_values
+
+    # Superadmin filter (accepted)
+    res = await client.get(f"/users/?{UserFilterNames.ROLE.value}={UserRoleFilter.SUPERADMIN.value}")
+    data = res.json()
+    assert data["total"] == 2
+
+    items = data["items"]
+    assert len(items) == 2
+
+    roles = [item["role"] for item in items]
+    assert UserRole.SUPERADMIN in roles
+    assert UserRole.ADMIN not in roles
+    assert UserRole.USER not in roles
+
 class TestGetUserByID:
   async def test_get_user_by_id_success(self, client: AsyncClient, db_session: AsyncSession):
     admin_mock = UserComplete(
