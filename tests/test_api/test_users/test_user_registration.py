@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.messages import ErrorMessages
 from app.models.user import User
+from app.models.user_role import UserRole
 from app.schemas.user import UserCreate
 
 class TestCreateUser:
@@ -19,7 +20,7 @@ class TestCreateUser:
     before_total_count = before_total_count_res.scalar() or 0
 
     user_schema = UserCreate(
-      name="name",
+      name="Karl Marx",
       password="password",
       password_confirm="password"
     )
@@ -29,7 +30,15 @@ class TestCreateUser:
 
     data = response.json()
     assert data["id"] is not None
-    assert data["name"] == "name"
+    assert data["name"] == "Karl Marx"
+
+    assert "pw_hash" not in data
+    assert "password" not in data
+
+    new_user = await db_session.get(User, data["id"])
+
+    assert new_user is not None
+    assert new_user.role == UserRole.USER
 
     after_total_count_res = await db_session.execute(
       select(func.count())
