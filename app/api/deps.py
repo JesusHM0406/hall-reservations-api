@@ -61,7 +61,7 @@ async def get_current_active_user(user: Annotated[UserComplete, Depends(get_curr
   if user.is_deleted:
     raise HTTPException(
       status_code=status.HTTP_404_NOT_FOUND,
-      detail=ErrorMessages.DELETED_USER
+      detail=ErrorMessages.USER_NOT_FOUND
   )
 
   if not user.is_active:

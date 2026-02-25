@@ -13,7 +13,7 @@ class TestGetMe:
   async def test_get_me_success(self, client: AsyncClient):
     me_mock = UserComplete(
       id=123,
-      name="isaias",
+      name="Karl Marx",
       role=UserRole.USER,
       is_active=True,
       is_deleted=False
@@ -26,9 +26,11 @@ class TestGetMe:
     assert response.status_code == 200
     data = response.json()
 
-    assert data["name"] == "isaias"
+    assert data["name"] == "Karl Marx"
     assert data["id"] == 123
     assert data["role"] == UserRole.USER
+    assert data["is_active"] is True
+    assert data["is_deleted"] is False
 
   async def test_get_me_unauthenticated(self, client: AsyncClient):
     app.dependency_overrides = {}
@@ -53,6 +55,22 @@ class TestGetMe:
 
     assert response.status_code == 400
     assert response.json()["detail"] == ErrorMessages.INACTIVE_USER
+
+  async def test_get_me_deleted(self, client: AsyncClient):
+    deleted_me = UserComplete(
+      id=123,
+      name="Karl Marx",
+      role=UserRole.USER,
+      is_active=False,
+      is_deleted=True
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: deleted_me
+
+    response = await client.get("/users/me")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
 class TestUpdateMe:
   async def test_update_user_success(self, client: AsyncClient, db_session: AsyncSession):
@@ -183,7 +201,7 @@ class TestsDeleteMe:
     res = await client.delete("/users/me")
 
     assert res.status_code == 404
-    assert res.json()["detail"] == ErrorMessages.DELETED_USER
+    assert res.json()["detail"] == ErrorMessages.USER_NOT_FOUND
     assert fake_user.is_deleted is True
 
   async def test_delete_me_inactive(self, client: AsyncClient, db_session: AsyncSession):
