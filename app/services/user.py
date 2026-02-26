@@ -14,7 +14,7 @@ from app.crud.user import (
   crud_restore_user,
   crud_update_user,
 )
-from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
+from app.exceptions.exceptions import BusinessLogicError, ConflictError, ForbiddenError, NotFoundError
 from app.models.user_role import UserRole
 from app.schemas.filters.user import UserFilters, UserFilterLabels, UserFilterNames, UserRoleFilter, UserStatusFilter
 from app.schemas.user import UserAdminUpdate, UserComplete, UserRead
@@ -135,8 +135,8 @@ async def service_update_user_as_admin(
     if superadmin_count == 1:
       raise BusinessLogicError(ErrorMessages.DISABLE_LAST_SUPERADMIN)
 
-  if not is_superadmin:
-    update.role = None
+  if not is_superadmin and update.role is not None:
+    raise ForbiddenError(ErrorMessages.NOT_ENOUGH_PERMISSIONS_UPDATE_ROLE)
 
   updated_user = await crud_update_user(
     user=user,

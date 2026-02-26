@@ -6,6 +6,7 @@ class ErrorMessages:
   UNAUTHORIZED = "Incorrect username or password."
   INVALID_CREDENTIALS = "Could not validate credentials"
   NOT_ENOUGH_PERMISSIONS = "You don't have enough permissions to perform this action."
+  NOT_ENOUGH_PERMISSIONS_UPDATE_ROLE = "You don't have enough permissions to update the user role."
   DELETED_USER = "The user was deleted."
 
   # Unhandled errors

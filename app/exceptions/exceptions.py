@@ -12,3 +12,7 @@ class BusinessLogicError(AppError):
 class ConflictError(AppError):
   def __init__(self, message: str):
     super().__init__(message, status_code=409, code="RESOURCE_CONFLICT")
+
+class ForbiddenError(AppError):
+  def __init__(self, message: str):
+    super().__init__(message, status_code=403, code="NOT_ENOUGH_PERMISSIONS")

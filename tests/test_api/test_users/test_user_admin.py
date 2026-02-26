@@ -406,3 +406,163 @@ class TestGetUserByID:
 
     assert response.status_code == 403
     assert response.json()["detail"] == ErrorMessages.NOT_ENOUGH_PERMISSIONS
+
+  async def test_get_admin_as_admin(self, client: AsyncClient, db_session: AsyncSession):
+    # Admin role
+    user_mock = UserComplete(
+      id=1,
+      name="user",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    fake_user = User(name="fake", pw_hash="h")
+    other_user = User(name="other", pw_hash="h")
+
+    db_session.add_all([fake_user, other_user])
+    await db_session.flush()
+
+    response = await client.get(f"/users/{fake_user.id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == fake_user.id
+    assert data["name"] == fake_user.name
+    assert data["role"] == fake_user.role.value
+    assert data["is_active"] == fake_user.is_active
+    assert data["is_deleted"] == fake_user.is_deleted
+
+  async def test_get_superadmin_as_admin(self, client: AsyncClient, db_session: AsyncSession):
+    # Admin role
+    user_mock = UserComplete(
+      id=1,
+      name="user",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    fake_superadmin = User(name="fake", pw_hash="h", role=UserRole.SUPERADMIN)
+
+    db_session.add(fake_superadmin)
+    await db_session.flush()
+
+    response = await client.get(f"/users/{fake_superadmin.id}")
+
+    assert response.status_code == 404
+    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+
+  async def test_get_superadmin_as_superadmin(self, client: AsyncClient, db_session: AsyncSession):
+    # Superadmin role
+    user_mock = UserComplete(
+      id=1,
+      name="user",
+      role=UserRole.SUPERADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    fake_superadmin = User(name="fake", pw_hash="h", role=UserRole.SUPERADMIN)
+
+    db_session.add(fake_superadmin)
+    await db_session.flush()
+
+    response = await client.get(f"/users/{fake_superadmin.id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == fake_superadmin.id
+    assert data["name"] == fake_superadmin.name
+    assert data["role"] == fake_superadmin.role.value
+    assert data["is_active"] == fake_superadmin.is_active
+    assert data["is_deleted"] == fake_superadmin.is_deleted
+
+  async def test_get_admin_as_superadmin(self, client: AsyncClient, db_session: AsyncSession):
+    # Superadmin role
+    user_mock = UserComplete(
+      id=1,
+      name="user",
+      role=UserRole.SUPERADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    fake_admin = User(name="fake", pw_hash="h", role=UserRole.ADMIN)
+
+    db_session.add(fake_admin)
+    await db_session.flush()
+
+    response = await client.get(f"/users/{fake_admin.id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == fake_admin.id
+    assert data["name"] == fake_admin.name
+    assert data["role"] == fake_admin.role.value
+    assert data["is_active"] == fake_admin.is_active
+    assert data["is_deleted"] == fake_admin.is_deleted
+
+  async def test_get_user_by_id_deleted(self, client: AsyncClient, db_session: AsyncSession):
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    fake_user = User(name="fake", pw_hash="h", is_active=False, is_deleted=True)
+
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    res = await client.get(f"/users/{fake_user.id}")
+
+    assert res.status_code == 404
+    assert res.json()["message"] == ErrorMessages.USER_NOT_FOUND
+
+  async def test_get_user_by_id_inactive(self, client: AsyncClient, db_session: AsyncSession):
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    fake_user = User(name="fake", pw_hash="h", is_active=False, is_deleted=False)
+
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    res = await client.get(f"/users/{fake_user.id}")
+
+    assert res.status_code == 200
+
+  async def test_get_user_by_id_not_int(self, client: AsyncClient, db_session: AsyncSession):
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    res = await client.get("/users/string")
+
+    # FastAPI Validation
+    assert res.status_code == 422
