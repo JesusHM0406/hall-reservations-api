@@ -145,7 +145,7 @@ async def service_update_user_as_admin(
     if update.is_active is False and user.role == UserRole.SUPERADMIN and superadmin_count == 1:
         raise BusinessLogicError(ErrorMessages.DISABLE_LAST_SUPERADMIN)
 
-    if update.role is not None and update.role != UserRole.SUPERADMIN and superadmin_count == 1:
+    if update.role is not None and update.role != UserRole.SUPERADMIN and user.role == UserRole.SUPERADMIN and superadmin_count == 1:
       raise BusinessLogicError(ErrorMessages.CANNOT_DOWNGRADE_LAST_SUPERADMIN)
 
   if not is_superadmin and update.role is not None:
