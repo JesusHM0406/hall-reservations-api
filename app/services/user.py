@@ -209,10 +209,10 @@ async def service_restore_user(
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
   if user.is_deleted is False:
-    raise ConflictError(ErrorMessages.USER_ALREADY_ACTIVE)
+    raise BusinessLogicError(ErrorMessages.USER_ALREADY_ACTIVE)
 
   if user.role == UserRole.ADMIN and admin.role != UserRole.SUPERADMIN:
-    raise BusinessLogicError(ErrorMessages.CANNOT_RESTORE_ADMIN)
+    raise ForbiddenError(ErrorMessages.CANNOT_RESTORE_ADMIN)
 
   new_name = new_name.strip()
   if not new_name:
