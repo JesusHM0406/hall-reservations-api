@@ -9,7 +9,7 @@ from app.main import app
 from app.models.user import User
 from app.models.user_role import UserRole
 from app.schemas.filters.user import UserFilterNames, UserRoleFilter, UserStatusFilter
-from app.schemas.user import UserAdminUpdate, UserComplete
+from app.schemas.user import UserAdminUpdate, UserComplete, UserCreate
 
 class TestGetUsers:
   async def test_get_users_empty_admin(self, client: AsyncClient):
@@ -568,7 +568,7 @@ class TestGetUserByID:
     # FastAPI Validation
     assert res.status_code == 422
 
-class TestUpdateById:
+class TestUpdateByID:
   async def test_admin_updates_normal_user_success(self, client: AsyncClient, db_session: AsyncSession):
     fake_db_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
     db_session.add(fake_db_user)
@@ -1044,3 +1044,254 @@ class TestUpdateById:
 
     assert user_db is not None
     assert user_db.name == "user"
+
+class TestDeleteByID:
+  async def test_admin_deletes_user(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    response = await client.delete(f"/users/{fake_user.id}")
+
+    assert response.status_code == 204
+
+    await db_session.flush()
+
+    user_db = await db_session.get(User, fake_user.id)
+
+    assert user_db is not None
+    assert user_db.is_deleted is True
+    assert user_db.is_active is False
+
+  async def test_superadmin_deletes_admin(self, client: AsyncClient, db_session: AsyncSession):
+    fake_admin = User(name="admin", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_admin)
+    await db_session.flush()
+
+    superadmin_mock = UserComplete(
+      id=999,
+      name="superadmin",
+      role=UserRole.SUPERADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: superadmin_mock
+
+    response = await client.delete(f"/users/{fake_admin.id}")
+
+    assert response.status_code == 204
+
+    await db_session.flush()
+
+    admin_db = await db_session.get(User, fake_admin.id)
+
+    assert admin_db is not None
+    assert admin_db.is_deleted is True
+    assert admin_db.is_active is False
+
+  async def test_superadmin_deletes_superadmin(self, client: AsyncClient, db_session: AsyncSession):
+    fake_superadmin1 = User(name="superadmin1", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    fake_superadmin2 = User(name="superadmin2", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    db_session.add_all([fake_superadmin1, fake_superadmin2])
+    await db_session.flush()
+
+    superadmin_mock = UserComplete(
+      id=fake_superadmin1.id,
+      name=fake_superadmin1.name,
+      role=fake_superadmin1.role,
+      is_active=fake_superadmin1.is_active,
+      is_deleted=fake_superadmin1.is_deleted
+    )
+    app.dependency_overrides[get_current_user] = lambda: superadmin_mock
+
+    response = await client.delete(f"/users/{fake_superadmin2.id}")
+
+    assert response.status_code == 204
+
+    await db_session.flush()
+
+    superadmin_db = await db_session.get(User, fake_superadmin2.id)
+
+    assert superadmin_db is not None
+    assert superadmin_db.is_deleted is True
+    assert superadmin_db.is_active is False
+
+  async def test_admin_cannot_delete_superadmin(self, client: AsyncClient, db_session: AsyncSession):
+    fake_superadmin = User(name="superadmin", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_superadmin)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    response = await client.delete(f"/users/{fake_superadmin.id}")
+
+    assert response.status_code == 404
+    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+
+    await db_session.flush()
+
+    superadmin_db = await db_session.get(User, fake_superadmin.id)
+
+    assert superadmin_db is not None
+    assert superadmin_db.is_deleted is False
+    assert superadmin_db.is_active is True
+
+  async def test_admin_cannot_delete_admin(self, client: AsyncClient, db_session: AsyncSession):
+    fake_admin = User(name="admin", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_admin)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=999,
+      name="admin",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    response = await client.delete(f"/users/{fake_admin.id}")
+
+    assert response.status_code == 403
+    assert response.json()["message"] == ErrorMessages.CANNOT_DELETE_ADMIN
+
+    await db_session.flush()
+
+    admin_db = await db_session.get(User, fake_admin.id)
+
+    assert admin_db is not None
+    assert admin_db.is_deleted is False
+    assert admin_db.is_active is True
+
+  async def test_admin_delete_deleted_user_fail(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user = User(name="user", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=999,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    response = await client.delete(f"/users/{fake_user.id}")
+
+    assert response.status_code == 404
+    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+
+  async def test_superadmin_self_deletes(self, client: AsyncClient, db_session: AsyncSession):
+    fake_superadmin = User(name="superadmin", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_superadmin)
+    await db_session.flush()
+
+    superadmin_mock = UserComplete(
+      id=fake_superadmin.id,
+      name=fake_superadmin.name,
+      role=fake_superadmin.role,
+      is_active=fake_superadmin.is_active,
+      is_deleted=fake_superadmin.is_deleted
+    )
+    app.dependency_overrides[get_current_user] = lambda: superadmin_mock
+
+    response = await client.delete(f"/users/{fake_superadmin.id}")
+
+    assert response.status_code == 400
+    assert response.json()["message"] == ErrorMessages.DELETE_CURRENT_ADMIN
+
+    await db_session.flush()
+
+    superadmin_db = await db_session.get(User, fake_superadmin.id)
+
+    assert superadmin_db is not None
+    assert superadmin_db.is_deleted is False
+    assert superadmin_db.is_active is True
+
+  # This case is extremely rare; however, we must be prepared
+  # to  ensure  the  system  is  not left without superadmins
+  async def test_superadmin_deletes_last_superadmin(self, client: AsyncClient, db_session: AsyncSession):
+    fake_superadmin = User(name="superadmin", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_superadmin)
+    await db_session.flush()
+
+    superadmin_mock = UserComplete(
+      id=999,
+      name="the one",
+      role=UserRole.SUPERADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: superadmin_mock
+
+    response = await client.delete(f"/users/{fake_superadmin.id}")
+
+    assert response.status_code == 400
+    assert response.json()["message"] == ErrorMessages.DELETE_LAST_SUPERADMIN
+
+    await db_session.flush()
+
+    superadmin_db = await db_session.get(User, fake_superadmin.id)
+
+    assert superadmin_db is not None
+    assert superadmin_db.is_deleted is False
+    assert superadmin_db.is_active is True
+
+  async def test_delete_success_name_liberation(self, client: AsyncClient, db_session: AsyncSession):
+    name = "user"
+
+    fake_user = User(
+      name=name,
+      pw_hash="h",
+      role=UserRole.USER,
+      is_active=True,
+      is_deleted=False
+    )
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=999,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    new_user_scheme = UserCreate(
+      name=name,
+      password="password123",
+      password_confirm="password123"
+    )
+
+    res = await client.post("/users/", json=new_user_scheme.model_dump())
+    assert res.status_code == 409
+
+    res = await client.delete(f"/users/{fake_user.id}")
+    assert res.status_code == 204
+
+    await db_session.flush()
+
+    assert fake_user.is_deleted is True
+
+    res = await client.post("/users/", json=new_user_scheme.model_dump())
+    assert res.status_code == 201

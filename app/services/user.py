@@ -185,7 +185,7 @@ async def service_delete_user_as_admin(*, db: AsyncSession, id_delete: int, admi
     raise BusinessLogicError(ErrorMessages.DELETE_CURRENT_ADMIN)
 
   if user.role == UserRole.ADMIN and admin.role != UserRole.SUPERADMIN:
-    raise BusinessLogicError(ErrorMessages.CANNOT_DELETE_ADMIN)
+    raise ForbiddenError(ErrorMessages.CANNOT_DELETE_ADMIN)
 
   if user.role == UserRole.SUPERADMIN and admin.role == UserRole.SUPERADMIN:
     superadmin_count = await crud_count_superadmins(db=db)
