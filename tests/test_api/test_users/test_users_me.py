@@ -224,6 +224,34 @@ class TestUpdateMe:
     assert user is not None
     assert user.name == "user1"
 
+  async def test_update_me_white_space_short_name(self, client: AsyncClient, db_session: AsyncSession):
+    user1 = User(name="user1", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(user1)
+    await db_session.flush()
+
+    user_mock = UserComplete(
+      id=user1.id,
+      name=user1.name,
+      role=user1.role,
+      is_active=user1.is_active,
+      is_deleted=user1.is_deleted
+    )
+    app.dependency_overrides[get_current_user] = lambda: user_mock
+
+    user_update = UserUpdate(name="    s")
+
+    response = await client.patch("/users/me", json=user_update.model_dump())
+
+    assert response.status_code == 400
+    assert response.json()["message"] == ErrorMessages.SHORT_NAME
+
+    await db_session.flush()
+
+    user = await db_session.get(User, user1.id)
+
+    assert user is not None
+    assert user.name == "user1"
+
   async def test_update_me_white_space(self, client: AsyncClient, db_session: AsyncSession):
     user1 = User(name="user1", role=UserRole.USER, is_active=True, pw_hash="h")
     db_session.add(user1)

@@ -1045,6 +1045,36 @@ class TestUpdateByID:
     assert user_db is not None
     assert user_db.name == "user"
 
+  async def test_admin_updates_white_space_short_name(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name="    s",
+      role=None,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 400
+    assert response.json()["message"] == ErrorMessages.SHORT_NAME
+
+    user_db = await db_session.get(User, fake_user.id)
+
+    assert user_db is not None
+    assert user_db.name == "user"
+
 class TestDeleteByID:
   async def test_admin_deletes_user(self, client: AsyncClient, db_session: AsyncSession):
     fake_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
@@ -1621,6 +1651,48 @@ class TestRestoreUser:
 
     assert response.status_code == 400
     assert response.json()["message"] == ErrorMessages.EMPTY_NAME
+
+    await db_session.flush()
+
+    user_db = await db_session.get(User, fake_user.id)
+
+    assert user_db is not None
+    assert user_db.name == username
+    assert user_db.is_deleted is True
+    assert user_db.is_active is False
+
+  async def test_restore_white_space_short_name(self, client: AsyncClient, db_session: AsyncSession):
+    username = "user"
+    fake_user = User(
+      name=username,
+      pw_hash="h",
+      role=UserRole.USER,
+      is_active=False,
+      is_deleted=True
+    )
+
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    assert fake_user.is_deleted is True
+
+    admin_mock = UserComplete(
+      id=999,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    newname = "      s"
+    user_restore_update = UserRestoreUpdate(name=newname)
+
+    response = await client.patch(f"/users/{fake_user.id}/restore", json=user_restore_update.model_dump())
+
+    assert response.status_code == 400
+    assert response.json()["message"] == ErrorMessages.SHORT_NAME
 
     await db_session.flush()
 

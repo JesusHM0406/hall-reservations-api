@@ -15,6 +15,7 @@ class ErrorMessages:
 
   # User errors
   SHORT_PASSWORD = "The password must contain at least 8 characters."
+  SHORT_NAME = "The name must contain at least 3 characters, not counting extra blank spaces."
   PASSWORDS_MISMATCH = "The passwords don't match."
   DUPLICATED_USERNAME = "The user already exists."
   USER_NOT_FOUND = "User not found."

@@ -16,5 +16,6 @@ class Settings(BaseSettings):
   PAGINATION_LIMIT_PER_PAGE: int = 10
   SEARCH_LIMIT: int = 10
   MIN_PASSWORD_SIZE: int = 8
+  MIN_NAME_SIZE: int = 3
 
 settings = Settings()

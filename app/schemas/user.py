@@ -12,7 +12,7 @@ class UserRead(BaseModel):
   name: str
 
 class UserCreate(BaseModel):
-  name: str = Field(..., min_length=3, max_length=30)
+  name: str = Field(..., min_length=settings.MIN_NAME_SIZE, max_length=30)
   password: str = Field(..., min_length=settings.MIN_PASSWORD_SIZE, max_length=72)
   password_confirm: str = Field(..., min_length=settings.MIN_PASSWORD_SIZE, max_length=72)
 
@@ -26,15 +26,15 @@ class UserCreate(BaseModel):
     return self
 
 class UserUpdate(BaseModel):
-  name: str = Field(..., min_length=3, max_length=30)
+  name: str = Field(..., min_length=settings.MIN_NAME_SIZE, max_length=30)
 
 class UserAdminUpdate(BaseModel):
-  name: str | None = Field(None, min_length=3, max_length=30)
+  name: str | None = Field(None, min_length=settings.MIN_NAME_SIZE, max_length=30)
   role: UserRole | None = Field(None)
   is_active: bool | None = Field(None)
 
 class UserRestoreUpdate(BaseModel):
-  name: str = Field(..., min_length=3, max_length=30)
+  name: str = Field(..., min_length=settings.MIN_NAME_SIZE, max_length=30)
 
 class UserComplete(UserRead):
   role: UserRole

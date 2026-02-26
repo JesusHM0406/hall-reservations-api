@@ -151,6 +151,36 @@ class TestCreateUser:
     after_total_count = after_total_count_res.scalar() or 0
     assert after_total_count == before_total_count
 
+  async def test_create_user_white_space_short_name(
+    self,
+    client: AsyncClient,
+    db_session: AsyncSession
+  ):
+    before_total_count_res = await db_session.execute(
+      select(func.count())
+      .select_from(User)
+    )
+    before_total_count = before_total_count_res.scalar() or 0
+
+    user_schema = UserCreate(
+      name="     s",
+      password="password",
+      password_confirm="password"
+    )
+
+    response = await client.post("/users/", json=user_schema.model_dump())
+    assert response.status_code == 400
+
+    data = response.json()
+    assert data["message"] == ErrorMessages.SHORT_NAME
+
+    after_total_count_res = await db_session.execute(
+      select(func.count())
+      .select_from(User)
+    )
+    after_total_count = after_total_count_res.scalar() or 0
+    assert after_total_count == before_total_count
+
   async def test_create_user_white_space_name_success(
     self,
     client: AsyncClient,

@@ -36,6 +36,8 @@ async def service_create_user(
   name = name.strip()
   if not name:
     raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
+  if len(name) < settings.MIN_NAME_SIZE:
+    raise BusinessLogicError(ErrorMessages.SHORT_NAME)
 
   user = await crud_get_user_by_name(db=db, name=name)
 
@@ -89,6 +91,8 @@ async def service_update_user(
   name = name.strip()
   if not name:
     raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
+  if len(name) < settings.MIN_NAME_SIZE:
+    raise BusinessLogicError(ErrorMessages.SHORT_NAME)
 
   existing_user = await crud_get_user_by_name(db=db, name=name)
 
@@ -127,6 +131,8 @@ async def service_update_user_as_admin(
 
     if not update_name:
       raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
+    if len(update_name) < settings.MIN_NAME_SIZE:
+      raise BusinessLogicError(ErrorMessages.SHORT_NAME)
 
     existing_user = await crud_get_user_by_name(db=db, name=update_name)
 
@@ -217,6 +223,8 @@ async def service_restore_user(
   new_name = new_name.strip()
   if not new_name:
     raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
+  if len(new_name) < settings.MIN_NAME_SIZE:
+    raise BusinessLogicError(ErrorMessages.SHORT_NAME)
 
   existing_user = await crud_get_user_by_name(db=db, name=new_name)
 
