@@ -1,3 +1,4 @@
+from typing import Any
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -294,7 +295,7 @@ class TestUpdateMe:
     app.dependency_overrides[get_current_user] = lambda: user_mock
 
     # IMPORTANT: This may fail for other reason if i update the UserUpdate scheme
-    user_update = {
+    user_update: dict[str, Any] = {
       "name": "newname",
       "role": UserRole.SUPERADMIN
     }

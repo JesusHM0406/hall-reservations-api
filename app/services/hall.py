@@ -155,11 +155,11 @@ async def service_search_halls(
 ) -> List[HallSearchResponse]:
   result = await crud_search_halls(db=db, search_query=search_query)
 
-  data = [
+  data: list[HallSearchResponse] = [
     HallSearchResponse(
-      id=row.Hall.id,
-      name=row.Hall.name,
-      rank=row.rank
+      id=row[0].id,
+      name=row[0].name,
+      rank=row[1]
     )
     for row in result
   ]

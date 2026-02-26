@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -30,7 +30,7 @@ def event_loop():
   loop.close()
 
 @pytest.fixture(scope="session", autouse=True)
-async def setup_database(event_loop):
+async def setup_database(event_loop: Any) -> AsyncGenerator[None, None]:
   """Create the tables before the tests and delete them at the end."""
   async with engine.begin() as conn:
     await conn.run_sync(Base.metadata.create_all)

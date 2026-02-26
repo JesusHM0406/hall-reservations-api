@@ -1,4 +1,5 @@
 from datetime import datetime, timezone, timedelta
+from typing import cast
 
 from pwdlib import PasswordHash
 import jwt
@@ -32,8 +33,8 @@ async def authenticate_user(*, db: AsyncSession, name: str, password: str):
     is_deleted=user.is_deleted
   )
 
-def create_access_token(*, data: dict, expires_delta: timedelta | None = None):
-  to_encode = data.copy()
+def create_access_token(*, data: dict[str, object], expires_delta: timedelta | None = None) -> str:
+  to_encode: dict[str, object] = data.copy()
   if expires_delta:
     expire = datetime.now(timezone.utc) + expires_delta
   else:
@@ -42,9 +43,15 @@ def create_access_token(*, data: dict, expires_delta: timedelta | None = None):
       timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
   to_encode.update({"exp": expire})
-  encoded_jwt = jwt.encode(
+  # PyJWT's key parameter has incomplete type stubs (Unknown | PyJWK | str | bytes)
+  encoded_jwt = cast(
+    str | bytes | bytearray | memoryview,
+    jwt.encode(  # type: ignore[misc]
     to_encode,
     settings.SECRET_KEY,
     algorithm=settings.ALGORITHM
+    )
   )
-  return encoded_jwt
+  if isinstance(encoded_jwt, str):
+    return encoded_jwt
+  return bytes(encoded_jwt).decode("utf-8")

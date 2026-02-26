@@ -1,5 +1,9 @@
+from typing import Any, Sequence
+
 from sqlalchemy import func, or_, select
+from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.core.config import settings
 from app.models.hall import Hall
@@ -62,7 +66,7 @@ async def crud_get_all_halls(
   stmt = select(Hall).order_by(Hall.id.desc())
   total_records_stmt = select(func.count()).select_from(Hall)
 
-  filters_to_apply = []
+  filters_to_apply: list[ColumnElement[bool]] = []
 
   status_filter = filters.status
 
@@ -105,7 +109,7 @@ async def crud_get_all_halls(
     current_page=computed_fields.current_page
   )
 
-async def crud_search_halls(*, db: AsyncSession, search_query: str):
+async def crud_search_halls(*, db: AsyncSession, search_query: str) -> Sequence[Row[tuple[Hall, Any]]]:
   query_str = search_query.strip().lower()
   if not query_str:
       return []

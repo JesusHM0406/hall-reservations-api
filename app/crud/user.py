@@ -1,5 +1,6 @@
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.core.config import settings
 from app.models.user import User
@@ -67,7 +68,7 @@ async def crud_get_all_users(
 
   total_records_stmt = select(func.count()).select_from(User)
 
-  filters_to_apply = []
+  filters_to_apply: list[ColumnElement[bool]] = []
 
   if admin.role != UserRole.SUPERADMIN:
     filters_to_apply.append(User.role != UserRole.SUPERADMIN)

@@ -1,10 +1,13 @@
-from typing import TYPE_CHECKING, List, Text
+from typing import TYPE_CHECKING, Any, List, Text
 
 from sqlalchemy import Boolean, Computed, FetchedValue, Index, Integer, String, event
 from sqlalchemy import Text as SQLtext
 from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.engine import Connection
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.schema import Table
+from sqlalchemy.sql.type_api import TypeEngine
 
 from app.db.base_class import Base
 
@@ -34,7 +37,7 @@ class Hall(Base):
     )
 
 @event.listens_for(Hall.__table__, "before_create")
-def add_computed_column(target, connection, **kw):
+def add_computed_column(target: Table, connection: Connection, **kw: Any) -> None:
   # When testing with SQLite, we don't want to calculate this column because
   # SQLite doesn't have those functions, so we omit those calculations
   if connection.dialect.name != "sqlite":
@@ -47,5 +50,5 @@ def add_computed_column(target, connection, **kw):
     )
 
 @compiles(TSVECTOR, "sqlite")
-def compile_tsvector_sqlite(type_, compiler, **kw):
+def compile_tsvector_sqlite(type_: TypeEngine[Any], compiler: Any, **kw: Any) -> str:
   return "TEXT"

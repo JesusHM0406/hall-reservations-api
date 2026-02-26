@@ -1,3 +1,4 @@
+from typing import Any
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -101,7 +102,7 @@ class TestCreateUser:
     before_total_count = before_total_count_res.scalar() or 0
 
     # IMPORTANT: This may fail for other reason if i update the UserCreate scheme
-    user_schema = {
+    user_schema: dict[str, Any] = {
       "name":"Karl Marx",
       "password":"password",
       "password_confirm":"otherpassword"
@@ -223,7 +224,7 @@ class TestCreateUser:
     before_total_count = before_total_count_res.scalar() or 0
 
     # IMPORTANT: This may fail for other reason if i update the UserCreate scheme
-    user_schema = {
+    user_schema: dict[str, Any] = {
       "name":"Karl Marx",
       "password":"password",
       "password_confirm":"password",

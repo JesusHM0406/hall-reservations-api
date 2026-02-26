@@ -21,7 +21,7 @@ from app.schemas.user import UserComplete
 from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
 
-STATUS_TRANSITIONS = {
+STATUS_TRANSITIONS: dict[ReservationStatus, list[ReservationStatus]] = {
     ReservationStatus.CONFIRMED: [ReservationStatus.CANCELLED, ReservationStatus.FINISHED],
     ReservationStatus.CANCELLED: [],
     ReservationStatus.FINISHED: []

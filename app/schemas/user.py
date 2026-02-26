@@ -21,7 +21,7 @@ class UserCreate(BaseModel):
     pw1 = self.password
     pw2 = self.password_confirm
 
-    if pw1 is not None and pw2 is not None and pw1 != pw2:
+    if pw1 != pw2:
       raise ValueError(ErrorMessages.PASSWORDS_MISMATCH)
     return self
 

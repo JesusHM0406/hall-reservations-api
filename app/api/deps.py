@@ -1,9 +1,8 @@
-from typing import Annotated, AsyncGenerator
+from typing import Annotated, Any, AsyncGenerator
 
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import PyJWTError
 from starlette.status import HTTP_400_BAD_REQUEST
 
 from app.core.config import settings
@@ -33,7 +32,8 @@ async def get_current_user(
       headers={"WWW-Authenticate": "Bearer"},
   )
   try:
-    payload = jwt.decode(
+    # PyJWT's key parameter has incomplete type stubs (Unknown | PyJWK | str | bytes)
+    payload: dict[str, Any] = jwt.decode(  # type: ignore[misc]
       token,
       settings.SECRET_KEY,
       algorithms=[settings.ALGORITHM]
@@ -41,7 +41,7 @@ async def get_current_user(
     id = payload.get("sub")
     if id is None:
       raise credentials_exception
-  except PyJWTError:
+  except jwt.PyJWTError:
     raise credentials_exception
 
   user = await crud_get_user_by_id(db=db, id=int(id))
