@@ -1,4 +1,5 @@
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -8,7 +9,7 @@ from app.main import app
 from app.models.user import User
 from app.models.user_role import UserRole
 from app.schemas.filters.user import UserFilterNames, UserRoleFilter, UserStatusFilter
-from app.schemas.user import UserComplete
+from app.schemas.user import UserAdminUpdate, UserComplete
 
 class TestGetUsers:
   async def test_get_users_empty_admin(self, client: AsyncClient):
@@ -566,3 +567,480 @@ class TestGetUserByID:
 
     # FastAPI Validation
     assert res.status_code == 422
+
+class TestUpdateById:
+  async def test_admin_updates_normal_user_success(self, client: AsyncClient, db_session: AsyncSession):
+    fake_db_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_db_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name="newname",
+      role=None,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_db_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "newname"
+
+    user_res = await db_session.execute(select(User).where(User.name == "newname"))
+    user_db = user_res.scalar_one_or_none()
+
+    assert user_db is not None
+    assert user_db.id == fake_db_user.id
+
+  async def test_admin_updates_normal_user_no_info(self, client: AsyncClient, db_session: AsyncSession):
+    fake_db_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_db_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name=None,
+      role=None,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_db_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["name"] == "user"
+    assert data["role"] == UserRole.USER
+    assert data["is_active"] is True
+    assert data["is_deleted"] is False
+
+    user_db = await db_session.get(User, fake_db_user.id)
+
+    assert user_db is not None
+    assert user_db.name == "user"
+    assert user_db.role == UserRole.USER
+    assert user_db.is_active is True
+    assert user_db.is_deleted is False
+
+  async def test_admin_updates_normal_user_same_name(self, client: AsyncClient, db_session: AsyncSession):
+    fake_db_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_db_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name=fake_db_user.name,
+      role=None,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_db_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["name"] == "user"
+    assert data["role"] == UserRole.USER
+    assert data["is_active"] is True
+    assert data["is_deleted"] is False
+
+    user_db = await db_session.get(User, fake_db_user.id)
+
+    assert user_db is not None
+    assert user_db.name == "user"
+    assert user_db.role == UserRole.USER
+    assert user_db.is_active is True
+    assert user_db.is_deleted is False
+
+  async def test_superadmin_promotes_user_to_admin(self, client: AsyncClient, db_session: AsyncSession):
+    fake_db_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_db_user)
+    await db_session.flush()
+
+    # Just to be sure, humans often make many mistakes without realizing it.
+    assert fake_db_user.role == UserRole.USER
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.SUPERADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name="newname",
+      role=UserRole.ADMIN,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_db_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "newname"
+    assert data["role"] == UserRole.ADMIN
+
+    user_res = await db_session.execute(select(User).where(User.name == "newname"))
+    user_db = user_res.scalar_one_or_none()
+
+    assert user_db is not None
+    assert user_db.id == fake_db_user.id
+    assert user_db.role == UserRole.ADMIN
+
+  async def test_superadmin_downgrades_admin_to_user(self, client: AsyncClient, db_session: AsyncSession):
+    fake_db_user = User(name="user", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_db_user)
+    await db_session.flush()
+
+    # Just to be sure, humans often make many mistakes without realizing it.
+    assert fake_db_user.role == UserRole.ADMIN
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.SUPERADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name=None,
+      role=UserRole.USER,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_db_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "user"
+    assert data["role"] == UserRole.USER
+
+    user_db = await db_session.get(User, fake_db_user.id)
+
+    assert user_db is not None
+    assert user_db.id == fake_db_user.id
+    assert user_db.role == UserRole.USER
+
+  async def test_superadmin_self_demotes_success(self, client: AsyncClient, db_session: AsyncSession):
+    fake_superadmin1 = User(name="superadmin1", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    fake_superadmin2 = User(name="superadmin2", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    db_session.add_all([fake_superadmin1, fake_superadmin2])
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=fake_superadmin2.id,
+      name=fake_superadmin2.name,
+      role=fake_superadmin2.role,
+      is_active=fake_superadmin2.is_active,
+      is_deleted=fake_superadmin2.is_deleted
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name=None,
+      role=UserRole.USER,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{admin_mock.id}", json=user_update.model_dump())
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["name"] == fake_superadmin2.name
+    assert data["role"] == UserRole.USER
+
+    user_db = await db_session.get(User, admin_mock.id)
+
+    assert user_db is not None
+    assert user_db.role == UserRole.USER
+
+  async def test_admin_promotes_user_to_admin_fail(self, client: AsyncClient, db_session: AsyncSession):
+    fake_db_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_db_user)
+    await db_session.flush()
+
+    # Just to be sure, humans often make many mistakes without realizing it.
+    assert fake_db_user.role == UserRole.USER
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name="newname",
+      role=UserRole.ADMIN,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_db_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 403
+    assert response.json()["message"] == ErrorMessages.NOT_ENOUGH_PERMISSIONS_UPDATE_ROLE
+
+    await db_session.flush()
+
+    user_db = await db_session.get(User, fake_db_user.id)
+
+    assert user_db is not None
+    assert user_db.role == UserRole.USER
+    assert user_db.name == "user"
+
+  async def test_admin_updates_superadmin_fail(self, client: AsyncClient, db_session: AsyncSession):
+    fake_superadmin = User(name="superadmin", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_superadmin)
+    await db_session.flush()
+
+    # Just to be sure, humans often make many mistakes without realizing it.
+    assert fake_superadmin.role == UserRole.SUPERADMIN
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name="newname",
+      role=UserRole.ADMIN,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_superadmin.id}", json=user_update.model_dump())
+
+    assert response.status_code == 404
+    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+
+    await db_session.flush()
+
+    superadmin_db = await db_session.get(User, fake_superadmin.id)
+
+    assert superadmin_db is not None
+    assert superadmin_db.role == UserRole.SUPERADMIN
+    assert superadmin_db.name == "superadmin"
+
+  async def test_admin_self_promotes(self, client: AsyncClient, db_session: AsyncSession):
+    fake_admin = User(name="admin", role=UserRole.ADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_admin)
+    await db_session.flush()
+
+    # Just to be sure, humans often make many mistakes without realizing it.
+    assert fake_admin.role == UserRole.ADMIN
+
+    admin_mock = UserComplete(
+      id=fake_admin.id,
+      name=fake_admin.name,
+      role=fake_admin.role,
+      is_active=fake_admin.is_active,
+      is_deleted=fake_admin.is_deleted
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name=None,
+      role=UserRole.SUPERADMIN,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_admin.id}", json=user_update.model_dump())
+
+    assert response.status_code == 400
+    data = response.json()
+    assert data["message"] == ErrorMessages.CANNOT_UPDATE
+
+    await db_session.flush()
+
+    admin_db = await db_session.get(User, fake_admin.id)
+
+    assert admin_db is not None
+    assert admin_db.role == UserRole.ADMIN
+
+  async def test_last_superadmin_self_demotes_fail(self, client: AsyncClient, db_session: AsyncSession):
+    fake_superadmin1 = User(name="superadmin1", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_superadmin1)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=fake_superadmin1.id,
+      name=fake_superadmin1.name,
+      role=fake_superadmin1.role,
+      is_active=fake_superadmin1.is_active,
+      is_deleted=fake_superadmin1.is_deleted
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name=None,
+      role=UserRole.USER,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{admin_mock.id}", json=user_update.model_dump())
+
+    assert response.status_code == 400
+    data = response.json()
+    assert data["message"] == ErrorMessages.CANNOT_DOWNGRADE_LAST_SUPERADMIN
+
+    superadmin_db = await db_session.get(User, fake_superadmin1.id)
+
+    assert superadmin_db is not None
+    assert superadmin_db.role == UserRole.SUPERADMIN
+
+  async def test_last_superadmin_self_disables_fail(self, client: AsyncClient, db_session: AsyncSession):
+    fake_superadmin1 = User(name="superadmin1", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
+    db_session.add(fake_superadmin1)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=fake_superadmin1.id,
+      name=fake_superadmin1.name,
+      role=fake_superadmin1.role,
+      is_active=fake_superadmin1.is_active,
+      is_deleted=fake_superadmin1.is_deleted
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name=None,
+      role=None,
+      is_active=False
+    )
+
+    response = await client.patch(f"/users/{admin_mock.id}", json=user_update.model_dump())
+
+    assert response.status_code == 400
+    data = response.json()
+    assert data["message"] == ErrorMessages.DISABLE_LAST_SUPERADMIN
+
+    superadmin_db = await db_session.get(User, fake_superadmin1.id)
+
+    assert superadmin_db is not None
+    assert superadmin_db.role == UserRole.SUPERADMIN
+
+  async def test_admin_updates_normal_user_duplicated_name(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user1 = User(name="user1", role=UserRole.USER, is_active=True, pw_hash="h")
+    fake_user2 = User(name="user2", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add_all([fake_user1, fake_user2])
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name="user2",
+      role=None,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_user1.id}", json=user_update.model_dump())
+
+    assert response.status_code == 409
+    assert response.json()["message"] == ErrorMessages.DUPLICATED_USERNAME
+
+    user1_db = await db_session.get(User, fake_user1.id)
+
+    assert user1_db is not None
+    assert user1_db.name == "user1"
+
+  async def test_admin_updates_deleted_user(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user = User(name="user", role=UserRole.USER, is_active=False, pw_hash="h", is_deleted=True)
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name="newname",
+      role=None,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 404
+    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+
+    user_db = await db_session.get(User, fake_user.id)
+
+    assert user_db is not None
+    assert user_db.name == "user"
+
+  async def test_admin_updates_empty_name(self, client: AsyncClient, db_session: AsyncSession):
+    fake_user = User(name="user", role=UserRole.USER, is_active=True, pw_hash="h")
+    db_session.add(fake_user)
+    await db_session.flush()
+
+    admin_mock = UserComplete(
+      id=888,
+      name="the one",
+      role=UserRole.ADMIN,
+      is_active=True,
+      is_deleted=False
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin_mock
+
+    user_update = UserAdminUpdate(
+      name="    ",
+      role=None,
+      is_active=None
+    )
+
+    response = await client.patch(f"/users/{fake_user.id}", json=user_update.model_dump())
+
+    assert response.status_code == 400
+    assert response.json()["message"] == ErrorMessages.EMPTY_NAME
+
+    user_db = await db_session.get(User, fake_user.id)
+
+    assert user_db is not None
+    assert user_db.name == "user"

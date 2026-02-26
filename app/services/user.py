@@ -113,34 +113,41 @@ async def service_update_user_as_admin(
   if not user or user.is_deleted or (user.role == UserRole.SUPERADMIN and not is_superadmin):
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
 
+  is_self = user.id == admin.id
+
   if user.role == UserRole.ADMIN and not is_superadmin:
     raise BusinessLogicError(ErrorMessages.CANNOT_UPDATE_ADMIN)
 
-  if user.id == admin.id:
+  if is_self and not is_superadmin:
     raise BusinessLogicError(ErrorMessages.CANNOT_UPDATE)
 
-  if update.name:
-    update.name = update.name.strip()
+  update_name = update.name
+  if update_name:
+    update_name = update_name.strip()
 
-    if not update.name:
+    if not update_name:
       raise BusinessLogicError(ErrorMessages.EMPTY_NAME)
 
-    existing_user = await crud_get_user_by_name(db=db, name=update.name)
+    existing_user = await crud_get_user_by_name(db=db, name=update_name)
 
     if existing_user and existing_user.id != id:
       raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
 
-  if update.is_active is False and user.role == UserRole.SUPERADMIN and admin.role == UserRole.SUPERADMIN:
+  if is_superadmin:
     superadmin_count = await crud_count_superadmins(db=db)
-    if superadmin_count == 1:
-      raise BusinessLogicError(ErrorMessages.DISABLE_LAST_SUPERADMIN)
+
+    if update.is_active is False and user.role == UserRole.SUPERADMIN and superadmin_count == 1:
+        raise BusinessLogicError(ErrorMessages.DISABLE_LAST_SUPERADMIN)
+
+    if update.role is not None and update.role != UserRole.SUPERADMIN and superadmin_count == 1:
+      raise BusinessLogicError(ErrorMessages.CANNOT_DOWNGRADE_LAST_SUPERADMIN)
 
   if not is_superadmin and update.role is not None:
     raise ForbiddenError(ErrorMessages.NOT_ENOUGH_PERMISSIONS_UPDATE_ROLE)
 
   updated_user = await crud_update_user(
     user=user,
-    name=update.name,
+    name=update_name,
     role=update.role,
     is_active=update.is_active
   )
