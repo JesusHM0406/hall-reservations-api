@@ -33,18 +33,33 @@ async def get_current_user(
   )
   try:
     # PyJWT's key parameter has incomplete type stubs (Unknown | PyJWK | str | bytes)
+    # Explicitly specify algorithms to prevent algorithm confusion attacks
     payload: dict[str, Any] = jwt.decode(  # type: ignore[misc]
       token,
       settings.SECRET_KEY,
-      algorithms=[settings.ALGORITHM]
+      algorithms=[settings.ALGORITHM]  # Only accept expected algorithm
     )
     id = payload.get("sub")
     if id is None:
       raise credentials_exception
+    
+    # Validate that user ID is numeric to prevent injection
+    try:
+      user_id = int(id)
+    except (ValueError, TypeError):
+      raise credentials_exception
+      
+  except jwt.ExpiredSignatureError:
+    # Token has expired
+    raise credentials_exception
+  except jwt.InvalidTokenError:
+    # Invalid token (malformed, wrong signature, etc.)
+    raise credentials_exception
   except jwt.PyJWTError:
+    # Catch any other JWT errors
     raise credentials_exception
 
-  user = await crud_get_user_by_id(db=db, id=int(id))
+  user = await crud_get_user_by_id(db=db, id=user_id)
 
   if user is None:
     raise credentials_exception

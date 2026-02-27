@@ -9,6 +9,8 @@ from app.core.config import settings
 from app.crud.user import crud_get_user_by_name
 from app.schemas.user import UserComplete
 
+# Use recommended secure password hashing (Argon2id by default)
+# This provides protection against brute-force and rainbow table attacks
 password_hash = PasswordHash.recommended()
 
 def verify_password(*, plain_password: str, hashed_password: str):
