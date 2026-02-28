@@ -123,3 +123,21 @@ async def crud_finish_reservations(*, db: AsyncSession):
   )
 
   await db.execute(stmt)
+
+async def crud_has_confirmed_reservations(*, db: AsyncSession, hall_id: int) -> bool:
+  """
+  Check if a hall has any confirmed reservations.
+  Returns True if there are confirmed reservations, False otherwise.
+  """
+  stmt = (
+    select(func.count())
+    .select_from(Reservation)
+    .where(
+      Reservation.hall_id == hall_id,
+      Reservation.status == ReservationStatus.CONFIRMED
+    )
+  )
+
+  result = await db.execute(stmt)
+  count = result.scalar() or 0
+  return count > 0

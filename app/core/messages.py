@@ -37,6 +37,7 @@ class ErrorMessages:
   UNAVAILABLE_HALL = "The hall isn't available in this moment."
   DELETED_HALL = "It appears the hall was deleted."
   EMPTY_HALL_NAME = "Hall name cannot be empty or contain only whitespace."
+  HALL_HAS_CONFIRMED_RESERVATIONS = "Cannot disable hall because it has confirmed reservations."
 
   # Reservation errors
   INVALID_DATE = "The date is invalid; it must be at least one day after the current date."
