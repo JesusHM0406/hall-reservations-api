@@ -517,8 +517,7 @@ class TestEmptyAndNullScenarios:
 
     response = await client.get(f"/reservations/?{ReservationFilterNames.USER.value}=")
 
-    assert response.status_code == 200
-    assert response.json()["total"] == 0  # Should not return all reservations, should treat empty as no match
+    assert response.status_code == 422 # Should fail validation for empty string
 
   async def test_filter_with_only_whitespace(
     self, 
