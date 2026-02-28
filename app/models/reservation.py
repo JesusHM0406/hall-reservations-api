@@ -43,6 +43,9 @@ class Reservation(Base):
       unique=True,
       postgresql_where=(
         status == ReservationStatus.CONFIRMED
+      ),
+      sqlite_where=(
+        status == ReservationStatus.CONFIRMED
       )
     ),
     Index('idx_reservation_user_id', 'user_id'),
