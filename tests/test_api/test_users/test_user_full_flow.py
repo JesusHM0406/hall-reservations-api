@@ -7,9 +7,13 @@ from app.core.security import get_password_hash
 from app.models.user import User
 from app.models.user_role import UserRole
 from app.schemas.user import UserAdminUpdate, UserCreate, UserRestoreUpdate, UserUpdate
+from app.utils.rate_limit import registration_rate_limiter
 
 
 async def test_user_complete_lifecycle(client: AsyncClient, db_session: AsyncSession):
+  # Reset rate limiter at the start of this test
+  await registration_rate_limiter.reset_all()
+  
   # 1: Creation
   user_scheme = UserCreate(
     name="Karl Marx",
@@ -55,6 +59,9 @@ async def test_user_complete_lifecycle(client: AsyncClient, db_session: AsyncSes
   user_id = data["id"]
 
   # 3: Conflict
+  # Reset rate limiter to allow another registration in this test
+  await registration_rate_limiter.reset_all()
+  
   new_user_scheme = UserCreate(
     name="New User",
     password="password123",
@@ -135,6 +142,9 @@ async def test_user_complete_lifecycle(client: AsyncClient, db_session: AsyncSes
   assert response.json()["name"] == restore_scheme.name
 
 async def test_hierarchy_and_escalation_real_flow(client: AsyncClient, db_session: AsyncSession):
+  # Reset rate limiter at the start of this test
+  await registration_rate_limiter.reset_all()
+  
   # 1: Superadmin creation (in db directly)
   superadmin_pw = "SecretSuperAdmin123!"
   superadmin_hash = get_password_hash(password=superadmin_pw)
@@ -238,6 +248,9 @@ async def test_hierarchy_and_escalation_real_flow(client: AsyncClient, db_sessio
   admin_token = user_token
 
   # 4: New user (the admin will try to promote this user)
+  # Reset rate limiter to allow another registration in this test
+  await registration_rate_limiter.reset_all()
+  
   user2_scheme = UserCreate(
     name="Spinoza",
     password="password",
