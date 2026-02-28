@@ -58,7 +58,9 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     transaction = await connection.begin()
     async with AsyncSession(bind=connection, expire_on_commit=False) as session:
       yield session
-    await transaction.rollback()
+    # Only rollback if transaction is still active
+    if transaction.is_active:
+      await transaction.rollback()
 
 @pytest.fixture
 async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
