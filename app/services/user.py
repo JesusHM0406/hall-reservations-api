@@ -50,7 +50,7 @@ async def service_create_user(
     new_user = await crud_create_new_user(db=db, name=name, pw_hash=pw_hash)
   except IntegrityError:
     # This IntegrityError is most likely due to a violation of name uniqueness
-    raise ConflictError(ErrorMessages.DUPLICATED_RESERVATION)
+    raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
 
   await db.flush()
 
