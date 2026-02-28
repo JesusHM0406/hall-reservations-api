@@ -14,6 +14,7 @@ from app.api.v1.routes.user import router as user_router
 from app.core.config import settings
 from app.core.messages import ErrorMessages
 from app.exceptions.base import AppError
+from app.middleware.rate_limit import GlobalRateLimitMiddleware
 from app.utils.tasks import clean_expired_reservations
 
 logging.basicConfig(level=logging.INFO)
@@ -44,6 +45,9 @@ app.add_middleware(
   allow_methods=["*"],
   allow_headers=["*"]
 )
+
+# Global rate limiting middleware
+app.add_middleware(GlobalRateLimitMiddleware)
 
 @app.exception_handler(AppError)
 async def app_exception_handler(request: Request, exc: AppError):

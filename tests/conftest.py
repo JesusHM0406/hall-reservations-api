@@ -9,6 +9,7 @@ from sqlalchemy.pool import StaticPool
 from app.api.deps import get_db
 from app.db.base_class import Base
 from app.main import app
+from app.utils.rate_limit import global_rate_limiter, login_rate_limiter, registration_rate_limiter
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -37,6 +38,18 @@ async def setup_database(event_loop: Any) -> AsyncGenerator[None, None]:
   yield
   async with engine.begin() as conn:
     await conn.run_sync(Base.metadata.drop_all)
+
+@pytest.fixture(autouse=True)
+async def reset_all_rate_limiters():
+  """Auto-reset all rate limiters before each test."""
+  await global_rate_limiter.reset_all()
+  await login_rate_limiter.reset_all()
+  await registration_rate_limiter.reset_all()
+  yield
+  await global_rate_limiter.reset_all()
+  await login_rate_limiter.reset_all()
+  await registration_rate_limiter.reset_all()
+
 
 @pytest.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:

@@ -120,6 +120,8 @@ class InMemoryRateLimiter:
 # NOTE: In production with multiple workers, is better the Redis-based solution
 login_rate_limiter = InMemoryRateLimiter(max_attempts=5, window_seconds=60)
 registration_rate_limiter = InMemoryRateLimiter(max_attempts=3, window_seconds=300)
+# Global rate limiter for all endpoints (100 requests per minute)
+global_rate_limiter = InMemoryRateLimiter(max_attempts=100, window_seconds=60)
 
 
 async def check_rate_limit(

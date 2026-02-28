@@ -5,7 +5,6 @@ Tests focus on edge cases, JWT handling, and security vulnerabilities.
 from datetime import datetime, timedelta, timezone
 
 import jwt
-import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,15 +13,6 @@ from app.core.messages import ErrorMessages
 from app.core.security import get_password_hash
 from app.models.user import User
 from app.models.user_role import UserRole
-from app.utils.rate_limit import login_rate_limiter
-
-
-@pytest.fixture(autouse=True)
-async def reset_rate_limiter():
-  """Auto-reset rate limiter before each test."""
-  await login_rate_limiter.reset_all()
-  yield
-  await login_rate_limiter.reset_all()
 
 
 class TestLoginSecurity:
