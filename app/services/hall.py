@@ -85,6 +85,12 @@ async def service_update_hall(
   if not hall:
     raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
 
+  # Check if name is being updated and if it already exists for another hall
+  if name and name != hall.name:
+    existing_hall = await crud_get_hall_by_name(db=db, name=name)
+    if existing_hall:
+      raise ConflictError(ErrorMessages.DUPLICATED_HALL_NAME)
+
   updated_hall = await crud_update_hall(
     hall=hall,
     name=name,

@@ -47,7 +47,7 @@ async def get_all_halls(
 async def search_halls(db: DBDep, q: Annotated[str, Query(min_length=2)]) -> List[HallSearchResponse]:
   return await service_search_halls(db=db, search_query=q)
 
-@router.get("/{name}", response_model=HallRead)
+@router.get("/by-name/{name}", response_model=HallRead)
 async def get_hall_by_name(db: DBDep, name: str) -> HallRead:
   return await service_get_hall_by_name(db=db, name=name)
 

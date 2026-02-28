@@ -43,9 +43,9 @@ async def crud_update_hall(
   description: str | None,
   is_available: bool | None
 ):
-  if name:
+  if name is not None:
     hall.name = name
-  if description:
+  if description is not None:
     hall.description = description
   if is_available is not None:
     hall.is_available = is_available

@@ -36,6 +36,7 @@ class ErrorMessages:
   HALL_NOT_FOUND = "Hall not found."
   UNAVAILABLE_HALL = "The hall isn't available in this moment."
   DELETED_HALL = "It appears the hall was deleted."
+  EMPTY_HALL_NAME = "Hall name cannot be empty or contain only whitespace."
 
   # Reservation errors
   INVALID_DATE = "The date is invalid; it must be at least one day after the current date."
