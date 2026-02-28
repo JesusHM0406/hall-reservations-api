@@ -1,5 +1,5 @@
 from typing_extensions import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.api.deps import AdminDep, DBDep, UserDep
 from app.models.reservation import Reservation as Reservation
@@ -16,11 +16,29 @@ from app.services.user import (
   service_update_user_as_admin,
 )
 from app.utils.pagination import Pagination
+from app.utils.rate_limit import registration_rate_limiter
 
 router = APIRouter()
 
 @router.post("/", status_code=201, response_model=UserRead)
-async def add_user(user: UserCreate, db: DBDep) -> UserRead:
+async def add_user(request: Request, user: UserCreate, db: DBDep) -> UserRead:
+  # Rate limiting by IP address
+  client_ip = request.client.host if request.client else "unknown"
+  
+  is_allowed = await registration_rate_limiter.is_allowed(client_ip)
+  
+  if not is_allowed:
+    retry_after = await registration_rate_limiter.get_retry_after(client_ip)
+    headers: dict[str, str] = {}
+    if retry_after:
+      headers["Retry-After"] = str(retry_after)
+    
+    raise HTTPException(
+      status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+      detail=f"Too many registration attempts. Please try again after {retry_after} seconds.",
+      headers=headers
+    )
+  
   return await service_create_user(
     db=db,
     name=user.name,
