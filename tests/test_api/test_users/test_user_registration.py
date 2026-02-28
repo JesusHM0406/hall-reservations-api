@@ -1,6 +1,5 @@
 from typing import Any
 
-import pytest
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,15 +8,6 @@ from app.core.messages import ErrorMessages
 from app.models.user import User
 from app.models.user_role import UserRole
 from app.schemas.user import UserCreate
-from app.utils.rate_limit import registration_rate_limiter
-
-
-@pytest.fixture(autouse=True)
-async def reset_registration_rate_limiter():
-  """Auto-reset rate limiter before each test."""
-  await registration_rate_limiter.reset_all()
-  yield
-  await registration_rate_limiter.reset_all()
 
 
 class TestCreateUser:
