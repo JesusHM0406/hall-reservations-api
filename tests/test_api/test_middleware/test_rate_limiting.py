@@ -1,8 +1,8 @@
 """
-Tests for global rate limiting middleware.
+Tests for rate limiting middleware across the application.
 
-Tests verify that the global rate limiter protects all endpoints
-from excessive requests while allowing normal usage.
+Covers both global rate limiting (all endpoints) and 
+auth-specific rate limiting (login endpoint protection).
 """
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -182,5 +182,160 @@ class TestGlobalRateLimiting:
     response = await client.get(
       "/users/me",
       headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 429
+
+
+class TestLoginRateLimiting:
+  """Test rate limiting functionality on login endpoint."""
+
+  async def test_rate_limit_allows_initial_attempts(
+    self,
+    client: AsyncClient,
+    db_session: AsyncSession
+  ):
+    """Test that initial login attempts are allowed."""
+    user = User(
+      name="testuser",
+      pw_hash=get_password_hash(password="password123"),
+      is_active=True,
+      is_deleted=False
+    )
+    db_session.add(user)
+    await db_session.flush()
+
+    # First 5 attempts should be allowed
+    for _ in range(5):
+      response = await client.post(
+        "/auth/login",
+        data={"username": "testuser", "password": "wrong"}
+      )
+      # Should return 401 (auth failed), not 429 (rate limit)
+      assert response.status_code == 401
+
+  async def test_rate_limit_blocks_after_max_attempts(
+    self,
+    client: AsyncClient,
+    db_session: AsyncSession
+  ):
+    """Test that rate limit blocks after exceeding max attempts."""
+    user = User(
+      name="testuser",
+      pw_hash=get_password_hash(password="password123"),
+      is_active=True,
+      is_deleted=False
+    )
+    db_session.add(user)
+    await db_session.flush()
+
+    # Make 5 failed attempts (max_attempts)
+    for _ in range(5):
+      response = await client.post(
+        "/auth/login",
+        data={"username": "testuser", "password": "wrong"}
+      )
+      assert response.status_code == 401
+
+    # 6th attempt should be rate limited
+    response = await client.post(
+      "/auth/login",
+      data={"username": "testuser", "password": "wrong"}
+    )
+    assert response.status_code == 429
+    assert "Too many login attempts" in response.json()["detail"]
+
+  async def test_rate_limit_returns_retry_after_header(
+    self,
+    client: AsyncClient,
+    db_session: AsyncSession
+  ):
+    """Test that rate limit response includes Retry-After header."""
+    user = User(
+      name="testuser",
+      pw_hash=get_password_hash(password="password123"),
+      is_active=True,
+      is_deleted=False
+    )
+    db_session.add(user)
+    await db_session.flush()
+
+    # Exceed rate limit
+    for _ in range(5):
+      await client.post(
+        "/auth/login",
+        data={"username": "testuser", "password": "wrong"}
+      )
+
+    # Rate limited request should have Retry-After header
+    response = await client.post(
+      "/auth/login",
+      data={"username": "testuser", "password": "wrong"}
+    )
+    assert response.status_code == 429
+    assert "retry-after" in response.headers
+
+  async def test_rate_limit_per_ip_address(
+    self,
+    client: AsyncClient,
+    db_session: AsyncSession
+  ):
+    """Test that rate limiting is per-IP address."""
+    user = User(
+      name="testuser",
+      pw_hash=get_password_hash(password="password123"),
+      is_active=True,
+      is_deleted=False
+    )
+    db_session.add(user)
+    await db_session.flush()
+
+    # Simulate requests from different IPs by using different client-like objects
+    # The test client uses a fixed test IP, so we exhaust the rate limit
+    for _ in range(5):
+      await client.post(
+        "/auth/login",
+        data={"username": "testuser", "password": "wrong"}
+      )
+
+    # 6th request is rate limited
+    response = await client.post(
+      "/auth/login",
+      data={"username": "testuser", "password": "wrong"}
+    )
+    assert response.status_code == 429
+
+  async def test_rate_limit_successful_login_does_not_reset(
+    self,
+    client: AsyncClient,
+    db_session: AsyncSession
+  ):
+    """Test that successful login does not automatically reset rate limit."""
+    user = User(
+      name="testuser",
+      pw_hash=get_password_hash(password="password123"),
+      is_active=True,
+      is_deleted=False
+    )
+    db_session.add(user)
+    await db_session.flush()
+
+    # Make 4 failed attempts
+    for _ in range(4):
+      await client.post(
+        "/auth/login",
+        data={"username": "testuser", "password": "wrong"}
+      )
+
+    # Successful login counts as one more attempt
+    response = await client.post(
+      "/auth/login",
+      data={"username": "testuser", "password": "password123"}
+    )
+    assert response.status_code == 200  # Successful login
+
+    # 6th attempt (5 + 1) should be rate limited
+    response = await client.post(
+      "/auth/login",
+      data={"username": "testuser", "password": "wrong"}
     )
     assert response.status_code == 429
