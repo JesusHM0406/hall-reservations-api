@@ -26,6 +26,16 @@ async def service_create_new_hall(
   description: str,
   is_available: bool
 ) -> HallRead:
+  # Trim and validate name (schema validation should have already done this, but defense in depth)
+  name = name.strip()
+  description = description.strip()
+  
+  if not name:
+    raise ConflictError(ErrorMessages.EMPTY_HALL_NAME)
+  
+  if not description:
+    raise ConflictError(ErrorMessages.EMPTY_HALL_DESCRIPTION)
+
   hall = await crud_get_hall_by_name(db=db, name=name)
 
   if hall:
@@ -85,6 +95,17 @@ async def service_update_hall(
 
   if not hall:
     raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
+
+  # Trim strings if provided
+  if name is not None:
+    name = name.strip()
+    if not name:
+      raise ConflictError(ErrorMessages.EMPTY_HALL_NAME)
+  
+  if description is not None:
+    description = description.strip()
+    if not description:
+      raise ConflictError(ErrorMessages.EMPTY_HALL_DESCRIPTION)
 
   # Check if name is being updated and if it already exists for another hall
   if name and name != hall.name:
