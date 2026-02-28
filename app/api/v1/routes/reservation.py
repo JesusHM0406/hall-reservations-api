@@ -41,7 +41,8 @@ async def get_reservations(
   return await service_get_all_reservations(
     db=db,
     page=page,
-    filters=filters
+    filters=filters,
+    requesting_user=admin
   )
 
 @router.get("/me", response_model=Pagination)
@@ -56,7 +57,8 @@ async def get_reservations_for_the_current_user(
   return await service_get_all_reservations(
     db=db,
     page=page,
-    filters=filters
+    filters=filters,
+    requesting_user=user
   )
 
 @router.get("/{id}", response_model=ReservationRead)
