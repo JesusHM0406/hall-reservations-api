@@ -22,9 +22,9 @@ from app.utils.pagination import Pagination, get_pagination
 from app.utils.pagination_filters import FilterFactory
 
 STATUS_TRANSITIONS: dict[ReservationStatus, list[ReservationStatus]] = {
-    ReservationStatus.CONFIRMED: [ReservationStatus.CANCELLED, ReservationStatus.FINISHED],
-    ReservationStatus.CANCELLED: [],
-    ReservationStatus.FINISHED: []
+  ReservationStatus.CONFIRMED: [ReservationStatus.CANCELLED, ReservationStatus.FINISHED],
+  ReservationStatus.CANCELLED: [],
+  ReservationStatus.FINISHED: []
 }
 
 async def service_create_new_reservation(
@@ -34,16 +34,19 @@ async def service_create_new_reservation(
   hall_id: int,
   reservation_date: date
 ) -> ReservationRead:
+  # Validate date (redundant with schema validation but provides defense in depth)
   today = date.today()
-  if reservation_date < today or reservation_date == today:
+  if reservation_date <= today:
     raise BusinessLogicError(ErrorMessages.INVALID_DATE)
 
+  # Validate user exists and is active
   user = await crud_get_user_by_id(db=db, id=user_id)
   if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
   if not user.is_active:
     raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
 
+  # Validate hall exists and is available
   hall = await crud_get_hall_by_id(db=db, id=hall_id)
   if not hall:
     raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
@@ -82,8 +85,29 @@ async def service_get_reservation(
   if not reservation:
     raise NotFoundError(ErrorMessages.RESERVATION_NOT_FOUND)
 
-  if user.role != UserRole.ADMIN and reservation.user_id != user.id:
-    raise BusinessLogicError(ErrorMessages.RESERVATION_FROM_OTHER_USER)
+  # Get the reservation owner's role to enforce permission boundaries
+  reservation_owner = await crud_get_user_by_id(db=db, id=reservation.user_id)
+  
+  if not reservation_owner or reservation_owner.is_deleted:
+    raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
+
+  # Permission checks:
+  # 1. Users can only see their own reservations
+  # 2. Admins can see user and admin reservations, but NOT superadmin reservations
+  # 3. Superadmins can see all reservations
+  is_own_reservation = reservation.user_id == user.id
+  is_superadmin = user.role == UserRole.SUPERADMIN
+  is_admin = user.role == UserRole.ADMIN
+  reservation_owner_is_superadmin = reservation_owner.role == UserRole.SUPERADMIN
+
+  if not is_own_reservation:
+    if not is_admin and not is_superadmin:
+      # Regular users can't see others' reservations
+      raise BusinessLogicError(ErrorMessages.RESERVATION_FROM_OTHER_USER)
+    
+    if is_admin and reservation_owner_is_superadmin:
+      # Admins can't see superadmin reservations
+      raise NotFoundError(ErrorMessages.RESERVATION_NOT_FOUND)
 
   return ReservationRead(
     id=reservation.id,
@@ -106,6 +130,9 @@ async def service_update_reservation_status(
 
   if not user or user.is_deleted:
     raise NotFoundError(ErrorMessages.USER_NOT_FOUND)
+  
+  if not user.is_active:
+    raise BusinessLogicError(ErrorMessages.INACTIVE_USER)
 
   reservation = await crud_get_reservation(db=db, reservation_id=reservation_id)
 
@@ -123,9 +150,18 @@ async def service_update_reservation_status(
   if new_status not in STATUS_TRANSITIONS.get(reservation.status, []):
     raise BusinessLogicError(ErrorMessages.INVALID_TRANSITION)
 
-  if (new_status == ReservationStatus.FINISHED and
-    date.today() != reservation.reservation_date):
+  # Validate date-specific transitions
+  today = date.today()
+  
+  if new_status == ReservationStatus.FINISHED:
+    # Can only finish on the reservation date
+    if today != reservation.reservation_date:
       raise BusinessLogicError(ErrorMessages.INVALID_FINALIZATION)
+  
+  if new_status == ReservationStatus.CANCELLED:
+    # Cannot cancel reservations in the past (but can cancel today's reservation)
+    if reservation.reservation_date < today:
+      raise BusinessLogicError(ErrorMessages.CANNOT_CANCEL_PAST_RESERVATION)
 
   updated_reservation = await crud_update_reservation_status(
     new_status=new_status,
@@ -146,7 +182,8 @@ async def service_get_all_reservations(
   *,
   db: AsyncSession,
   page: int,
-  filters: ReservationFilters
+  filters: ReservationFilters,
+  requesting_user: UserComplete
 ) -> Pagination:
   reservation_status_filter_dict: dict[str, str] = {}
 
@@ -173,7 +210,8 @@ async def service_get_all_reservations(
   result = await crud_get_reservations(
     db=db,
     page=page,
-    filters=filters
+    filters=filters,
+    requesting_user_role=requesting_user.role
   )
 
   pagination = get_pagination(pagination=result, page=page, available_filters=reservation_availables_filters)

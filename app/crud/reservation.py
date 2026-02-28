@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.models.hall import Hall
 from app.models.reservation import Reservation, ReservationStatus
 from app.models.user import User
+from app.models.user_role import UserRole
 from app.schemas.filters.reservation import ReservationFilters
 from app.schemas.reservation import ReservationRead
 from app.utils.pagination import get_pagination_computed_fields
@@ -54,14 +55,28 @@ async def crud_get_reservations(
   *,
   db: AsyncSession,
   page: int,
-  filters: ReservationFilters
+  filters: ReservationFilters,
+  requesting_user_role: UserRole
 ) -> PaginationCRUD:
   stmt = select(Reservation).order_by(Reservation.id.desc())
   total_records_stmt = select(func.count()).select_from(Reservation)
 
-  if filters.user_name:
-    stmt = stmt.join(Reservation.user).where(User.name.ilike(f"%{filters.user_name}%"))
-    total_records_stmt = total_records_stmt.join(Reservation.user).where(User.name.ilike(f"%{filters.user_name}%"))
+  # Join User table for role filtering - always needed to check user role
+  user_join_needed = bool(filters.user_name) or requesting_user_role != UserRole.SUPERADMIN
+
+  if user_join_needed:
+    if filters.user_name:
+      stmt = stmt.join(Reservation.user).where(User.name.ilike(f"%{filters.user_name}%"))
+      total_records_stmt = total_records_stmt.join(Reservation.user).where(User.name.ilike(f"%{filters.user_name}%"))
+    else:
+      stmt = stmt.join(Reservation.user)
+      total_records_stmt = total_records_stmt.join(Reservation.user)
+    
+    # Non-superadmins cannot see superadmin reservations
+    if requesting_user_role != UserRole.SUPERADMIN:
+      stmt = stmt.where(User.role != UserRole.SUPERADMIN)
+      total_records_stmt = total_records_stmt.where(User.role != UserRole.SUPERADMIN)
+    
     stmt = stmt.options(contains_eager(Reservation.user).load_only(User.name))
   else:
     stmt = stmt.options(joinedload(Reservation.user).load_only(User.name))
