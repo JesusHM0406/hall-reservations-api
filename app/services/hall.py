@@ -11,6 +11,7 @@ from app.crud.hall import (
   crud_update_hall,
   crud_update_hall_availability,
 )
+from app.crud.reservation import crud_has_confirmed_reservations
 from app.exceptions.exceptions import ConflictError, NotFoundError
 from app.schemas.filters.hall import HallFilters, HallFilterLabels, HallFilterNames, HallStatusFilter
 from app.schemas.hall import HallRead, HallSearchResponse
@@ -91,6 +92,13 @@ async def service_update_hall(
     if existing_hall:
       raise ConflictError(ErrorMessages.DUPLICATED_HALL_NAME)
 
+  # Check if hall is being disabled and has confirmed reservations
+  if is_available is not None and not is_available and hall.is_available:
+    # Only check if we're actually disabling (changing from True to False)
+    has_confirmed = await crud_has_confirmed_reservations(db=db, hall_id=id)
+    if has_confirmed:
+      raise ConflictError(ErrorMessages.HALL_HAS_CONFIRMED_RESERVATIONS)
+
   updated_hall = await crud_update_hall(
     hall=hall,
     name=name,
@@ -115,6 +123,13 @@ async def service_update_hall_availability(
 
   if not hall:
     raise NotFoundError(ErrorMessages.HALL_NOT_FOUND)
+
+  # Check if hall is being disabled and has confirmed reservations
+  if not is_available and hall.is_available:
+    # Only check if we're actually disabling (changing from True to False)
+    has_confirmed = await crud_has_confirmed_reservations(db=db, hall_id=id)
+    if has_confirmed:
+      raise ConflictError(ErrorMessages.HALL_HAS_CONFIRMED_RESERVATIONS)
 
   updated_hall = await crud_update_hall_availability(
     hall=hall,
