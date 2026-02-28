@@ -37,6 +37,7 @@ class ErrorMessages:
   UNAVAILABLE_HALL = "The hall isn't available in this moment."
   DELETED_HALL = "It appears the hall was deleted."
   EMPTY_HALL_NAME = "Hall name cannot be empty or contain only whitespace."
+  EMPTY_HALL_DESCRIPTION = "Hall description cannot be empty or contain only whitespace."
   HALL_HAS_CONFIRMED_RESERVATIONS = "Cannot disable hall because it has confirmed reservations."
 
   # Reservation errors
@@ -48,3 +49,4 @@ class ErrorMessages:
   INVALID_TRANSITION = "Invalid status transition."
   INVALID_FINALIZATION = "The reservation cannot be finalized because today is not the reservation date."
   RESERVATION_FROM_OTHER_USER = "You are not the owner of this reservation and you do not have permission to access it."
+  CANNOT_CANCEL_PAST_RESERVATION = "Cannot cancel a reservation that is in the past."
