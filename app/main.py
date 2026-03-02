@@ -49,6 +49,11 @@ app.add_middleware(
 # Global rate limiting middleware
 app.add_middleware(GlobalRateLimitMiddleware)
 
+@app.get("/health", tags=["Health"])
+async def health_check():
+  """Health check endpoint for Docker and monitoring."""
+  return {"status": "ok", "message": "API is running"}
+
 @app.exception_handler(AppError)
 async def app_exception_handler(request: Request, exc: AppError):
   return JSONResponse(
