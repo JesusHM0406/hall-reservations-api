@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environment
+.venv/
+.env
+
+# VS Code configuration
+.vscode/
+
+.gitignore
+.git/
