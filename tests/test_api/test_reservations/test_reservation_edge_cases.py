@@ -63,7 +63,7 @@ class TestDeletedReferences:
 
     # Should return 404 because user is deleted
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
   async def test_finish_reservation_with_deleted_hall(
     self, 
@@ -88,7 +88,7 @@ class TestDeletedReferences:
     response = await client.patch(f"/reservations/{reservation.id}/finish")
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.DELETED_HALL
+    assert response.json()["detail"] == ErrorMessages.DELETED_HALL
 
 
 class TestMalformedRequests:
@@ -295,7 +295,7 @@ class TestConcurrencyScenarios:
     response = await client.post("/reservations/", json=build_create_reservation_request(hall_id=hall.id, reservation_date=tomorrow))
 
     assert response.status_code == 409
-    assert response.json()["message"] == ErrorMessages.DUPLICATED_RESERVATION
+    assert response.json()["detail"] == ErrorMessages.DUPLICATED_RESERVATION
 
   async def test_cancel_then_rebook_same_slot(
     self, 

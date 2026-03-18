@@ -52,7 +52,7 @@ app.add_middleware(GlobalRateLimitMiddleware)
 @app.get("/health", tags=["Health"])
 async def health_check():
   """Health check endpoint for Docker and monitoring."""
-  return {"status": "ok", "message": "API is running"}
+  return {"status": "ok", "detail": "API is running"}
 
 @app.exception_handler(AppError)
 async def app_exception_handler(request: Request, exc: AppError):
@@ -61,7 +61,7 @@ async def app_exception_handler(request: Request, exc: AppError):
     content={
       "status": "error",
       "code": exc.code,
-      "message": exc.message,
+      "detail": exc.detail,
       "path": request.url.path
     }
   )
@@ -73,7 +73,7 @@ async def integrity_exception_handler(request: Request, exc: IntegrityError):
     content={
       "status": "error",
       "code": "DATABASE_INTEGRITY_ERROR",
-      "message": ErrorMessages.INTEGRITY_ERROR,
+      "detail": ErrorMessages.INTEGRITY_ERROR,
       "path": request.url.path
     }
   )
@@ -86,7 +86,7 @@ async def general_exception_handler(request: Request, exc: Exception):
     content={
       "status": "error",
       "code": "INTERNAL_SERVER_ERROR",
-      "message": ErrorMessages.UNEXPECTED_ERROR,
+      "detail": ErrorMessages.UNEXPECTED_ERROR,
       "path": request.url.path
     }
   )

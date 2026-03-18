@@ -95,7 +95,7 @@ class TestFinishReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.INVALID_FINALIZATION
+    assert data["detail"] == ErrorMessages.INVALID_FINALIZATION
 
   async def test_finish_reservation_past_date_fails(
     self, 
@@ -128,7 +128,7 @@ class TestFinishReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.INVALID_FINALIZATION
+    assert data["detail"] == ErrorMessages.INVALID_FINALIZATION
 
   async def test_finish_already_finished_reservation(
     self, 
@@ -161,7 +161,7 @@ class TestFinishReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.INVALID_TRANSITION
+    assert data["detail"] == ErrorMessages.INVALID_TRANSITION
 
   async def test_finish_cancelled_reservation(
     self, 
@@ -194,7 +194,7 @@ class TestFinishReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.INVALID_TRANSITION
+    assert data["detail"] == ErrorMessages.INVALID_TRANSITION
 
   async def test_finish_other_user_reservation(
     self, 
@@ -229,7 +229,7 @@ class TestFinishReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.RESERVATION_USER_CONFLICT
+    assert data["detail"] == ErrorMessages.RESERVATION_USER_CONFLICT
 
   async def test_finish_nonexistent_reservation(
     self, 
@@ -249,7 +249,7 @@ class TestFinishReservation:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.RESERVATION_NOT_FOUND
+    assert data["detail"] == ErrorMessages.RESERVATION_NOT_FOUND
 
   async def test_finish_reservation_unauthenticated(
     self, 
@@ -397,7 +397,7 @@ class TestCancelReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.CANNOT_CANCEL_PAST_RESERVATION
+    assert data["detail"] == ErrorMessages.CANNOT_CANCEL_PAST_RESERVATION
 
   async def test_cancel_already_cancelled_reservation(
     self, 
@@ -430,7 +430,7 @@ class TestCancelReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.INVALID_TRANSITION
+    assert data["detail"] == ErrorMessages.INVALID_TRANSITION
 
   async def test_cancel_finished_reservation(
     self, 
@@ -463,7 +463,7 @@ class TestCancelReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.INVALID_TRANSITION
+    assert data["detail"] == ErrorMessages.INVALID_TRANSITION
 
   async def test_cancel_other_user_reservation(
     self, 
@@ -498,7 +498,7 @@ class TestCancelReservation:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.RESERVATION_USER_CONFLICT
+    assert data["detail"] == ErrorMessages.RESERVATION_USER_CONFLICT
 
   async def test_cancel_nonexistent_reservation(
     self, 
@@ -518,7 +518,7 @@ class TestCancelReservation:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.RESERVATION_NOT_FOUND
+    assert data["detail"] == ErrorMessages.RESERVATION_NOT_FOUND
 
   async def test_cancel_reservation_unauthenticated(
     self, 
@@ -659,7 +659,7 @@ class TestStatusTransitionMatrix:
 
     response = await client.patch(f"/reservations/{reservation.id}/finish")
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.INVALID_TRANSITION
+    assert response.json()["detail"] == ErrorMessages.INVALID_TRANSITION
 
   async def test_finished_to_cancelled_invalid(
     self, 
@@ -688,7 +688,7 @@ class TestStatusTransitionMatrix:
 
     response = await client.patch(f"/reservations/{reservation.id}/cancel")
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.INVALID_TRANSITION
+    assert response.json()["detail"] == ErrorMessages.INVALID_TRANSITION
 
   async def test_finished_to_confirmed_invalid(
     self

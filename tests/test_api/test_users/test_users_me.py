@@ -195,7 +195,7 @@ class TestUpdateMe:
     response = await client.patch("/users/me", json=user_update.model_dump())
 
     assert response.status_code == 409
-    assert response.json()["message"] == ErrorMessages.DUPLICATED_USERNAME
+    assert response.json()["detail"] == ErrorMessages.DUPLICATED_USERNAME
 
   async def test_update_me_empty_name(self, client: AsyncClient, db_session: AsyncSession):
     user1 = User(name="user1", role=UserRole.USER, is_active=True, pw_hash="h")
@@ -216,7 +216,7 @@ class TestUpdateMe:
     response = await client.patch("/users/me", json=user_update.model_dump())
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.EMPTY_NAME
+    assert response.json()["detail"] == ErrorMessages.EMPTY_NAME
 
     await db_session.flush()
 
@@ -244,7 +244,7 @@ class TestUpdateMe:
     response = await client.patch("/users/me", json=user_update.model_dump())
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.SHORT_NAME
+    assert response.json()["detail"] == ErrorMessages.SHORT_NAME
 
     await db_session.flush()
 
@@ -431,7 +431,7 @@ class TestsDeleteMe:
     res = await client.delete("/users/me")
 
     assert res.status_code == 400
-    assert res.json()["message"] == ErrorMessages.DELETE_LAST_SUPERADMIN
+    assert res.json()["detail"] == ErrorMessages.DELETE_LAST_SUPERADMIN
 
     await db_session.flush()
 

@@ -91,7 +91,7 @@ class TestCreateHall:
 
     assert response.status_code == 409
     data = response.json()
-    assert data["message"] == ErrorMessages.DUPLICATED_HALL_NAME
+    assert data["detail"] == ErrorMessages.DUPLICATED_HALL_NAME
 
   async def test_create_hall_empty_name(self, client: AsyncClient, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
     """Creating a hall with empty name should fail"""
@@ -364,7 +364,7 @@ class TestUpdateHall:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_NOT_FOUND
+    assert data["detail"] == ErrorMessages.HALL_NOT_FOUND
 
   async def test_update_hall_duplicate_name(self, client: AsyncClient, db_session: AsyncSession, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
     """Updating hall name to existing name should fail"""
@@ -385,7 +385,7 @@ class TestUpdateHall:
 
     assert response.status_code == 409
     data = response.json()
-    assert data["message"] == ErrorMessages.DUPLICATED_HALL_NAME
+    assert data["detail"] == ErrorMessages.DUPLICATED_HALL_NAME
 
   async def test_update_hall_same_name(self, client: AsyncClient, db_session: AsyncSession, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
     """Updating hall with same name should succeed"""
@@ -557,7 +557,7 @@ class TestUpdateHall:
 
     assert response.status_code == 409
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_HAS_CONFIRMED_RESERVATIONS
+    assert data["detail"] == ErrorMessages.HALL_HAS_CONFIRMED_RESERVATIONS
 
   async def test_disable_hall_with_only_cancelled_reservations_should_succeed(self, client: AsyncClient, db_session: AsyncSession, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
     """Disabling a hall with only cancelled reservations should succeed"""
@@ -740,7 +740,7 @@ class TestUpdateHallAvailability:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_NOT_FOUND
+    assert data["detail"] == ErrorMessages.HALL_NOT_FOUND
 
   async def test_update_availability_regular_user_forbidden(self, client: AsyncClient, db_session: AsyncSession, regular_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
     """Regular user cannot update hall availability"""
@@ -812,7 +812,7 @@ class TestUpdateHallAvailability:
 
     assert response.status_code == 409
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_HAS_CONFIRMED_RESERVATIONS
+    assert data["detail"] == ErrorMessages.HALL_HAS_CONFIRMED_RESERVATIONS
 
   async def test_disable_availability_with_only_cancelled_reservations_should_succeed(self, client: AsyncClient, db_session: AsyncSession, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
     """Disabling availability for a hall with only cancelled reservations should succeed"""

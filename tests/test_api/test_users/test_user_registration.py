@@ -82,7 +82,7 @@ class TestCreateUser:
     assert response.status_code == 409
 
     data = response.json()
-    assert data["message"] == ErrorMessages.DUPLICATED_USERNAME
+    assert data["detail"] == ErrorMessages.DUPLICATED_USERNAME
 
     after_total_count_res = await db_session.execute(
       select(func.count())
@@ -145,7 +145,7 @@ class TestCreateUser:
     assert response.status_code == 400
 
     data = response.json()
-    assert data["message"] == ErrorMessages.EMPTY_NAME
+    assert data["detail"] == ErrorMessages.EMPTY_NAME
 
     after_total_count_res = await db_session.execute(
       select(func.count())
@@ -175,7 +175,7 @@ class TestCreateUser:
     assert response.status_code == 400
 
     data = response.json()
-    assert data["message"] == ErrorMessages.SHORT_NAME
+    assert data["detail"] == ErrorMessages.SHORT_NAME
 
     after_total_count_res = await db_session.execute(
       select(func.count())

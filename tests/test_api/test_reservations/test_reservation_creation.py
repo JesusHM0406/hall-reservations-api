@@ -406,7 +406,7 @@ class TestCreateReservationBusinessLogic:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_NOT_FOUND
+    assert data["detail"] == ErrorMessages.HALL_NOT_FOUND
 
   async def test_create_reservation_unavailable_hall(
     self, 
@@ -432,7 +432,7 @@ class TestCreateReservationBusinessLogic:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.UNAVAILABLE_HALL
+    assert data["detail"] == ErrorMessages.UNAVAILABLE_HALL
 
   async def test_create_reservation_inactive_user(
     self, 
@@ -527,7 +527,7 @@ class TestCreateReservationConflicts:
 
     assert response.status_code == 409
     data = response.json()
-    assert data["message"] == ErrorMessages.DUPLICATED_RESERVATION
+    assert data["detail"] == ErrorMessages.DUPLICATED_RESERVATION
 
   async def test_create_reservation_after_cancelled(
     self, 

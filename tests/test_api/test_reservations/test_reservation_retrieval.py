@@ -80,7 +80,7 @@ class TestGetSingleReservation:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.RESERVATION_NOT_FOUND
+    assert data["detail"] == ErrorMessages.RESERVATION_NOT_FOUND
 
   async def test_get_reservation_unauthenticated(
     self, 

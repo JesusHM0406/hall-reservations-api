@@ -390,7 +390,7 @@ class TestGetUserByID:
     response = await client.get("/users/9999")
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
   async def test_get_user_by_id_as_regular_user(self, client: AsyncClient):
     # User without admin role
@@ -456,7 +456,7 @@ class TestGetUserByID:
     response = await client.get(f"/users/{fake_superadmin.id}")
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
   async def test_get_superadmin_as_superadmin(self, client: AsyncClient, db_session: AsyncSession):
     # Superadmin role
@@ -532,7 +532,7 @@ class TestGetUserByID:
     res = await client.get(f"/users/{fake_user.id}")
 
     assert res.status_code == 404
-    assert res.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert res.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
   async def test_get_user_by_id_inactive(self, client: AsyncClient, db_session: AsyncSession):
     admin_mock = UserComplete(
@@ -810,7 +810,7 @@ class TestUpdateByID:
     response = await client.patch(f"/users/{fake_db_user.id}", json=user_update.model_dump())
 
     assert response.status_code == 403
-    assert response.json()["message"] == ErrorMessages.NOT_ENOUGH_PERMISSIONS_UPDATE_ROLE
+    assert response.json()["detail"] == ErrorMessages.NOT_ENOUGH_PERMISSIONS_UPDATE_ROLE
 
     await db_session.flush()
 
@@ -846,7 +846,7 @@ class TestUpdateByID:
     response = await client.patch(f"/users/{fake_superadmin.id}", json=user_update.model_dump())
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
     await db_session.flush()
 
@@ -883,7 +883,7 @@ class TestUpdateByID:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.CANNOT_UPDATE
+    assert data["detail"] == ErrorMessages.CANNOT_UPDATE
 
     await db_session.flush()
 
@@ -916,7 +916,7 @@ class TestUpdateByID:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.CANNOT_DOWNGRADE_LAST_SUPERADMIN
+    assert data["detail"] == ErrorMessages.CANNOT_DOWNGRADE_LAST_SUPERADMIN
 
     superadmin_db = await db_session.get(User, fake_superadmin1.id)
 
@@ -947,7 +947,7 @@ class TestUpdateByID:
 
     assert response.status_code == 400
     data = response.json()
-    assert data["message"] == ErrorMessages.DISABLE_LAST_SUPERADMIN
+    assert data["detail"] == ErrorMessages.DISABLE_LAST_SUPERADMIN
 
     superadmin_db = await db_session.get(User, fake_superadmin1.id)
 
@@ -978,7 +978,7 @@ class TestUpdateByID:
     response = await client.patch(f"/users/{fake_user1.id}", json=user_update.model_dump())
 
     assert response.status_code == 409
-    assert response.json()["message"] == ErrorMessages.DUPLICATED_USERNAME
+    assert response.json()["detail"] == ErrorMessages.DUPLICATED_USERNAME
 
     user1_db = await db_session.get(User, fake_user1.id)
 
@@ -1008,7 +1008,7 @@ class TestUpdateByID:
     response = await client.patch(f"/users/{fake_user.id}", json=user_update.model_dump())
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
     user_db = await db_session.get(User, fake_user.id)
 
@@ -1038,7 +1038,7 @@ class TestUpdateByID:
     response = await client.patch(f"/users/{fake_user.id}", json=user_update.model_dump())
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.EMPTY_NAME
+    assert response.json()["detail"] == ErrorMessages.EMPTY_NAME
 
     user_db = await db_session.get(User, fake_user.id)
 
@@ -1068,7 +1068,7 @@ class TestUpdateByID:
     response = await client.patch(f"/users/{fake_user.id}", json=user_update.model_dump())
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.SHORT_NAME
+    assert response.json()["detail"] == ErrorMessages.SHORT_NAME
 
     user_db = await db_session.get(User, fake_user.id)
 
@@ -1172,7 +1172,7 @@ class TestDeleteByID:
     response = await client.delete(f"/users/{fake_superadmin.id}")
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
     await db_session.flush()
 
@@ -1199,7 +1199,7 @@ class TestDeleteByID:
     response = await client.delete(f"/users/{fake_admin.id}")
 
     assert response.status_code == 403
-    assert response.json()["message"] == ErrorMessages.CANNOT_DELETE_ADMIN
+    assert response.json()["detail"] == ErrorMessages.CANNOT_DELETE_ADMIN
 
     await db_session.flush()
 
@@ -1226,7 +1226,7 @@ class TestDeleteByID:
     response = await client.delete(f"/users/{fake_user.id}")
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
   async def test_superadmin_self_deletes(self, client: AsyncClient, db_session: AsyncSession):
     fake_superadmin = User(name="superadmin", role=UserRole.SUPERADMIN, is_active=True, pw_hash="h")
@@ -1245,7 +1245,7 @@ class TestDeleteByID:
     response = await client.delete(f"/users/{fake_superadmin.id}")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.DELETE_CURRENT_ADMIN
+    assert response.json()["detail"] == ErrorMessages.DELETE_CURRENT_ADMIN
 
     await db_session.flush()
 
@@ -1274,7 +1274,7 @@ class TestDeleteByID:
     response = await client.delete(f"/users/{fake_superadmin.id}")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.DELETE_LAST_SUPERADMIN
+    assert response.json()["detail"] == ErrorMessages.DELETE_LAST_SUPERADMIN
 
     await db_session.flush()
 
@@ -1474,7 +1474,7 @@ class TestRestoreUser:
     response = await client.patch(f"/users/{fake_del_admin.id}/restore", json=admin_restore_update.model_dump())
 
     assert response.status_code == 403
-    assert response.json()["message"] == ErrorMessages.CANNOT_RESTORE_ADMIN
+    assert response.json()["detail"] == ErrorMessages.CANNOT_RESTORE_ADMIN
 
     await db_session.flush()
 
@@ -1515,7 +1515,7 @@ class TestRestoreUser:
     response = await client.patch(f"/users/{fake_del_superadmin.id}/restore", json=superadmin_restore_update.model_dump())
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
     await db_session.flush()
 
@@ -1566,7 +1566,7 @@ class TestRestoreUser:
     response = await client.patch(f"/users/{fake_del_user.id}/restore", json=user_restore_update.model_dump())
 
     assert response.status_code == 409
-    assert response.json()["message"] == ErrorMessages.DUPLICATED_USERNAME
+    assert response.json()["detail"] == ErrorMessages.DUPLICATED_USERNAME
 
     await db_session.flush()
 
@@ -1608,7 +1608,7 @@ class TestRestoreUser:
     response = await client.patch(f"/users/{fake_user.id}/restore", json=user_restore_update.model_dump())
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.USER_ALREADY_ACTIVE
+    assert response.json()["detail"] == ErrorMessages.USER_ALREADY_ACTIVE
 
     await db_session.flush()
 
@@ -1650,7 +1650,7 @@ class TestRestoreUser:
     response = await client.patch(f"/users/{fake_user.id}/restore", json=user_restore_update.model_dump())
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.EMPTY_NAME
+    assert response.json()["detail"] == ErrorMessages.EMPTY_NAME
 
     await db_session.flush()
 
@@ -1692,7 +1692,7 @@ class TestRestoreUser:
     response = await client.patch(f"/users/{fake_user.id}/restore", json=user_restore_update.model_dump())
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.SHORT_NAME
+    assert response.json()["detail"] == ErrorMessages.SHORT_NAME
 
     await db_session.flush()
 
@@ -1723,4 +1723,4 @@ class TestRestoreUser:
     response = await client.patch("/users/4/restore", json=user_restore_update.model_dump())
 
     assert response.status_code == 404
-    assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND

@@ -56,7 +56,7 @@ class TestRBACGetSingleReservation:
     response = await client.get(f"/reservations/{reservation.id}")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.RESERVATION_FROM_OTHER_USER
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_FROM_OTHER_USER
 
   async def test_user_cannot_see_admin_reservation(
     self, 
@@ -83,7 +83,7 @@ class TestRBACGetSingleReservation:
     response = await client.get(f"/reservations/{reservation.id}")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.RESERVATION_FROM_OTHER_USER
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_FROM_OTHER_USER
 
   async def test_user_cannot_see_superadmin_reservation(
     self, 
@@ -110,7 +110,7 @@ class TestRBACGetSingleReservation:
     response = await client.get(f"/reservations/{reservation.id}")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.RESERVATION_FROM_OTHER_USER
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_FROM_OTHER_USER
 
   async def test_admin_can_see_user_reservation(
     self, 
@@ -188,7 +188,7 @@ class TestRBACGetSingleReservation:
     response = await client.get(f"/reservations/{reservation.id}")
 
     assert response.status_code == 404  # Pretend it doesn't exist
-    assert response.json()["message"] == ErrorMessages.RESERVATION_NOT_FOUND
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_NOT_FOUND
 
   async def test_superadmin_can_see_user_reservation(
     self, 
@@ -421,7 +421,7 @@ class TestRBACStatusTransitions:
     response = await client.patch(f"/reservations/{reservation.id}/cancel")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.RESERVATION_USER_CONFLICT
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_USER_CONFLICT
 
   async def test_user_cannot_finish_other_user_reservation(
     self, 
@@ -448,7 +448,7 @@ class TestRBACStatusTransitions:
     response = await client.patch(f"/reservations/{reservation.id}/finish")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.RESERVATION_USER_CONFLICT
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_USER_CONFLICT
 
   async def test_admin_cannot_cancel_user_reservation(
     self, 
@@ -475,7 +475,7 @@ class TestRBACStatusTransitions:
     response = await client.patch(f"/reservations/{reservation.id}/cancel")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.RESERVATION_USER_CONFLICT
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_USER_CONFLICT
 
   async def test_admin_cannot_cancel_superadmin_reservation(
     self, 
@@ -502,7 +502,7 @@ class TestRBACStatusTransitions:
     response = await client.patch(f"/reservations/{reservation.id}/cancel")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.RESERVATION_USER_CONFLICT
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_USER_CONFLICT
 
   async def test_superadmin_cannot_cancel_user_reservation(
     self, 
@@ -529,7 +529,7 @@ class TestRBACStatusTransitions:
     response = await client.patch(f"/reservations/{reservation.id}/cancel")
 
     assert response.status_code == 400
-    assert response.json()["message"] == ErrorMessages.RESERVATION_USER_CONFLICT
+    assert response.json()["detail"] == ErrorMessages.RESERVATION_USER_CONFLICT
 
   async def test_user_can_cancel_own_reservation(
     self, 

@@ -78,7 +78,7 @@ async def test_user_complete_lifecycle(client: AsyncClient, db_session: AsyncSes
 
   response = await client.patch("/users/me", headers={"Authorization": f"Bearer {user_token}"}, json=user_update.model_dump())
   assert response.status_code == 409
-  assert response.json()["message"] == ErrorMessages.DUPLICATED_USERNAME
+  assert response.json()["detail"] == ErrorMessages.DUPLICATED_USERNAME
 
   response = await client.patch(f"/users/{new_user_id}", headers={"Authorization": f"Bearer {user_token}"})
   assert response.status_code == 403
@@ -118,7 +118,7 @@ async def test_user_complete_lifecycle(client: AsyncClient, db_session: AsyncSes
 
   response = await client.get(f"/users/{user_id}", headers={"Authorization": f"Bearer {admin_token}"})
   assert response.status_code == 404
-  assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+  assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
   # 6: Restore
   restore_scheme = UserRestoreUpdate(name="Karl Marx Return")
@@ -243,7 +243,7 @@ async def test_hierarchy_and_escalation_real_flow(client: AsyncClient, db_sessio
 
   # The administrator can now update user information, but cannot yet update super administrator information.
   assert response.status_code == 404
-  assert response.json()["message"] == ErrorMessages.USER_NOT_FOUND
+  assert response.json()["detail"] == ErrorMessages.USER_NOT_FOUND
 
   admin_token = user_token
 
@@ -292,7 +292,7 @@ async def test_hierarchy_and_escalation_real_flow(client: AsyncClient, db_sessio
   )
 
   assert response.status_code == 403
-  assert response.json()["message"] == ErrorMessages.NOT_ENOUGH_PERMISSIONS_UPDATE_ROLE
+  assert response.json()["detail"] == ErrorMessages.NOT_ENOUGH_PERMISSIONS_UPDATE_ROLE
 
   # 6: Superadmin promotes admin to superadmin
   admin_update = UserAdminUpdate(

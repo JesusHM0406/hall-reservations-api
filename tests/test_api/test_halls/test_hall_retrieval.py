@@ -184,7 +184,7 @@ class TestGetHallById:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_NOT_FOUND
+    assert data["detail"] == ErrorMessages.HALL_NOT_FOUND
 
   async def test_get_hall_by_id_invalid_id(self, client: AsyncClient):
     """Getting hall with invalid ID format returns 422"""
@@ -201,7 +201,7 @@ class TestGetHallById:
     # Should return 404 since there's no hall with ID 0
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_NOT_FOUND
+    assert data["detail"] == ErrorMessages.HALL_NOT_FOUND
 
   async def test_get_hall_by_id_negative(self, client: AsyncClient):
     """Getting hall with negative ID"""
@@ -209,7 +209,7 @@ class TestGetHallById:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_NOT_FOUND
+    assert data["detail"] == ErrorMessages.HALL_NOT_FOUND
 
 
 class TestGetHallByName:
@@ -235,7 +235,7 @@ class TestGetHallByName:
 
     assert response.status_code == 404
     data = response.json()
-    assert data["message"] == ErrorMessages.HALL_NOT_FOUND
+    assert data["detail"] == ErrorMessages.HALL_NOT_FOUND
 
   async def test_get_hall_by_name_with_spaces(self, client: AsyncClient, db_session: AsyncSession):
     """Getting hall by name with spaces"""
