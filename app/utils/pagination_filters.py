@@ -1,14 +1,18 @@
-from typing import List, Dict, Any
+from enum import Enum
+from typing import List, Dict
 
 from pydantic import BaseModel
 
+class FilterTypeEnum(Enum):
+  SELECT = 'select'
+  TEXT = 'text'
 
 class AvailableFilter(BaseModel):
   name: str
   label: str
-  type: str
-  options: List[Dict[str, Any]] | None = None
-  current_value: Any = None
+  type: FilterTypeEnum
+  options: List[Dict[str, str]] | None = None
+  current_value: str | int | None = None
 
 class FilterFactory:
   @staticmethod
@@ -17,13 +21,13 @@ class FilterFactory:
     name: str,
     label: str,
     options: Dict[str, str],
-    current: Any = None
+    current: str | int | None = None
   ):
     formatted_options = [{"label": v, "value": k} for k, v in options.items()]
     return AvailableFilter(
       name=name,
       label=label,
-      type="select",
+      type=FilterTypeEnum.SELECT,
       options=formatted_options,
       current_value=current
     )
@@ -37,5 +41,5 @@ class FilterFactory:
     return AvailableFilter(
       name=name,
       label=label,
-      type="text"
+      type=FilterTypeEnum.TEXT
     )
