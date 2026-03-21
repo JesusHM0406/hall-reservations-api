@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 
 from app.core.messages import ErrorMessages
 from app.models.reservation_status import ReservationStatus
@@ -35,7 +35,7 @@ async def service_create_new_reservation(
   reservation_date: date
 ) -> ReservationRead:
   # Validate date (redundant with schema validation but provides defense in depth)
-  today = date.today()
+  today = datetime.now(timezone.utc).date()
   if reservation_date <= today:
     raise BusinessLogicError(ErrorMessages.INVALID_DATE)
 
@@ -151,7 +151,7 @@ async def service_update_reservation_status(
     raise BusinessLogicError(ErrorMessages.INVALID_TRANSITION)
 
   # Validate date-specific transitions
-  today = date.today()
+  today = datetime.now(timezone.utc).date()
   
   if new_status == ReservationStatus.FINISHED:
     # Can only finish on the reservation date

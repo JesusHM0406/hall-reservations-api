@@ -13,7 +13,7 @@ Focuses on:
 """
 
 from typing import Any, Callable
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -244,7 +244,7 @@ class TestCreateReservationValidation:
     db_session.add(hall)
     await db_session.flush()
 
-    too_far_date = date.today() + timedelta(days=366)  # Over 1 year
+    too_far_date = datetime.now(timezone.utc).date() + timedelta(days=366)  # Over 1 year
     # Use hardcoded dict to test invalid date validation (intentionally send date > 1 year)
     reservation_data: dict[str, Any] = {
       "hall_id": hall.id,

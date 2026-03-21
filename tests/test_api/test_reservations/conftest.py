@@ -5,7 +5,7 @@ Provides reusable components for setting up test scenarios.
 """
 
 from typing import Any, Callable, Generator
-from datetime import date, timedelta
+from datetime import datetime, timezone, timedelta, date
 
 import pytest
 from app.main import app
@@ -120,37 +120,37 @@ def mock_auth() -> Generator[Callable[[UserComplete], None], Any, Any]:
 @pytest.fixture
 def tomorrow() -> date:
   """Fixture providing tomorrow's date"""
-  return date.today() + timedelta(days=1)
+  return datetime.now(timezone.utc).date() + timedelta(days=1)
 
 
 @pytest.fixture
 def future_date() -> date:
   """Fixture providing a date 7 days in the future"""
-  return date.today() + timedelta(days=7)
+  return datetime.now(timezone.utc).date() + timedelta(days=7)
 
 
 @pytest.fixture
 def far_future_date() -> date:
   """Fixture providing a date 6 months in the future"""
-  return date.today() + timedelta(days=180)
+  return datetime.now(timezone.utc).date() + timedelta(days=180)
 
 
 @pytest.fixture
 def max_future_date() -> date:
   """Fixture providing the maximum allowed future date (1 year)"""
-  return date.today() + timedelta(days=365)
+  return datetime.now(timezone.utc).date() + timedelta(days=365)
 
 
 @pytest.fixture
 def past_date() -> date:
   """Fixture providing yesterday's date"""
-  return date.today() - timedelta(days=1)
+  return datetime.now(timezone.utc).date() - timedelta(days=1)
 
 
 @pytest.fixture
 def today() -> date:
   """Fixture providing today's date"""
-  return date.today()
+  return datetime.now(timezone.utc).date()
 
 
 # ============================================================================
