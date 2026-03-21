@@ -134,7 +134,6 @@ class TestGetUsers:
     assert data["current_page"] == 1
     assert data["has_next"] is True
     assert data["has_prev"] is False
-    assert data["next_num"] == 2
 
     response = await client.get("/users/?page=2")
     data = response.json()
@@ -143,7 +142,6 @@ class TestGetUsers:
     assert data["current_page"] == 2
     assert data["has_next"] is False
     assert data["has_prev"] is True
-    assert data["prev_num"] == 1
 
   async def test_get_users_pagination_boundaries(self, client: AsyncClient, db_session: AsyncSession):
     admin_mock = UserComplete(

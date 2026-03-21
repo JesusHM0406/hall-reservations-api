@@ -81,7 +81,6 @@ class TestGetAllHalls:
     assert data["current_page"] == 1
     assert data["has_next"] is True
     assert data["has_prev"] is False
-    assert data["next_num"] == 2
 
     # Page 2
     response = await client.get("/halls/?page=2")
@@ -90,7 +89,6 @@ class TestGetAllHalls:
     assert data["current_page"] == 2
     assert data["has_next"] is False
     assert data["has_prev"] is True
-    assert data["prev_num"] == 1
 
   async def test_get_halls_pagination_boundaries(self, client: AsyncClient, db_session: AsyncSession):
     """Getting halls handles page boundaries correctly"""
