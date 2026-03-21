@@ -246,7 +246,7 @@ async def service_get_all_users(
   page: int,
   filters: UserFilters,
   admin: UserComplete
-) -> Pagination:
+) -> Pagination[UserComplete]:
   result = await crud_get_all_users(db=db, page=page, filters=filters, admin=admin)
 
   pagination = get_pagination(pagination=result, page=page)

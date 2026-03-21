@@ -57,7 +57,7 @@ async def crud_get_reservations(
   page: int,
   filters: ReservationFilters,
   requesting_user_role: UserRole
-) -> PaginationCRUD:
+) -> PaginationCRUD[ReservationRead]:
   stmt = select(Reservation).order_by(Reservation.id.desc())
   total_records_stmt = select(func.count()).select_from(Reservation)
 

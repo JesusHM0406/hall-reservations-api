@@ -183,7 +183,7 @@ async def service_get_all_reservations(
   page: int,
   filters: ReservationFilters,
   requesting_user: UserComplete
-) -> Pagination:
+) -> Pagination[ReservationRead]:
   result = await crud_get_reservations(
     db=db,
     page=page,

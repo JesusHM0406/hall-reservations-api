@@ -168,7 +168,7 @@ async def service_get_all_halls(
   db: AsyncSession,
   page: int,
   filters: HallFilters
-) -> Pagination:
+) -> Pagination[HallRead]:
   result = await crud_get_all_halls(db=db, page=page, filters=filters)
 
   pagination = get_pagination(pagination=result, page=page)

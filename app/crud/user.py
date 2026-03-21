@@ -63,7 +63,7 @@ async def crud_get_all_users(
   page: int,
   filters: UserFilters,
   admin: UserComplete
-) -> PaginationCRUD:
+) -> PaginationCRUD[UserComplete]:
   stmt = select(User).order_by(User.id.desc())
 
   total_records_stmt = select(func.count()).select_from(User)

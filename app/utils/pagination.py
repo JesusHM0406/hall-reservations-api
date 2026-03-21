@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 import math
-from typing import Any, List
+from typing import List, Generic
 
 from pydantic import BaseModel, computed_field
 
 from app.core.config import settings
 from app.utils.pagination_crud import PaginationCRUD
+from app.utils.generic_type import T
 
-
-class Pagination(BaseModel):
-  items: List[Any]
+class Pagination(BaseModel, Generic[T]):
+  items: List[T]
   total: int
   requested_page: int
   per_page: int
@@ -30,7 +30,7 @@ class PaginationComputedFields():
   current_page: int
   current_offset: int
 
-def get_pagination(*, pagination: PaginationCRUD, page: int) -> Pagination:
+def get_pagination(*, pagination: PaginationCRUD[T], page: int) -> Pagination[T]:
   return Pagination(
     items=pagination.items,
     requested_page=page,

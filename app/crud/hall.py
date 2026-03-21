@@ -62,7 +62,7 @@ async def crud_get_all_halls(
   db: AsyncSession,
   page: int,
   filters: HallFilters
-) -> PaginationCRUD:
+) -> PaginationCRUD[HallRead]:
   stmt = select(Hall).order_by(Hall.id.desc())
   total_records_stmt = select(func.count()).select_from(Hall)
 

@@ -31,13 +31,13 @@ async def create_reservation(
     reservation_date=reservation.reservation_date
   )
 
-@router.get("/", response_model=Pagination)
+@router.get("/", response_model=Pagination[ReservationRead])
 async def get_reservations(
   db: DBDep,
   admin: AdminDep,
   filters: Annotated[ReservationFilters, Depends()],
   page: int = 1
-) -> Pagination:
+) -> Pagination[ReservationRead]:
   return await service_get_all_reservations(
     db=db,
     page=page,
@@ -45,13 +45,13 @@ async def get_reservations(
     requesting_user=admin
   )
 
-@router.get("/me", response_model=Pagination)
+@router.get("/me", response_model=Pagination[ReservationRead])
 async def get_reservations_for_the_current_user(
   db: DBDep,
   user: UserDep,
   filters: Annotated[ReservationFilters, Depends()],
   page: int = 1
-) -> Pagination:
+) -> Pagination[ReservationRead]:
   filters.user_name = user.name
 
   return await service_get_all_reservations(

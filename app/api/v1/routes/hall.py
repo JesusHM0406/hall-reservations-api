@@ -31,12 +31,12 @@ async def create_new_hall(
     is_available=hall.is_available
   )
 
-@router.get("/", response_model=Pagination)
+@router.get("/", response_model=Pagination[HallRead])
 async def get_all_halls(
   db: DBDep,
   filters: Annotated[HallFilters, Depends()],
   page: int = 1
-) -> Pagination:
+) -> Pagination[HallRead]:
   return await service_get_all_halls(
     db=db,
     page=page,

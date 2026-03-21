@@ -46,13 +46,13 @@ async def add_user(request: Request, user: UserCreate, db: DBDep) -> UserRead:
     password_confirm=user.password_confirm
   )
 
-@router.get("/", response_model=Pagination)
+@router.get("/", response_model=Pagination[UserComplete])
 async def get_all_users(
   db: DBDep,
   admin: AdminDep,
   filters: Annotated[UserFilters, Depends()],
   page: int = 1
-) -> Pagination:
+) -> Pagination[UserComplete]:
   return await service_get_all_users(
     db=db,
     page=page,

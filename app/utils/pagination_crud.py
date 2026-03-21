@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import Any, List
+from typing import List, Generic
+
+from app.utils.generic_type import T
 
 
 @dataclass
-class PaginationCRUD:
-  items: List[Any]
+class PaginationCRUD(Generic[T]):
+  items: List[T]
   total: int
   per_page: int
   pages: int
