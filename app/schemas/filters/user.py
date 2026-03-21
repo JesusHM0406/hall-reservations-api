@@ -24,7 +24,3 @@ class UserFilters(BaseModel):
 class UserFilterNames(str, Enum):
   ROLE = "role"
   STATUS = "status"
-
-class UserFilterLabels(str, Enum):
-  ROLE = "By role"
-  STATUS = "By status"

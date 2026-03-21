@@ -12,6 +12,3 @@ class HallFilters(BaseModel):
 
 class HallFilterNames(str, Enum):
   STATUS = "status"
-
-class HallFilterLabels(str, Enum):
-  STATUS = "By availability"
