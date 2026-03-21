@@ -26,14 +26,6 @@ class Pagination(BaseModel):
   def has_next(self) -> bool:
     return self.current_page < self.pages
 
-  @computed_field
-  def prev_num(self) -> int | None:
-    return self.current_page - 1 if self.current_page > 1 else None
-
-  @computed_field
-  def next_num(self) -> int | None:
-    return self.current_page + 1 if self.current_page < self.pages else None
-
 @dataclass
 class PaginationComputedFields():
   pages: int
