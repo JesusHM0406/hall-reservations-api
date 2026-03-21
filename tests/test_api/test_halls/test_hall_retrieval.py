@@ -143,20 +143,6 @@ class TestGetAllHalls:
     data = response.json()
     assert data["total"] == 4
 
-  async def test_get_halls_available_filters_metadata(self, client: AsyncClient):
-    """Check available filters metadata in response"""
-    response = await client.get("/halls/")
-
-    assert response.status_code == 200
-    data = response.json()
-    assert "available_filters" in data
-    filters = data["available_filters"]
-    assert len(filters) > 0
-
-    status_filter = filters[0]
-    assert status_filter["name"] == HallFilterNames.STATUS.value
-    assert "options" in status_filter
-
 
 class TestGetHallById:
   """Tests for GET /halls/{id} endpoint"""

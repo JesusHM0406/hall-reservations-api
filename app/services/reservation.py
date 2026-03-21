@@ -15,11 +15,10 @@ from app.crud.reservation import (
 from app.crud.user import crud_get_user_by_id
 from app.exceptions.exceptions import BusinessLogicError, ConflictError, NotFoundError
 from app.models.user_role import UserRole
-from app.schemas.filters.reservation import ReservationFilters, ReservationFilterLabels, ReservationFilterNames
+from app.schemas.filters.reservation import ReservationFilters
 from app.schemas.reservation import ReservationRead
 from app.schemas.user import UserComplete
 from app.utils.pagination import Pagination, get_pagination
-from app.utils.pagination_filters import FilterFactory
 
 STATUS_TRANSITIONS: dict[ReservationStatus, list[ReservationStatus]] = {
   ReservationStatus.CONFIRMED: [ReservationStatus.CANCELLED, ReservationStatus.FINISHED],
@@ -185,28 +184,6 @@ async def service_get_all_reservations(
   filters: ReservationFilters,
   requesting_user: UserComplete
 ) -> Pagination:
-  reservation_status_filter_dict: dict[str, str] = {}
-
-  for status in ReservationStatus:
-    reservation_status_filter_dict[status.value] = status.value.capitalize()
-
-  reservation_availables_filters = [
-    FilterFactory.text(
-      name=ReservationFilterNames.USER.value,
-      label=ReservationFilterLabels.USER.value
-    ),
-    FilterFactory.text(
-      name=ReservationFilterNames.HALL.value,
-      label=ReservationFilterLabels.HALL.value
-    ),
-    FilterFactory.select(
-      name=ReservationFilterNames.STATUS.value,
-      label=ReservationFilterLabels.STATUS.value,
-      options=reservation_status_filter_dict,
-      current=filters.status
-    )
-  ]
-
   result = await crud_get_reservations(
     db=db,
     page=page,
@@ -214,6 +191,6 @@ async def service_get_all_reservations(
     requesting_user_role=requesting_user.role
   )
 
-  pagination = get_pagination(pagination=result, page=page, available_filters=reservation_availables_filters)
+  pagination = get_pagination(pagination=result, page=page)
 
   return pagination

@@ -13,10 +13,9 @@ from app.crud.hall import (
 )
 from app.crud.reservation import crud_has_confirmed_reservations
 from app.exceptions.exceptions import ConflictError, NotFoundError
-from app.schemas.filters.hall import HallFilters, HallFilterLabels, HallFilterNames, HallStatusFilter
+from app.schemas.filters.hall import HallFilters
 from app.schemas.hall import HallRead, HallSearchResponse
 from app.utils.pagination import Pagination, get_pagination
-from app.utils.pagination_filters import FilterFactory
 
 
 async def service_create_new_hall(
@@ -170,23 +169,9 @@ async def service_get_all_halls(
   page: int,
   filters: HallFilters
 ) -> Pagination:
-  hall_status_filter_dict: dict[str, str] = {}
-
-  for status in HallStatusFilter:
-    hall_status_filter_dict[status.value] = status.value.capitalize()
-
-  hall_available_filters = [
-    FilterFactory.select(
-      name=HallFilterNames.STATUS.value,
-      label=HallFilterLabels.STATUS.value,
-      options=hall_status_filter_dict,
-      current=filters.status
-    )
-  ]
-
   result = await crud_get_all_halls(db=db, page=page, filters=filters)
 
-  pagination = get_pagination(pagination=result, page=page, available_filters=hall_available_filters)
+  pagination = get_pagination(pagination=result, page=page)
 
   return pagination
 

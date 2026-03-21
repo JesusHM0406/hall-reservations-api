@@ -6,7 +6,6 @@ from pydantic import BaseModel, computed_field
 
 from app.core.config import settings
 from app.utils.pagination_crud import PaginationCRUD
-from app.utils.pagination_filters import AvailableFilter
 
 
 class Pagination(BaseModel):
@@ -16,7 +15,6 @@ class Pagination(BaseModel):
   per_page: int
   pages: int
   current_page: int
-  available_filters: List[AvailableFilter] = []
 
   @computed_field
   def has_prev(self) -> bool:
@@ -32,15 +30,14 @@ class PaginationComputedFields():
   current_page: int
   current_offset: int
 
-def get_pagination(*, pagination: PaginationCRUD, page: int, available_filters: List[AvailableFilter]) -> Pagination:
+def get_pagination(*, pagination: PaginationCRUD, page: int) -> Pagination:
   return Pagination(
     items=pagination.items,
     requested_page=page,
     per_page=pagination.per_page,
     total=pagination.total,
     pages=pagination.pages,
-    current_page=pagination.current_page,
-    available_filters=available_filters
+    current_page=pagination.current_page
   )
 
 def get_pagination_computed_fields(

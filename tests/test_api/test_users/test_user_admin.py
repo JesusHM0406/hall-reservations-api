@@ -271,14 +271,6 @@ class TestGetUsers:
     data = res.json()
     assert data["total"] == 7
 
-    filters = data["available_filters"]
-    role_filter = filters[0]
-    assert role_filter["name"] == UserFilterNames.ROLE
-    role_option_values = [o["value"] for o in role_filter["options"]]
-    assert UserRoleFilter.SUPERADMIN.value not in role_option_values
-    assert UserRoleFilter.ADMIN.value in role_option_values
-    assert UserRoleFilter.USER.value in role_option_values
-
     items = data["items"]
     assert len(items) == 7
     roles = [item["role"] for item in items]
@@ -326,14 +318,6 @@ class TestGetUsers:
     items = data["items"]
     roles = [item["role"] for item in items]
     assert UserRole.SUPERADMIN in roles
-
-    filters = data["available_filters"]
-    role_filter = filters[0]
-    assert role_filter["name"] == UserFilterNames.ROLE
-    role_option_values = [o["value"] for o in role_filter["options"]]
-    assert UserRoleFilter.SUPERADMIN.value in role_option_values
-    assert UserRoleFilter.ADMIN.value in role_option_values
-    assert UserRoleFilter.USER.value in role_option_values
 
     # Superadmin filter (accepted)
     res = await client.get(f"/users/?{UserFilterNames.ROLE.value}={UserRoleFilter.SUPERADMIN.value}")
