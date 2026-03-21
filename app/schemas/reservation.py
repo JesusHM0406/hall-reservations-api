@@ -3,6 +3,7 @@ from datetime import date, datetime, timezone, timedelta
 from pydantic import BaseModel, field_validator
 
 from app.core.messages import ErrorMessages
+from app.models.reservation_status import ReservationStatus
 
 
 class ReservationCreate(BaseModel):
@@ -37,5 +38,5 @@ class ReservationRead(BaseModel):
   user_name: str
   hall_id: int
   hall_name: str
-  status: str
+  status: ReservationStatus
   reservation_date: date
