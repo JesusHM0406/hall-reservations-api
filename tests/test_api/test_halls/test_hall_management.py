@@ -175,11 +175,27 @@ class TestCreateHall:
     assert data["description"] == "This should be trimmed"
 
   async def test_create_hall_long_name(self, client: AsyncClient, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
-    """Creating a hall with name > 255 chars should fail"""
+    """Creating a hall with name > 100 chars should fail"""
     mock_auth(admin_user)
 
     hall_data: dict[str, Any] = {
       "name": "A" * 101,
+      "description": "Valid long description",
+      "is_available": True
+    }
+
+    response = await client.post("/halls/", json=hall_data)
+
+    assert response.status_code == 422
+    data = response.json()
+    assert "detail" in data
+
+  async def test_create_hall_long_description(self, client: AsyncClient, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
+    """Creating a hall with description > 1000 chars should fail"""
+    mock_auth(admin_user)
+
+    hall_data: dict[str, Any] = {
+      "name": "ABCDEFGHIJ" * 11,
       "description": "Valid long description",
       "is_available": True
     }
