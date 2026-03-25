@@ -112,7 +112,7 @@ async def crud_get_all_halls(
 async def crud_search_halls(*, db: AsyncSession, search_query: str) -> Sequence[Row[tuple[Hall, Any]]]:
   query_str = search_query.strip().lower()
   if not query_str:
-      return []
+    return []
 
   formatted_fts = " & ".join(f"{word}:*" for word in query_str.split())
   ts_query = func.to_tsquery("english", formatted_fts)

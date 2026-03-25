@@ -185,8 +185,7 @@ async def service_search_halls(
   data: list[HallSearchResponse] = [
     HallSearchResponse(
       id=row[0].id,
-      name=row[0].name,
-      rank=row[1]
+      name=row[0].name
     )
     for row in result
   ]
