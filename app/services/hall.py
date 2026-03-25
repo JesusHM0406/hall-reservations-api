@@ -28,10 +28,10 @@ async def service_create_new_hall(
   # Trim and validate name (schema validation should have already done this, but defense in depth)
   name = name.strip()
   description = description.strip()
-  
+
   if not name:
     raise ConflictError(ErrorMessages.EMPTY_HALL_NAME)
-  
+
   if not description:
     raise ConflictError(ErrorMessages.EMPTY_HALL_DESCRIPTION)
 
@@ -100,7 +100,7 @@ async def service_update_hall(
     name = name.strip()
     if not name:
       raise ConflictError(ErrorMessages.EMPTY_HALL_NAME)
-  
+
   if description is not None:
     description = description.strip()
     if not description:
@@ -184,8 +184,10 @@ async def service_search_halls(
 
   data: list[HallSearchResponse] = [
     HallSearchResponse(
-      id=row[0].id,
-      name=row[0].name
+      id=row[0],
+      name=row[1],
+      is_available=row[2],
+      preview=row[3]
     )
     for row in result
   ]

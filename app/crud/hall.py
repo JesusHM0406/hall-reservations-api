@@ -1,6 +1,6 @@
 from typing import Any, Sequence
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, case
 from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
@@ -109,7 +109,7 @@ async def crud_get_all_halls(
     current_page=computed_fields.current_page
   )
 
-async def crud_search_halls(*, db: AsyncSession, search_query: str) -> Sequence[Row[tuple[Hall, Any]]]:
+async def crud_search_halls(*, db: AsyncSession, search_query: str) -> Sequence[Row[tuple[int, str, bool, Any, Any]]]:
   query_str = search_query.strip().lower()
   if not query_str:
     return []
@@ -124,7 +124,16 @@ async def crud_search_halls(*, db: AsyncSession, search_query: str) -> Sequence[
   ).label("rank")
 
   stmt = (
-    select(Hall, relevance)
+    select(
+      Hall.id,
+      Hall.name,
+      Hall.is_available,
+      case(
+        (func.char_length(Hall.description) > 100, func.left(Hall.description, 97) + "..."),
+        else_=Hall.description
+      ).label("preview"),
+      relevance
+    )
     .filter(
       or_(
         Hall.search_vector.op("@@")(ts_query),

@@ -38,3 +38,5 @@ class HallUpdateAvailability(BaseModel):
 class HallSearchResponse(BaseModel):
   id: int
   name: str
+  is_available: bool
+  preview: str
