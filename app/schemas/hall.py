@@ -3,8 +3,8 @@ from pydantic import BaseModel, Field, field_validator
 from app.core.messages import ErrorMessages
 
 class HallCreate(BaseModel):
-  name: str = Field(min_length=1, max_length=255)
-  description: str = Field(min_length=1)
+  name: str = Field(min_length=5, max_length=100)
+  description: str = Field(min_length=20, max_length=1000)
   is_available: bool
 
   @field_validator("name", "description")
@@ -21,8 +21,8 @@ class HallRead(BaseModel):
   is_available: bool
 
 class HallUpdate(BaseModel):
-  name: str | None = Field(None, min_length=1, max_length=255)
-  description: str | None = Field(None, min_length=1)
+  name: str | None = Field(None, min_length=5, max_length=100)
+  description: str | None = Field(None, min_length=20, max_length=1000)
   is_available: bool | None
 
   @field_validator("name", "description")

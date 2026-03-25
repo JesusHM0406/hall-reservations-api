@@ -99,7 +99,7 @@ class TestCreateHall:
 
     hall_data: dict[str, Any] = {
       "name": "",
-      "description": "Valid description",
+      "description": "Valid long description",
       "is_available": True
     }
 
@@ -115,7 +115,7 @@ class TestCreateHall:
 
     hall_data: dict[str, Any] = {
       "name": "   ",
-      "description": "Valid description",
+      "description": "Valid long description",
       "is_available": True
     }
 
@@ -179,8 +179,8 @@ class TestCreateHall:
     mock_auth(admin_user)
 
     hall_data: dict[str, Any] = {
-      "name": "A" * 256,
-      "description": "Valid description",
+      "name": "A" * 101,
+      "description": "Valid long description",
       "is_available": True
     }
 
@@ -196,7 +196,7 @@ class TestCreateHall:
 
     hall_data: dict[str, Any] = {
       "name": "Test Hall",
-      "description": "Description",
+      "description": "Description for the Hall",
       "is_available": True
     }
 
@@ -210,7 +210,7 @@ class TestCreateHall:
     """Unauthenticated user cannot create a hall"""
     hall_data: dict[str, Any] = {
       "name": "Test Hall",
-      "description": "Description",
+      "description": "Description for the Hall",
       "is_available": True
     }
 
@@ -226,7 +226,7 @@ class TestCreateHall:
 
     hall_data: dict[str, Any] = {
       "name": "Test Hall",
-      "description": "Description",
+      "description": "Description for the Hall",
       "is_available": True
     }
 
@@ -249,7 +249,7 @@ class TestCreateHall:
 
     # Missing name
     response = await client.post("/halls/", json={
-      "description": "Test Description",
+      "description": "Test Description for the Hall",
       "is_available": True
     })
     assert response.status_code == 422
@@ -257,7 +257,7 @@ class TestCreateHall:
     # Missing is_available
     response = await client.post("/halls/", json={
       "name": "Test Hall",
-      "description": "Test Description"
+      "description": "Test Description for the Hall"
     })
     assert response.status_code == 422
 
@@ -297,7 +297,7 @@ class TestUpdateHall:
 
     update_data: dict[str, Any] = {
       "name": None,
-      "description": "New Description",
+      "description": "New Description for the Hall",
       "is_available": None
     }
 
@@ -305,7 +305,7 @@ class TestUpdateHall:
 
     assert response.status_code == 200
     data = response.json()
-    assert data["description"] == "New Description"
+    assert data["description"] == "New Description for the Hall"
     assert data["name"] == "Hall"  # Unchanged
 
   async def test_update_hall_availability_admin(self, client: AsyncClient, db_session: AsyncSession, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
@@ -338,7 +338,7 @@ class TestUpdateHall:
 
     update_data: dict[str, Any] = {
       "name": "New Name",
-      "description": "New Description",
+      "description": "New Description for the Hall",
       "is_available": False
     }
 
@@ -347,7 +347,7 @@ class TestUpdateHall:
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "New Name"
-    assert data["description"] == "New Description"
+    assert data["description"] == "New Description for the Hall"
     assert data["is_available"] is False
 
   async def test_update_hall_not_found(self, client: AsyncClient, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
@@ -397,7 +397,7 @@ class TestUpdateHall:
 
     update_data: dict[str, Any] = {
       "name": "Hall Name",  # Same name
-      "description": "New Description",
+      "description": "New Description for the Hall",
       "is_available": None
     }
 
@@ -406,7 +406,7 @@ class TestUpdateHall:
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "Hall Name"
-    assert data["description"] == "New Description"
+    assert data["description"] == "New Description for the Hall"
 
   async def test_update_hall_empty_name(self, client: AsyncClient, db_session: AsyncSession, admin_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
     """Updating hall with empty name should fail"""
@@ -478,7 +478,7 @@ class TestUpdateHall:
 
     update_data: dict[str, Any] = {
       "name": "  New Name  ",
-      "description": "  New Description  ",
+      "description": "  New Description For the Hall   ",
       "is_available": None
     }
 
@@ -487,7 +487,7 @@ class TestUpdateHall:
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "New Name"
-    assert data["description"] == "New Description"
+    assert data["description"] == "New Description For the Hall"
 
   async def test_create_hall_regular_user_forbidden(self, client: AsyncClient, db_session: AsyncSession, regular_user: UserComplete, mock_auth: Callable[[UserComplete], None]):
     """Regular user cannot update a hall"""
