@@ -71,12 +71,12 @@ async def crud_get_reservations(
     else:
       stmt = stmt.join(Reservation.user)
       total_records_stmt = total_records_stmt.join(Reservation.user)
-    
+
     # Non-superadmins cannot see superadmin reservations
     if requesting_user_role != UserRole.SUPERADMIN:
       stmt = stmt.where(User.role != UserRole.SUPERADMIN)
       total_records_stmt = total_records_stmt.where(User.role != UserRole.SUPERADMIN)
-    
+
     stmt = stmt.options(contains_eager(Reservation.user).load_only(User.name))
   else:
     stmt = stmt.options(joinedload(Reservation.user).load_only(User.name))
@@ -111,7 +111,7 @@ async def crud_get_reservations(
       user_name=item.user.name,
       hall_id=item.hall_id,
       hall_name=item.hall.name,
-      status=item.status.value,
+      status=item.status,
       reservation_date=item.reservation_date,
     )
     for item in result_items
