@@ -118,9 +118,10 @@ async def crud_search_halls(*, db: AsyncSession, search_query: str) -> Sequence[
   ts_query = func.to_tsquery("english", formatted_fts)
 
   relevance = (
-    func.ts_rank(Hall.search_vector, ts_query) +
-    func.similarity(Hall.name, query_str) +
-    (1.0 if query_str else 0.0)
+    case((Hall.name.ilike(f"{query_str}%"), 2.0), else_=0.0) +
+    func.similarity(Hall.name, query_str) * 1.5 +
+    case((Hall.search_vector.op("@@")(ts_query), 1.0), else_=0.0) +
+    func.similarity(Hall.description, query_str) * 0.5
   ).label("rank")
 
   stmt = (
@@ -136,10 +137,11 @@ async def crud_search_halls(*, db: AsyncSession, search_query: str) -> Sequence[
     )
     .filter(
       or_(
-        Hall.search_vector.op("@@")(ts_query),
         Hall.name.op("%")(query_str),
-        Hall.name.ilike(f"{query_str}%"),
-        Hall.description.ilike(f"% {query_str}%")
+        Hall.search_vector.op("@@")(ts_query),
+        Hall.name.ilike(f"%{query_str}%"),
+        Hall.description.ilike(f"%{query_str}%"),
+        func.similarity(Hall.name, query_str) > 0.2
       )
     )
     .order_by(relevance.desc())
