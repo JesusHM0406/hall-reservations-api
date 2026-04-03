@@ -23,7 +23,7 @@ class HallRead(BaseModel):
 class HallUpdate(BaseModel):
   name: str | None = Field(None, min_length=5, max_length=100)
   description: str | None = Field(None, min_length=20, max_length=1000)
-  is_available: bool | None
+  is_available: bool | None = None
 
   @field_validator("name", "description")
   @classmethod
