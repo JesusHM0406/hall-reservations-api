@@ -227,7 +227,7 @@ async def service_restore_user(
 
   existing_user = await crud_get_user_by_name(db=db, name=new_name)
 
-  if existing_user:
+  if existing_user and existing_user.id != id:
     raise ConflictError(ErrorMessages.DUPLICATED_USERNAME)
 
   await crud_restore_user(user=user, new_name=new_name)
