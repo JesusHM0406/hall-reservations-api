@@ -1,4 +1,4 @@
-# Salon Reservations API
+# Hall Reservations API
 
 A robust and secure REST API for managing event hall reservations with advanced features including user authentication, role-based access control, rate limiting, and comprehensive test coverage.
 
@@ -15,12 +15,11 @@ A robust and secure REST API for managing event hall reservations with advanced 
 - [Testing](#testing)
 - [Database](#database)
 - [Docker Deployment](#docker-deployment)
-- [Development](#development)
 - [License](#license)
 
 ## 🎯 Overview
 
-This is a robust and feature-complete API for managing salon/event hall reservations currently in active development. It provides comprehensive functionality for users to browse available halls, make reservations, and manage their bookings, while administrators can manage halls and view all reservations. The API implements JWT-based authentication, password hashing with Argon2, rate limiting, and role-based access control. Production deployment is planned once the frontend web application is completed.
+This is a robust and feature-complete API for managing salon/event hall reservations. It provides comprehensive functionality for users to browse available halls, make reservations, and manage their bookings, while administrators can manage halls and view all reservations. The API implements JWT-based authentication, password hashing with Argon2, rate limiting, and role-based access control.
 
 ## ✨ Features
 
@@ -54,7 +53,7 @@ This is a robust and feature-complete API for managing salon/event hall reservat
 - **Uvicorn** (0.40.0) - ASGI server implementation
 
 ### Database
-- **PostgreSQL** (18 Alpine) - Production-grade relational database
+- **Supabase** - Open-source Backend-as-a-Service (BaaS) platform based on PostgreSQL
 - **SQLAlchemy** (2.0.46) - SQL toolkit and ORM with async support
 - **Alembic** (1.18.1) - Database migration management
 - **asyncpg** (0.31.0) - PostgreSQL adapter for asyncio
@@ -79,61 +78,13 @@ This is a robust and feature-complete API for managing salon/event hall reservat
 
 ### Prerequisites
 - Python 3.12+
-- PostgreSQL 18+ (for production)
+- Database in Supabase
 - Git
 - Docker & Docker Compose (optional, for containerized setup)
 
 ### Installation
 
-#### Local Development Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <https://github.com/JesusHM0406/hall-reservations-api.git>
-   cd hall-reservations-api
-   ```
-
-2. **Create and activate virtual environment**
-   ```bash
-   # Windows
-   python -m venv .venv
-   .venv\Scripts\activate
-   
-   # macOS/Linux
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install --upgrade pip setuptools wheel
-   pip install -r requirements.txt
-   ```
-
-4. **Set up environment variables**
-   ```bash
-   # Create .env file from example (or create new one)
-   cp .env.example .env
-   ```
-   
-   Configure the following variables in `.env`:
-   ```
-   DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/salon_db
-   SECRET_KEY=your-super-secret-key-change-in-production
-   ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
-   POSTGRES_USER=salon_user
-   POSTGRES_PASSWORD=secure_password
-   POSTGRES_DB=salon_db
-   ```
-
-5. **Set up database**
-   ```bash
-   # Start PostgreSQL (if not already running)
-   # Then run migrations
-   alembic upgrade head
-   ```
-
-#### Docker Setup (Recommended)
+#### Docker Setup
 
 1. **Clone the repository**
    ```bash
@@ -149,7 +100,7 @@ This is a robust and feature-complete API for managing salon/event hall reservat
 
 3. **Build and start services**
    ```bash
-   docker-compose -f docker-compose.dev.yml up -d
+   docker-compose -f docker-compose.yml up -d
    ```
 
 ## ⚙️ Configuration
@@ -158,12 +109,9 @@ This is a robust and feature-complete API for managing salon/event hall reservat
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | - | ✅ |
+| `DATABASE_URL` | Supabase connection string | - | ✅ |
 | `SECRET_KEY` | JWT signing secret key | - | ✅ |
 | `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | - | ✅ |
-| `POSTGRES_USER` | PostgreSQL user | - | ✅ |
-| `POSTGRES_PASSWORD` | PostgreSQL password | - | ✅ |
-| `POSTGRES_DB` | PostgreSQL database name | - | ✅ |
 | `PROJECT_NAME` | API project name | "Hall Reservations API" | ❌ |
 | `PROJECT_VERSION` | API version | "0.0.1" | ❌ |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | JWT token expiration time | 60 | ❌ |
@@ -184,50 +132,23 @@ MIN_NAME_SIZE = 3                      # Username minimum length
 
 ## 🏃 Running the Application
 
-### Local Development
-
-1. **Activate virtual environment**
-   ```bash
-   # Windows
-   .venv\Scripts\activate
-   
-   # macOS/Linux
-   source .venv/bin/activate
-   ```
-
-2. **Run database migrations**
-   ```bash
-   alembic upgrade head
-   ```
-
-3. **Start the development server**
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-The API will be available at `http://localhost:8000`
-
-Interactive API documentation:
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
-
 ### Docker
 
 Start all services:
 ```bash
-docker-compose -f docker-compose.dev.yml up
+docker-compose -f docker-compose.yml up
 ```
 
 The API will be available at `http://localhost:8000`
 
 View logs:
 ```bash
-docker-compose -f docker-compose.dev.yml logs -f api
+docker-compose -f docker-compose.yml logs -f api
 ```
 
 Stop services:
 ```bash
-docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker-compose.yml down
 ```
 
 ## 📚 API Endpoints
@@ -381,7 +302,7 @@ Tests use SQLite in-memory database for fast, isolated test execution that doesn
 
 ### Database Design
 
-The application uses PostgreSQL with SQLAlchemy ORM. Key tables include:
+The application uses PostgreSQL (Supabase) with SQLAlchemy ORM. Key tables include:
 
 - **users**: User accounts with roles and soft-delete support
 - **halls**: Event hall information and availability
@@ -427,28 +348,18 @@ This design ensures test behavior matches production behavior exactly.
 
 ## 🐳 Docker Deployment
 
-> **Note**: The current Docker setup is simplified and development-focused. Production-ready Docker configuration will be added once the frontend web application is completed.
-
 ### Docker Architecture
 
-The project includes a development-focused Docker setup with two services:
-
-#### **PostgreSQL Service**
-- Image: `postgres:18-alpine` (lightweight Alpine Linux variant)
-- Volumes: `postgres_data` for persistent storage
-- Health checks: Automatic service validation
-- Network: Internal `salon-dev-network`
+The project includes a Docker setup with one service:
 
 #### **API Service**
-- Built from `Dockerfile.dev` with Python 3.12
-- Auto-reload enabled for development
-- Automatic migrations via `entrypoint.sh`
+- Built from `Dockerfile` with Python 3.12
+- Automatic migrations via `entrypoint.prod.sh`
 - Health checks: HTTP health endpoint validation
-- Volumes: Source code mounted for hot-reload development
 
 ### Dockerfile Details
 
-Key features of `Dockerfile.dev`:
+Key features of `Dockerfile`:
 
 - Base: Python 3.12-slim (small footprint)
 - System dependencies: gcc, postgresql-client
@@ -456,21 +367,11 @@ Key features of `Dockerfile.dev`:
 - Health checks: 30-second interval checks
 - Entrypoint: Automatic migrations and server startup
 
-### Docker Compose Configuration
-
-Key orchestration features:
-
-- Service dependencies: API waits for unhealthy database
-- Network isolation: Internal bridge network for security
-- Port mapping: Expose PostgreSQL (5432) and API (8000)
-- Volume management: Persistent database data, mounted source code
-- Environment management: Loaded from .env file
-
 ### Docker Commands
 
-**Start services** specifying compose file (development)
+**Start services** specifying compose file
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.yml up -d
 ```
 
 **View service logs**
@@ -480,12 +381,12 @@ docker-compose logs -f api
 
 **Stop services**
 ```bash
-docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker-compose.yml down
 ```
 
 **Rebuild images** after dependency changes
 ```bash
-docker-compose -f docker-compose.dev.yml up -d --build
+docker-compose -f docker-compose.yml up -d --build
 ```
 
 **Access database container**
