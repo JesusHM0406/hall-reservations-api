@@ -1,0 +1,98 @@
+from typing import Annotated, Any, AsyncGenerator
+
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from starlette.status import HTTP_400_BAD_REQUEST
+
+from app.core.config import settings
+from app.core.messages import ErrorMessages
+from app.crud.user import crud_get_user_by_id
+from app.db.session import AsyncSession, AsyncSessionLocal
+from app.models.user_role import UserRole
+from app.schemas.user import UserComplete
+
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+  async with AsyncSessionLocal() as session:
+    async with session.begin():
+      yield session
+
+DBDep = Annotated[AsyncSession, Depends(get_db)]
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+async def get_current_user(
+  token: Annotated[str, Depends(oauth2_scheme)],
+  db: DBDep
+) -> UserComplete:
+  credentials_exception = HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail=ErrorMessages.INVALID_CREDENTIALS,
+      headers={"WWW-Authenticate": "Bearer"},
+  )
+  try:
+    # PyJWT's key parameter has incomplete type stubs (Unknown | PyJWK | str | bytes)
+    # Explicitly specify algorithms to prevent algorithm confusion attacks
+    payload: dict[str, Any] = jwt.decode(  # type: ignore[misc]
+      token,
+      settings.SECRET_KEY,
+      algorithms=[settings.ALGORITHM]  # Only accept expected algorithm
+    )
+    id = payload.get("sub")
+    if id is None:
+      raise credentials_exception
+    
+    # Validate that user ID is numeric to prevent injection
+    try:
+      user_id = int(id)
+    except (ValueError, TypeError):
+      raise credentials_exception
+      
+  except jwt.ExpiredSignatureError:
+    # Token has expired
+    raise credentials_exception
+  except jwt.InvalidTokenError:
+    # Invalid token (malformed, wrong signature, etc.)
+    raise credentials_exception
+  except jwt.PyJWTError:
+    # Catch any other JWT errors
+    raise credentials_exception
+
+  user = await crud_get_user_by_id(db=db, id=user_id)
+
+  if user is None:
+    raise credentials_exception
+
+  return UserComplete(
+    id=user.id,
+    name=user.name,
+    role=user.role,
+    is_active=user.is_active,
+    is_deleted=user.is_deleted
+  )
+
+async def get_current_active_user(user: Annotated[UserComplete, Depends(get_current_user)]):
+  if user.is_deleted:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail=ErrorMessages.USER_NOT_FOUND
+  )
+
+  if not user.is_active:
+    raise HTTPException(
+      status_code=HTTP_400_BAD_REQUEST,
+      detail=ErrorMessages.INACTIVE_USER
+    )
+  return user
+
+async def get_current_active_admin(user: Annotated[UserComplete, Depends(get_current_active_user)]):
+  if user.role not in [UserRole.ADMIN, UserRole.SUPERADMIN]:
+    raise HTTPException(
+      status_code=403,
+      detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS
+    )
+  return user
+
+UserDep = Annotated[UserComplete, Depends(get_current_active_user)]
+AdminDep = Annotated[UserComplete, Depends(get_current_active_admin)]

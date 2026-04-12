@@ -1,0 +1,35 @@
+# Development Dockerfile for Salon Reservations API
+FROM python:3.12-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+  PYTHONDONTWRITEBYTECODE=1 \
+  PIP_NO_CACHE_DIR=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  gcc \
+  postgresql-client \
+  && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --upgrade pip setuptools wheel && \
+  pip install -r requirements.txt
+
+# We will bind mount the source code, so we don't copy it here
+
+# Expose the port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD python -c "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()" || exit 1
+
+# Run Alembic migrations and start the API with hot reload
+ENTRYPOINT ["./entrypoint.sh"]
