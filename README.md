@@ -2,6 +2,10 @@
 
 A robust and secure REST API for managing event hall reservations with advanced features including user authentication, role-based access control, rate limiting, and comprehensive test coverage.
 
+## Deploy
+
+[API in Render](https://hall-reservations-api.onrender.com)
+
 ## 📋 Table of Contents
 
 - [Overview](#overview)
