@@ -5,13 +5,14 @@ WORKDIR /app
 COPY requirements.txt .
 
 RUN pip install --upgrade pip setuptools wheel && \
-  pip install -r requirements.txt
+    pip install --prefix=/install -r requirements.txt
 
 FROM python:3.12-slim AS production
 
 ENV PYTHONUNBUFFERED=1 \
   PYTHONDONTWRITEBYTECODE=1 \
-  PIP_NO_CACHE_DIR=1
+  PIP_NO_CACHE_DIR=1 \
+  PYTHONPATH=/usr/local/lib/python3.12/site-packages
 
 WORKDIR /app
 
@@ -27,6 +28,8 @@ COPY . .
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 RUN chown -R appuser:appgroup /app
 USER appuser
+
+RUN chmod +x ./entrypoint.prod.sh
 
 EXPOSE 8000
 
