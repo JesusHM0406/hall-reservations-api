@@ -136,11 +136,8 @@ async def crud_search_halls(*, db: AsyncSession, search_query: str) -> Sequence[
     )
     .filter(
       or_(
-        Hall.name.op("%")(query_str),
-        Hall.search_vector.op("@@")(ts_query),
         Hall.name.ilike(f"%{query_str}%"),
-        Hall.description.ilike(f"%{query_str}%"),
-        func.similarity(Hall.name, query_str) > 0.2
+        Hall.search_vector.op("@@")(ts_query)
       )
     )
     .order_by(relevance.desc())
